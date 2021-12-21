@@ -68,6 +68,7 @@ module.exports = {
             // too many a11y issues to use jsx-a11y/recommended
             // enable rules and warnings as they are fixed
             "jsx-a11y/anchor-has-content": "error",
+            "jsx-a11y/no-redundant-roles": "error",
 
         },
     }],
