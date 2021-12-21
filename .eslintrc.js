@@ -1,5 +1,8 @@
 module.exports = {
-    plugins: ["matrix-org"],
+    plugins: [
+        "jsx-a11y",
+        "matrix-org",
+    ],
     extends: [
         "plugin:matrix-org/babel",
         "plugin:matrix-org/react",
@@ -61,6 +64,11 @@ module.exports = {
             "@typescript-eslint/no-explicit-any": "off",
             // We'd rather not do this but we do
             "@typescript-eslint/ban-ts-comment": "off",
+
+            // too many a11y issues to use jsx-a11y/recommended
+            // enable rules and warnings as they are fixed
+            "jsx-a11y/anchor-has-content": "error",
+
         },
     }],
     settings: {
