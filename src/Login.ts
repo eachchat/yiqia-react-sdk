@@ -22,6 +22,8 @@ import { logger } from "matrix-js-sdk/src/logger";
 
 import { IMatrixClientCreds } from "./MatrixClientPeg";
 import SecurityCustomisations from "./customisations/Security";
+import SettingsStore from "./settings/SettingsStore";
+import { UIFeature } from "./settings/UIFeature";
 
 interface ILoginOptions {
     defaultDeviceDisplayName?: string;
@@ -238,6 +240,9 @@ export async function sendLoginRequest(
     };
 
     SecurityCustomisations.examineLoginResponse?.(data, creds);
+    if(!SettingsStore.getValue(UIFeature.EnableEncrypt)) {
+        SecurityCustomisations.SHOW_ENCRYPTION_SETUP_UI = false;
+    }
 
     return creds;
 }
