@@ -34,6 +34,8 @@ import DialogButtons from "../elements/DialogButtons";
 import BaseDialog from "../dialogs/BaseDialog";
 import SpaceStore from "../../../stores/spaces/SpaceStore";
 import JoinRuleDropdown from "../elements/JoinRuleDropdown";
+import SettingsStore from "../../../settings/SettingsStore";
+import { UIFeature } from "../../../settings/UIFeature";
 
 interface IProps {
     defaultPublic?: boolean;
@@ -280,7 +282,7 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
         }
 
         let e2eeSection;
-        if (this.state.joinRule !== JoinRule.Public) {
+        if (SettingsStore.getValue(UIFeature.EnableEncrypt) && this.state.joinRule !== JoinRule.Public) {
             let microcopy;
             if (privateShouldBeEncrypted()) {
                 if (this.state.canChangeEncryption) {
