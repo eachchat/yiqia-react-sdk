@@ -15,6 +15,8 @@ limitations under the License.
 */
 
 import { MatrixClientPeg } from '../MatrixClientPeg';
+import SettingsStore from '../settings/SettingsStore';
+import { UIFeature } from '../settings/UIFeature';
 
 const CALL_BEHAVIOUR_WK_KEY = "io.element.call_behaviour";
 const E2EE_WK_KEY = "io.element.e2ee";
@@ -38,6 +40,12 @@ export function getCallBehaviourWellKnown(): ICallBehaviourWellKnown {
 }
 
 export function getE2EEWellKnown(): IE2EEWellKnown {
+    if (!SettingsStore.getValue(UIFeature.EnableEncrypt)) {
+        return {
+            default: false,
+            secure_backup_required: false
+        }
+    }
     const clientWellKnown = MatrixClientPeg.get().getClientWellKnown();
     if (clientWellKnown && clientWellKnown[E2EE_WK_KEY]) {
         return clientWellKnown[E2EE_WK_KEY];
