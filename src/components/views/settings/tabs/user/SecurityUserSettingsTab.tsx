@@ -76,6 +76,7 @@ interface IState {
     waitingUnignored: string[];
     managingInvites: boolean;
     invitedRoomIds: Set<string>;
+    isEncryptEnable?: boolean;
 }
 
 @replaceableComponent("views.settings.tabs.user.SecurityUserSettingsTab")
@@ -93,6 +94,7 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
             waitingUnignored: [],
             managingInvites: false,
             invitedRoomIds,
+            isEncryptEnable: SettingsStore.getValue(UIFeature.EnableEncrypt),
         };
     }
 
@@ -270,37 +272,46 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
     }
 
     public render(): JSX.Element {
-        const secureBackup = (
-            <div className='mx_SettingsTab_section'>
-                <span className="mx_SettingsTab_subheading">{ _t("Secure Backup") }</span>
-                <div className='mx_SettingsTab_subsectionText'>
-                    <SecureBackupPanel />
+        let secureBackup;
+        if(this.state.isEncryptEnable) {
+            secureBackup = (
+                <div className='mx_SettingsTab_section'>
+                    <span className="mx_SettingsTab_subheading">{ _t("Secure Backup") }</span>
+                    <div className='mx_SettingsTab_subsectionText'>
+                        <SecureBackupPanel />
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
 
-        const eventIndex = (
-            <div className="mx_SettingsTab_section">
-                <span className="mx_SettingsTab_subheading">{ _t("Message search") }</span>
-                <EventIndexPanel />
-            </div>
-        );
+        let eventIndex;
+        if(this.state.isEncryptEnable) {
+            eventIndex = (
+                <div className="mx_SettingsTab_section">
+                    <span className="mx_SettingsTab_subheading">{ _t("Message search") }</span>
+                    <EventIndexPanel />
+                </div>
+            );
+        }
 
         // XXX: There's no such panel in the current cross-signing designs, but
         // it's useful to have for testing the feature. If there's no interest
         // in having advanced details here once all flows are implemented, we
         // can remove this.
-        const crossSigning = (
-            <div className='mx_SettingsTab_section'>
-                <span className="mx_SettingsTab_subheading">{ _t("Cross-signing") }</span>
-                <div className='mx_SettingsTab_subsectionText'>
-                    <CrossSigningPanel />
+        let crossSigning;
+        if(this.state.isEncryptEnable) {
+            crossSigning = (
+                <div className='mx_SettingsTab_section'>
+                    <span className="mx_SettingsTab_subheading">{ _t("Cross-signing") }</span>
+                    <div className='mx_SettingsTab_subsectionText'>
+                        <CrossSigningPanel />
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
 
         let warning;
-        if (!privateShouldBeEncrypted() && SettingsStore.getValue(UIFeature.EnableEncrypt)) {
+        if (!privateShouldBeEncrypted() && this.state.isEncryptEnable) {
             warning = <div className="mx_SecurityUserSettingsTab_warning">
                 { _t("Your server admin has disabled end-to-end encryption by default " +
                     "in private rooms & Direct Messages.") }
@@ -376,14 +387,22 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
                             "A device's name is visible to people you communicate with.",
                         ) }
                     </span>
-                    <DevicesPanel />
+                    <DevicesPanel
+                        isEncryptEnabled={this.state.isEncryptEnable}
+                    />
                 </div>
-                <div className="mx_SettingsTab_heading">{ _t("Encryption") }</div>
+                {
+                    this.state.isEncryptEnable &&
+                    <div className="mx_SettingsTab_heading">{ _t("Encryption") }</div>
+                }
                 <div className="mx_SettingsTab_section">
                     { secureBackup }
                     { eventIndex }
                     { crossSigning }
-                    <CryptographyPanel />
+                    {
+                        this.state.isEncryptEnable &&
+                        <CryptographyPanel />
+                    }
                 </div>
                 { privacySection }
                 { advancedSection }

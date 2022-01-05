@@ -32,6 +32,7 @@ import AccessibleButton from "../elements/AccessibleButton";
 
 interface IProps {
     className?: string;
+    isEncryptEnabled?: boolean;
 }
 
 interface IState {
@@ -267,6 +268,7 @@ export default class DevicesPanel extends React.Component<IProps, IState> {
             canBeVerified={canBeVerified}
             onDeviceChange={this.loadDevices}
             onDeviceToggled={this.onDeviceSelectionToggled}
+            isEncryptEnabled={this.props.isEncryptEnabled}
         />;
     };
 
@@ -337,7 +339,10 @@ export default class DevicesPanel extends React.Component<IProps, IState> {
                 <hr />
                 <div className="mx_DevicesPanel_header">
                     <div className="mx_DevicesPanel_header_trust">
-                        { trustIcon }
+                        {
+                            this.props.isEncryptEnabled &&
+                            trustIcon
+                        }
                     </div>
                     <div className="mx_DevicesPanel_header_title">
                         { title }

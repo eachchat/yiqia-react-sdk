@@ -40,6 +40,7 @@ interface IProps {
     onDeviceChange: () => void;
     onDeviceToggled: (device: IMyDevice) => void;
     selected: boolean;
+    isEncryptEnabled?: boolean;
 }
 
 interface IState {
@@ -181,7 +182,10 @@ export default class DevicesPanelEntry extends React.Component<IProps, IState> {
             </form> :
             <React.Fragment>
                 { signOutButton }
-                { verifyButton }
+                {  
+                    this.props.isEncryptEnabled && 
+                    verifyButton
+                }
                 <AccessibleButton kind="primary_outline" onClick={this.onRename}>
                     { _t("Rename") }
                 </AccessibleButton>
@@ -189,7 +193,9 @@ export default class DevicesPanelEntry extends React.Component<IProps, IState> {
 
         return (
             <div className={"mx_DevicesPanel_device" + myDeviceClass}>
-                { left }
+                {   this.props.isEncryptEnabled &&
+                    left
+                }
                 <div className="mx_DevicesPanel_deviceInfo">
                     <div className="mx_DevicesPanel_deviceName">
                         { deviceName }
