@@ -29,6 +29,8 @@ import QuestionDialog from "./QuestionDialog";
 import BaseDialog from "./BaseDialog";
 import Spinner from "../elements/Spinner";
 import DialogButtons from "../elements/DialogButtons";
+import SettingsStore from '../../../settings/SettingsStore';
+import { UIFeature } from '../../../settings/UIFeature';
 
 interface IProps {
     onFinished: (success: boolean) => void;
@@ -51,7 +53,7 @@ export default class LogoutDialog extends React.Component<IProps, IState> {
         super(props);
 
         const cli = MatrixClientPeg.get();
-        const shouldLoadBackupStatus = cli.isCryptoEnabled() && !cli.getKeyBackupEnabled();
+        const shouldLoadBackupStatus = cli.isCryptoEnabled() && !cli.getKeyBackupEnabled() && SettingsStore.getValue(UIFeature.EnableEncrypt);
 
         this.state = {
             shouldLoadBackupStatus: shouldLoadBackupStatus,
