@@ -280,7 +280,7 @@ const RoomSummaryCard: React.FC<IProps> = ({ room, onClose }) => {
         <div className="mx_RoomSummaryCard_avatar" role="presentation">
             <RoomAvatar room={room} height={54} width={54} viewAvatarOnClick />
             {
-                SettingsStore.getValue(UIFeature.EnableEncrypt) &&
+                e2eStatus &&
                 <TextWithTooltip
                     tooltip={isRoomEncrypted ? _t("Encrypted") : _t("Not encrypted")}
                     class={classNames("mx_RoomSummaryCard_e2ee", {
