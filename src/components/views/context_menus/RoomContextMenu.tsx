@@ -45,6 +45,8 @@ import { RightPanelPhases } from "../../../stores/RightPanelStorePhases";
 import { ROOM_NOTIFICATIONS_TAB } from "../dialogs/RoomSettingsDialog";
 import { useEventEmitterState } from "../../../hooks/useEventEmitter";
 import DMRoomMap from "../../../utils/DMRoomMap";
+import SettingsStore from "../../../settings/SettingsStore";
+import { UIFeature } from "../../../settings/UIFeature";
 
 interface IProps extends IContextMenuProps {
     room: Room;
@@ -265,22 +267,25 @@ const RoomContextMenu = ({ room, onFinished, ...props }: IProps) => {
                 iconClassName="mx_RoomTile_iconFiles"
             />
 
-            <IconizedContextMenuOption
-                onClick={(ev: ButtonEvent) => {
-                    ev.preventDefault();
-                    ev.stopPropagation();
-
-                    ensureViewingRoom();
-                    defaultDispatcher.dispatch<SetRightPanelPhasePayload>({
-                        action: Action.SetRightPanelPhase,
-                        phase: RightPanelPhases.RoomSummary,
-                        allowClose: false,
-                    });
-                    onFinished();
-                }}
-                label={_t("Widgets")}
-                iconClassName="mx_RoomTile_iconWidgets"
-            />
+            {
+                SettingsStore.getValue(UIFeature.Widgets) &&
+                <IconizedContextMenuOption
+                    onClick={(ev: ButtonEvent) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+    
+                        ensureViewingRoom();
+                        defaultDispatcher.dispatch<SetRightPanelPhasePayload>({
+                            action: Action.SetRightPanelPhase,
+                            phase: RightPanelPhases.RoomSummary,
+                            allowClose: false,
+                        });
+                        onFinished();
+                    }}
+                    label={_t("Widgets")}
+                    iconClassName="mx_RoomTile_iconWidgets"
+                />
+            }
 
             { lowPriorityOption }
             { copyLinkOption }

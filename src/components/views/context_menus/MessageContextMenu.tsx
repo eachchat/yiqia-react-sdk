@@ -47,6 +47,7 @@ import { WidgetLayoutStore } from '../../../stores/widgets/WidgetLayoutStore';
 import EndPollDialog from '../dialogs/EndPollDialog';
 import { isPollEnded } from '../messages/MPollBody';
 import { createMapSiteLink } from "../messages/MLocationBody";
+import { UIFeature } from '../../../settings/UIFeature';
 
 export function canCancel(eventStatus: EventStatus): boolean {
     return eventStatus === EventStatus.QUEUED || eventStatus === EventStatus.NOT_SENT;
@@ -457,7 +458,7 @@ export default class MessageContextMenu extends React.Component<IProps, IState> 
         }
 
         let reportEventButton: JSX.Element;
-        if (mxEvent.getSender() !== me) {
+        if (SettingsStore.getValue(UIFeature.MessageReport) && mxEvent.getSender() !== me) {
             reportEventButton = (
                 <IconizedContextMenuOption
                     iconClassName="mx_MessageContextMenu_iconReport"
@@ -493,7 +494,10 @@ export default class MessageContextMenu extends React.Component<IProps, IState> 
                 { reportEventButton }
                 { externalURLButton }
                 { unhidePreviewButton }
-                { viewSourceButton }
+                {
+                    SettingsStore.getValue(UIFeature.MessageViewSource) &&
+                    viewSourceButton
+                }
                 { resendReactionsButton }
                 { collapseReplyChain }
             </IconizedContextMenuOptionList>

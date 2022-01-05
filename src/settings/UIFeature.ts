@@ -35,6 +35,8 @@ export enum UIFeature {
     TimelineEnableRelativeDates = "UIFeature.timelineEnableRelativeDates",
     EnableEncrypt = "UIFeature.enableEncrypt",
     ConferenceEnabled = "UIFeature.conferenceEnabled",
+    MessageReport = "UIFeature.messageReport",
+    MessageViewSource = "UIFeature.messageViewSource",
 }
 
 export enum UIComponent {
