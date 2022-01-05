@@ -48,6 +48,7 @@ import DMRoomMap from "../../../utils/DMRoomMap";
 
 interface IProps extends IContextMenuProps {
     room: Room;
+    isDm?: boolean;
 }
 
 const RoomContextMenu = ({ room, onFinished, ...props }: IProps) => {
@@ -97,10 +98,8 @@ const RoomContextMenu = ({ room, onFinished, ...props }: IProps) => {
         />;
     }
 
-    const isDm = DMRoomMap.shared().getUserIdForRoomId(room.roomId);
-
     let inviteOption: JSX.Element;
-    if (room.canInvite(cli.getUserId()) && !isDm) {
+    if (room.canInvite(cli.getUserId()) && !props.isDm) {
         const onInviteClick = (ev: ButtonEvent) => {
             ev.preventDefault();
             ev.stopPropagation();
@@ -184,7 +183,7 @@ const RoomContextMenu = ({ room, onFinished, ...props }: IProps) => {
 
     let peopleOption: JSX.Element;
     let copyLinkOption: JSX.Element;
-    if (!isDm) {
+    if (!props.isDm) {
         peopleOption = <IconizedContextMenuOption
             onClick={(ev: ButtonEvent) => {
                 ev.preventDefault();

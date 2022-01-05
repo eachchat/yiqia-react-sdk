@@ -40,6 +40,8 @@ import { contextMenuBelow } from './RoomTile';
 import { RoomNotificationStateStore } from '../../../stores/notifications/RoomNotificationStateStore';
 import { RightPanelPhases } from '../../../stores/RightPanelStorePhases';
 import { NotificationStateEvents } from '../../../stores/notifications/NotificationState';
+import DMRoomMap from '../../../utils/DMRoomMap';
+import { UIFeature } from '../../../settings/UIFeature';
 
 export interface ISearchInfo {
     searchTerm: string;
@@ -125,6 +127,8 @@ export default class RoomHeader extends React.Component<IProps, IState> {
     public render() {
         let searchStatus = null;
 
+        const isDm = DMRoomMap.shared().getUserIdForRoomId(this.props.room.roomId) ? true : false;
+
         // don't display the search count until the search completes and
         // gives us a valid (possibly zero) searchCount.
         if (this.props.searchInfo &&
@@ -159,6 +163,7 @@ export default class RoomHeader extends React.Component<IProps, IState> {
                     {...contextMenuBelow(this.state.contextMenuPosition)}
                     room={this.props.room}
                     onFinished={this.onContextMenuCloseClick}
+                    isDm={isDm}
                 />
             );
         }
@@ -200,7 +205,7 @@ export default class RoomHeader extends React.Component<IProps, IState> {
 
         const buttons: JSX.Element[] = [];
 
-        if (this.props.inRoom && SettingsStore.getValue("showCallButtonsInComposer")) {
+        if (this.props.inRoom && SettingsStore.getValue("showCallButtonsInComposer") && (isDm || SettingsStore.getValue(UIFeature.ConferenceEnabled))) {
             const voiceCallButton = <AccessibleTooltipButton
                 className="mx_RoomHeader_button mx_RoomHeader_voiceCallButton"
                 onClick={() => this.props.onCallPlaced(CallType.Voice)}

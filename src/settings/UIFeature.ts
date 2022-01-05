@@ -33,7 +33,8 @@ export enum UIFeature {
     AdvancedSettings = "UIFeature.advancedSettings",
     RoomHistorySettings = "UIFeature.roomHistorySettings",
     TimelineEnableRelativeDates = "UIFeature.timelineEnableRelativeDates",
-    EnableEncrypt = "UIFeature.enableEncrypt"
+    EnableEncrypt = "UIFeature.enableEncrypt",
+    ConferenceEnabled = "UIFeature.conferenceEnabled",
 }
 
 export enum UIComponent {
