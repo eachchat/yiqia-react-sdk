@@ -984,5 +984,13 @@ export const SETTINGS: {[setting: string]: ISetting} = {
     [UIFeature.MessageViewSource]: {
         supportedLevels: LEVELS_UI_FEATURE,
         default: true,
+    },
+    [UIFeature.CanChangePassword]: {
+        supportedLevels: LEVELS_UI_FEATURE,
+        default: true,
+    },
+    [UIFeature.CanChangeLanguage]: {
+        supportedLevels: LEVELS_UI_FEATURE,
+        default: true,
     }
 };

@@ -120,7 +120,7 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
         // You can change your password so long as the capability isn't explicitly disabled. The implicit
         // behaviour is you can change your password when the capability is missing or has not-false as
         // the enabled flag value.
-        const canChangePassword = !changePasswordCap || changePasswordCap['enabled'] !== false;
+        const canChangePassword = SettingsStore.getValue(UIFeature.CanChangePassword) && (!changePasswordCap || changePasswordCap['enabled'] !== false);
 
         this.setState({ serverSupportsSeparateAddAndBind, canChangePassword });
 
@@ -481,7 +481,10 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
                 <div className="mx_SettingsTab_heading">{ _t("General") }</div>
                 { this.renderProfileSection() }
                 { this.renderAccountSection() }
-                { this.renderLanguageSection() }
+                {
+                    SettingsStore.getValue(UIFeature.CanChangeLanguage) &&
+                    this.renderLanguageSection()
+                }
                 { supportsMultiLanguageSpellCheck ? this.renderSpellCheckSection() : null }
                 { discoverySection }
                 { this.renderIntegrationManagerSection() /* Has its own title */ }

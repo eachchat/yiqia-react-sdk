@@ -22,6 +22,7 @@ import SettingsStore from "../../../settings/SettingsStore";
 import PlatformPeg from "../../../PlatformPeg";
 import { SettingLevel } from "../../../settings/SettingLevel";
 import LanguageDropdown from "../elements/LanguageDropdown";
+import { UIFeature } from '../../../settings/UIFeature';
 
 function onChange(newLang: string): void {
     if (getCurrentLanguage() !== newLang) {
@@ -35,7 +36,7 @@ interface IProps {
 }
 
 export default function LanguageSelector({ disabled }: IProps): JSX.Element {
-    if (SdkConfig.get()['disable_login_language_selector']) return <div />;
+    if (!SettingsStore.getValue(UIFeature.CanChangeLanguage) && SdkConfig.get()['disable_login_language_selector']) return <div />;
     return <LanguageDropdown
         className="mx_AuthBody_language"
         onOptionChange={onChange}
