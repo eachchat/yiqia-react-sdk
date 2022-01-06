@@ -73,9 +73,10 @@ import SpaceStore from "../../../stores/spaces/SpaceStore";
 import ConfirmSpaceUserActionDialog from "../dialogs/ConfirmSpaceUserActionDialog";
 import { bulkSpaceBehaviour } from "../../../utils/space";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
-import { UIComponent } from "../../../settings/UIFeature";
+import { UIComponent, UIFeature } from "../../../settings/UIFeature";
 import { TimelineRenderingType } from "../../../contexts/RoomContext";
 import { useUserStatusMessage } from "../../../hooks/useUserStatusMessage";
+import SettingsStore from '../../../settings/SettingsStore';
 
 export interface IDevice {
     deviceId: string;
@@ -171,7 +172,7 @@ function useHasCrossSigningKeys(cli: MatrixClient, member: User, canVerify: bool
     }, [cli, member, canVerify], undefined);
 }
 
-function DeviceItem({ userId, device }: {userId: string, device: IDevice}) {
+function DeviceItem({ userId, device, EnableEncrypt }: {userId: string, device: IDevice, EnableEncrypt?: boolean}) {
     const cli = useContext(MatrixClientContext);
     const isMe = userId === cli.getUserId();
     const deviceTrust = cli.checkDeviceTrust(userId, device.deviceId);
@@ -212,7 +213,7 @@ function DeviceItem({ userId, device }: {userId: string, device: IDevice}) {
     if (isVerified) {
         return (
             <div className={classes} title={device.deviceId}>
-                <div className={iconClasses} />
+                { EnableEncrypt && <div className={iconClasses} /> }
                 <div className="mx_UserInfo_device_name">{ deviceName }</div>
                 <div className="mx_UserInfo_device_trusted">{ trustedLabel }</div>
             </div>
@@ -224,7 +225,7 @@ function DeviceItem({ userId, device }: {userId: string, device: IDevice}) {
                 title={device.deviceId}
                 onClick={onDeviceClick}
             >
-                <div className={iconClasses} />
+                { EnableEncrypt && <div className={iconClasses} /> }
                 <div className="mx_UserInfo_device_name">{ deviceName }</div>
                 <div className="mx_UserInfo_device_trusted">{ trustedLabel }</div>
             </AccessibleButton>
@@ -245,6 +246,7 @@ function DevicesSection({ devices, userId, loading }: {devices: IDevice[], userI
     if (devices === null) {
         return <>{ _t("Unable to load session list") }</>;
     }
+    const EnableEncrypt = SettingsStore.getValue(UIFeature.EnableEncrypt);
     const isMe = userId === cli.getUserId();
     const deviceTrusts = devices.map(d => cli.checkDeviceTrust(userId, d.deviceId));
 
@@ -294,19 +296,22 @@ function DevicesSection({ devices, userId, loading }: {devices: IDevice[], userI
             expandButton = (<AccessibleButton className="mx_UserInfo_expand mx_linkButton"
                 onClick={() => setExpanded(true)}
             >
-                <div className={expandIconClasses} />
+                {
+                    EnableEncrypt &&
+                    <div className={expandIconClasses} />
+                }
                 <div>{ expandCountCaption }</div>
             </AccessibleButton>);
         }
     }
 
     let deviceList = unverifiedDevices.map((device, i) => {
-        return (<DeviceItem key={i} userId={userId} device={device} />);
+        return (<DeviceItem key={i} userId={userId} device={device} EnableEncrypt={EnableEncrypt}/>);
     });
     if (isExpanded) {
         const keyStart = unverifiedDevices.length;
         deviceList = deviceList.concat(expandSectionDevices.map((device, i) => {
-            return (<DeviceItem key={i + keyStart} userId={userId} device={device} />);
+            return (<DeviceItem key={i + keyStart} userId={userId} device={device} EnableEncrypt={EnableEncrypt} />);
         }));
     }
 
