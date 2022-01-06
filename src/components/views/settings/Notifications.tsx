@@ -210,6 +210,10 @@ export default class Notifications extends React.PureComponent<IProps, IState> {
         for (const category of vectorCategories) {
             preparedNewState.vectorPushRules[category] = [];
             for (const rule of defaultRules[category]) {
+                if(!SettingsStore.getValue(UIFeature.EnableEncrypt) &&
+                    (rule.rule_id === ".m.rule.encrypted_room_one_to_one" || rule.rule_id === ".m.rule.encrypted")) {
+                    continue;
+                };
                 const definition = VectorPushRulesDefinitions[rule.rule_id];
                 const vectorState = definition.ruleToVectorState(rule);
                 preparedNewState.vectorPushRules[category].push({
@@ -571,10 +575,6 @@ export default class Notifications extends React.PureComponent<IProps, IState> {
         );
 
         const rows = this.state.vectorPushRules[category].map(r => {
-            if(!SettingsStore.getValue(UIFeature.EnableEncrypt) &&
-                (r.ruleId === ".m.rule.encrypted_room_one_to_one" || r.ruleId === ".m.rule.encrypted")) {
-                return <div />
-            };
             return(
                 <tr key={category + r.ruleId}>
                     <td>{ r.description }</td>
