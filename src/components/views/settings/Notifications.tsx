@@ -40,6 +40,7 @@ import AccessibleButton from "../elements/AccessibleButton";
 import TagComposer from "../elements/TagComposer";
 import { objectClone } from "../../../utils/objects";
 import { arrayDiff } from "../../../utils/arrays";
+import { UIFeature } from "../../../settings/UIFeature";
 
 // TODO: this "view" component still has far too much application logic in it,
 // which should be factored out to other files.
@@ -569,12 +570,20 @@ export default class Notifications extends React.PureComponent<IProps, IState> {
             />
         );
 
-        const rows = this.state.vectorPushRules[category].map(r => <tr key={category + r.ruleId}>
-            <td>{ r.description }</td>
-            <td>{ makeRadio(r, VectorState.Off) }</td>
-            <td>{ makeRadio(r, VectorState.On) }</td>
-            <td>{ makeRadio(r, VectorState.Loud) }</td>
-        </tr>);
+        const rows = this.state.vectorPushRules[category].map(r => {
+            if(!SettingsStore.getValue(UIFeature.EnableEncrypt) &&
+                (r.ruleId === ".m.rule.encrypted_room_one_to_one" || r.ruleId === ".m.rule.encrypted")) {
+                return <div />
+            };
+            return(
+                <tr key={category + r.ruleId}>
+                    <td>{ r.description }</td>
+                    <td>{ makeRadio(r, VectorState.Off) }</td>
+                    <td>{ makeRadio(r, VectorState.On) }</td>
+                    <td>{ makeRadio(r, VectorState.Loud) }</td>
+                </tr>
+            )}
+        );
 
         let sectionName: TranslatedString;
         switch (category) {
