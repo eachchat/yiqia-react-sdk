@@ -29,7 +29,7 @@ export default class AuthPage extends React.PureComponent {
                 <div className="mx_AuthPage_modal">
                     { this.props.children }
                 </div>
-                <AuthFooter />
+                {/* <AuthFooter /> */}
             </div>
         );
     }
