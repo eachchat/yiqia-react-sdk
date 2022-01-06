@@ -230,10 +230,10 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
                     { _t("Continue") }
                 </AccessibleButton>
 
-                <h4>{ _t("Learn more") }</h4>
+                {/* <h4>{ _t("Learn more") }</h4>
                 <a href="https://matrix.org/faq/#what-is-a-homeserver%3F" target="_blank" rel="noreferrer noopener">
                     { _t("About homeservers") }
-                </a>
+                </a> */}
             </form>
         </BaseDialog>;
     }
