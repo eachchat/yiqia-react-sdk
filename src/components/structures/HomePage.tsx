@@ -33,6 +33,8 @@ import MatrixClientContext from "../../contexts/MatrixClientContext";
 import MiniAvatarUploader, { AVATAR_SIZE } from "../views/elements/MiniAvatarUploader";
 import Analytics from "../../Analytics";
 import CountlyAnalytics from "../../CountlyAnalytics";
+import SettingsStore from "../../settings/SettingsStore";
+import { UIFeature } from "../../settings/UIFeature";
 
 const onClickSendDm = () => {
     Analytics.trackEvent('home_page', 'button', 'dm');
@@ -125,9 +127,12 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
                 <AccessibleButton onClick={onClickSendDm} className="mx_HomePage_button_sendDm">
                     { _t("Send a Direct Message") }
                 </AccessibleButton>
-                <AccessibleButton onClick={onClickExplore} className="mx_HomePage_button_explore">
-                    { _t("Explore Public Rooms") }
-                </AccessibleButton>
+                {
+                    SettingsStore.getValue(UIFeature.ExplorePublicEnabled) &&
+                    <AccessibleButton onClick={onClickExplore} className="mx_HomePage_button_explore">
+                        { _t("Explore Public Rooms") }
+                    </AccessibleButton>
+                }
                 <AccessibleButton onClick={onClickNewRoom} className="mx_HomePage_button_createGroup">
                     { _t("Create a Group Chat") }
                 </AccessibleButton>

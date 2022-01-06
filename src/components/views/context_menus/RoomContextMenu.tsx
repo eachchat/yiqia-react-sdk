@@ -203,20 +203,22 @@ const RoomContextMenu = ({ room, onFinished, ...props }: IProps) => {
             </span>
         </IconizedContextMenuOption>;
 
-        copyLinkOption = <IconizedContextMenuOption
-            onClick={(ev: ButtonEvent) => {
-                ev.preventDefault();
-                ev.stopPropagation();
-
-                dis.dispatch({
-                    action: "copy_room",
-                    room_id: room.roomId,
-                });
-                onFinished();
-            }}
-            label={_t("Copy room link")}
-            iconClassName="mx_RoomTile_iconCopyLink"
-        />;
+        if(SettingsStore.getValue(UIFeature.ShareRoomEnabled)) {
+            copyLinkOption = <IconizedContextMenuOption
+                onClick={(ev: ButtonEvent) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+    
+                    dis.dispatch({
+                        action: "copy_room",
+                        room_id: room.roomId,
+                    });
+                    onFinished();
+                }}
+                label={_t("Copy room link")}
+                iconClassName="mx_RoomTile_iconCopyLink"
+            />;
+        }
     }
 
     const onTagRoom = (ev: ButtonEvent, tagId: TagID) => {

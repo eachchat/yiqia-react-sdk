@@ -200,6 +200,7 @@ const UntaggedAuxButton = ({ tabIndex }: IAuxButtonProps) => {
     });
 
     const showCreateRoom = shouldShowComponent(UIComponent.CreateRooms);
+    const ExplorePublicEnabled = SettingsStore.getValue(UIFeature.ExplorePublicEnabled);
 
     let contextMenuContent: JSX.Element;
     if (menuDisplayed && activeSpace) {
@@ -207,19 +208,22 @@ const UntaggedAuxButton = ({ tabIndex }: IAuxButtonProps) => {
             MatrixClientPeg.get().getUserId());
 
         contextMenuContent = <IconizedContextMenuOptionList first>
-            <IconizedContextMenuOption
-                label={_t("Explore rooms")}
-                iconClassName="mx_RoomList_iconExplore"
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    closeMenu();
-                    defaultDispatcher.dispatch({
-                        action: "view_room",
-                        room_id: activeSpace.roomId,
-                    });
-                }}
-            />
+            {
+                ExplorePublicEnabled &&
+                <IconizedContextMenuOption
+                    label={_t("Explore rooms")}
+                    iconClassName="mx_RoomList_iconExplore"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeMenu();
+                        defaultDispatcher.dispatch({
+                            action: "view_room",
+                            room_id: activeSpace.roomId,
+                        });
+                    }}
+                />
+            }
             {
                 showCreateRoom
                     ? (<>
@@ -266,18 +270,19 @@ const UntaggedAuxButton = ({ tabIndex }: IAuxButtonProps) => {
                 }}
             /> }
             {
-                SettingsStore.getValue(UIFeature.ExplorePublicEnabled) &&<IconizedContextMenuOption
-                label={CommunityPrototypeStore.instance.getSelectedCommunityId()
-                    ? _t("Explore community rooms")
-                    : _t("Explore public rooms")}
-                iconClassName="mx_RoomList_iconExplore"
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    closeMenu();
-                    defaultDispatcher.fire(Action.ViewRoomDirectory);
-                }}
-            />
+                ExplorePublicEnabled &&
+                <IconizedContextMenuOption
+                    label={CommunityPrototypeStore.instance.getSelectedCommunityId()
+                        ? _t("Explore community rooms")
+                        : _t("Explore public rooms")}
+                    iconClassName="mx_RoomList_iconExplore"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeMenu();
+                        defaultDispatcher.fire(Action.ViewRoomDirectory);
+                    }}
+                />
             }
         </IconizedContextMenuOptionList>;
     }
