@@ -40,7 +40,8 @@ export enum UIFeature {
     CanChangePassword = "UIFeature.canChangePassword",
     CanChangeLanguage = "UIFeature.canChangeLanguage",
     ExplorePublicEnabled = "UIFeature.explorePublicEnabled",
-    ShareRoomEnabled = "UIFeature.shareRoomEnabled"
+    ShareRoomEnabled = "UIFeature.shareRoomEnabled",
+    SpaceEnabled = "UIFeature.spaceEnabled"
 }
 
 export enum UIComponent {
