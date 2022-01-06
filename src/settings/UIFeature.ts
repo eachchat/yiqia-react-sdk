@@ -38,7 +38,8 @@ export enum UIFeature {
     MessageReport = "UIFeature.messageReport",
     MessageViewSource = "UIFeature.messageViewSource",
     CanChangePassword = "UIFeature.canChangePassword",
-    CanChangeLanguage = "UIFeature.canChangeLanguage"
+    CanChangeLanguage = "UIFeature.canChangeLanguage",
+    ExplorePublicEnabled = "UIFeature.explorePublicEnabled"
 }
 
 export enum UIComponent {

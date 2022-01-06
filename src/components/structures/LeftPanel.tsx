@@ -44,6 +44,7 @@ import IndicatorScrollbar from "./IndicatorScrollbar";
 import RoomBreadcrumbs from "../views/rooms/RoomBreadcrumbs";
 import SettingsStore from "../../settings/SettingsStore";
 import UserMenu from "./UserMenu";
+import { UIFeature } from "../../settings/UIFeature";
 
 interface IProps {
     isMinimized: boolean;
@@ -366,7 +367,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
         let rightButton: JSX.Element;
         if (this.state.showBreadcrumbs === BreadcrumbsMode.Labs) {
             rightButton = <RecentlyViewedButton />;
-        } else if (this.state.activeSpace === MetaSpace.Home) {
+        } else if (SettingsStore.getValue(UIFeature.ExplorePublicEnabled) && this.state.activeSpace === MetaSpace.Home) {
             rightButton = <AccessibleTooltipButton
                 className="mx_LeftPanel_exploreButton"
                 onClick={this.onExplore}

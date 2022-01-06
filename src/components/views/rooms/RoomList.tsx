@@ -58,7 +58,7 @@ import { shouldShowSpaceInvite, showAddExistingRooms, showCreateNewRoom, showSpa
 import { replaceableComponent } from "../../../utils/replaceableComponent";
 import RoomAvatar from "../avatars/RoomAvatar";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
-import { UIComponent } from "../../../settings/UIFeature";
+import { UIComponent, UIFeature } from "../../../settings/UIFeature";
 import AccessibleTooltipButton from "../elements/AccessibleTooltipButton";
 import { useEventEmitterState } from "../../../hooks/useEventEmitter";
 import { ChevronFace, ContextMenuTooltipButton, useContextMenu } from "../../structures/ContextMenu";
@@ -265,7 +265,8 @@ const UntaggedAuxButton = ({ tabIndex }: IAuxButtonProps) => {
                     defaultDispatcher.dispatch({ action: "view_create_room" });
                 }}
             /> }
-            <IconizedContextMenuOption
+            {
+                SettingsStore.getValue(UIFeature.ExplorePublicEnabled) &&<IconizedContextMenuOption
                 label={CommunityPrototypeStore.instance.getSelectedCommunityId()
                     ? _t("Explore community rooms")
                     : _t("Explore public rooms")}
@@ -277,6 +278,7 @@ const UntaggedAuxButton = ({ tabIndex }: IAuxButtonProps) => {
                     defaultDispatcher.fire(Action.ViewRoomDirectory);
                 }}
             />
+            }
         </IconizedContextMenuOptionList>;
     }
 
@@ -670,13 +672,16 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
                     >
                         { _t("Start a new chat") }
                     </AccessibleButton>
-                    <AccessibleButton
-                        className="mx_RoomList_explorePrompt_explore"
-                        kind="link"
-                        onClick={this.onExplore}
-                    >
-                        { !isMetaSpace(this.props.activeSpace) ? _t("Explore rooms") : _t("Explore all public rooms") }
-                    </AccessibleButton>
+                    {
+                        SettingsStore.getValue(UIFeature.ExplorePublicEnabled) &&
+                        <AccessibleButton
+                            className="mx_RoomList_explorePrompt_explore"
+                            kind="link"
+                            onClick={this.onExplore}
+                        >
+                            { !isMetaSpace(this.props.activeSpace) ? _t("Explore rooms") : _t("Explore all public rooms") }
+                        </AccessibleButton>
+                    }
                 </div>;
             }
         }
