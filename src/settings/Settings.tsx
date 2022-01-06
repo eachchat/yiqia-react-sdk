@@ -996,5 +996,9 @@ export const SETTINGS: {[setting: string]: ISetting} = {
     [UIFeature.ExplorePublicEnabled]: {
         supportedLevels: LEVELS_UI_FEATURE,
         default: true,
+    },
+    [UIFeature.ShareRoomEnabled]: {
+        supportedLevels: LEVELS_UI_FEATURE,
+        default: true,
     }
 };
