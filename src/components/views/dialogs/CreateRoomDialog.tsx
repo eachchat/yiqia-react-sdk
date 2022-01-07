@@ -223,6 +223,7 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
 
     render() {
         let aliasField;
+        const explorePublicEnabled = SettingsStore.getValue(UIFeature.ExplorePublicEnabled);
         if (this.state.joinRule === JoinRule.Public) {
             const domain = MatrixClientPeg.get().getDomain();
             aliasField = (
@@ -238,47 +239,49 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
         }
 
         let publicPrivateLabel: JSX.Element;
-        if (CommunityPrototypeStore.instance.getSelectedCommunityId()) {
-            publicPrivateLabel = <p>
-                { _t(
-                    "Private rooms can be found and joined by invitation only. Public rooms can be " +
-                    "found and joined by anyone in this community.",
-                ) }
-            </p>;
-        } else if (this.state.joinRule === JoinRule.Restricted) {
-            publicPrivateLabel = <p>
-                { _t(
-                    "Everyone in <SpaceName/> will be able to find and join this room.", {}, {
-                        SpaceName: () => <b>{ this.props.parentSpace.name }</b>,
-                    },
-                ) }
-                &nbsp;
-                { _t("You can change this at any time from room settings.") }
-            </p>;
-        } else if (this.state.joinRule === JoinRule.Public && this.props.parentSpace) {
-            publicPrivateLabel = <p>
-                { _t(
-                    "Anyone will be able to find and join this room, not just members of <SpaceName/>.", {}, {
-                        SpaceName: () => <b>{ this.props.parentSpace.name }</b>,
-                    },
-                ) }
-                &nbsp;
-                { _t("You can change this at any time from room settings.") }
-            </p>;
-        } else if (this.state.joinRule === JoinRule.Public) {
-            publicPrivateLabel = <p>
-                { _t("Anyone will be able to find and join this room.") }
-                &nbsp;
-                { _t("You can change this at any time from room settings.") }
-            </p>;
-        } else if (this.state.joinRule === JoinRule.Invite) {
-            publicPrivateLabel = <p>
-                { _t(
-                    "Only people invited will be able to find and join this room.",
-                ) }
-                &nbsp;
-                { _t("You can change this at any time from room settings.") }
-            </p>;
+        if(explorePublicEnabled) {
+            if (CommunityPrototypeStore.instance.getSelectedCommunityId()) {
+                publicPrivateLabel = <p>
+                    { _t(
+                        "Private rooms can be found and joined by invitation only. Public rooms can be " +
+                        "found and joined by anyone in this community.",
+                    ) }
+                </p>;
+            } else if (this.state.joinRule === JoinRule.Restricted) {
+                publicPrivateLabel = <p>
+                    { _t(
+                        "Everyone in <SpaceName/> will be able to find and join this room.", {}, {
+                            SpaceName: () => <b>{ this.props.parentSpace.name }</b>,
+                        },
+                    ) }
+                    &nbsp;
+                    { _t("You can change this at any time from room settings.") }
+                </p>;
+            } else if (this.state.joinRule === JoinRule.Public && this.props.parentSpace) {
+                publicPrivateLabel = <p>
+                    { _t(
+                        "Anyone will be able to find and join this room, not just members of <SpaceName/>.", {}, {
+                            SpaceName: () => <b>{ this.props.parentSpace.name }</b>,
+                        },
+                    ) }
+                    &nbsp;
+                    { _t("You can change this at any time from room settings.") }
+                </p>;
+            } else if (this.state.joinRule === JoinRule.Public) {
+                publicPrivateLabel = <p>
+                    { _t("Anyone will be able to find and join this room.") }
+                    &nbsp;
+                    { _t("You can change this at any time from room settings.") }
+                </p>;
+            } else if (this.state.joinRule === JoinRule.Invite) {
+                publicPrivateLabel = <p>
+                    { _t(
+                        "Only people invited will be able to find and join this room.",
+                    ) }
+                    &nbsp;
+                    { _t("You can change this at any time from room settings.") }
+                </p>;
+            }
         }
 
         let e2eeSection;
@@ -346,14 +349,17 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
                             className="mx_CreateRoomDialog_topic"
                         />
 
-                        <JoinRuleDropdown
-                            label={_t("Room visibility")}
-                            labelInvite={_t("Private room (invite only)")}
-                            labelPublic={_t("Public room")}
-                            labelRestricted={this.supportsRestricted ? _t("Visible to space members") : undefined}
-                            value={this.state.joinRule}
-                            onChange={this.onJoinRuleChange}
-                        />
+                        {
+                            explorePublicEnabled &&
+                            <JoinRuleDropdown
+                                label={_t("Room visibility")}
+                                labelInvite={_t("Private room (invite only)")}
+                                labelPublic={_t("Public room")}
+                                labelRestricted={this.supportsRestricted ? _t("Visible to space members") : undefined}
+                                value={this.state.joinRule}
+                                onChange={this.onJoinRuleChange}
+                            />
+                        }
 
                         { publicPrivateLabel }
                         { e2eeSection }
