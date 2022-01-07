@@ -196,11 +196,14 @@ export default class VoiceUserSettingsTab extends React.Component<{}, IState> {
                         level={SettingLevel.DEVICE}
                         onChange={this.changeWebRtcMethod}
                     />
-                    <SettingsFlag
-                        name='fallbackICEServerAllowed'
-                        level={SettingLevel.DEVICE}
-                        onChange={this.changeFallbackICEServerAllowed}
-                    />
+                    {
+                        SdkConfig.get()['showFallbackICEServerAllowed'] &&
+                        <SettingsFlag
+                            name='fallbackICEServerAllowed'
+                            level={SettingLevel.DEVICE}
+                            onChange={this.changeFallbackICEServerAllowed}
+                        />
+                    }
                 </div>
             </div>
         );
