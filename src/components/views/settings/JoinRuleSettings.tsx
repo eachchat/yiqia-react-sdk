@@ -33,6 +33,8 @@ import { arrayHasDiff } from "../../../utils/arrays";
 import { useLocalEcho } from "../../../hooks/useLocalEcho";
 import dis from "../../../dispatcher/dispatcher";
 import { ROOM_SECURITY_TAB } from "../dialogs/RoomSettingsDialog";
+import SettingsStore from "../../../settings/SettingsStore";
+import { UIFeature } from "../../../settings/UIFeature";
 
 interface IProps {
     room: Room;
@@ -53,7 +55,8 @@ const JoinRuleSettings = ({ room, promptUpgrade, aliasWarning, onError, beforeCh
         ? restrictedRoomCapabilities?.preferred
         : undefined;
 
-    const disabled = !room.currentState.mayClientSendStateEvent(EventType.RoomJoinRules, cli);
+    let disabled = !room.currentState.mayClientSendStateEvent(EventType.RoomJoinRules, cli);
+    disabled = !SettingsStore.getValue(UIFeature.ExplorePublicEnabled);
 
     const [content, setContent] = useLocalEcho<IJoinRuleEventContent>(
         () => room.currentState.getStateEvents(EventType.RoomJoinRules, "")?.getContent(),
