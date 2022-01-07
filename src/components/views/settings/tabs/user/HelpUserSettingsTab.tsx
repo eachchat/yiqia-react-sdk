@@ -334,7 +334,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
                         { _t("Homeserver is") } <code>{ MatrixClientPeg.get().getHomeserverUrl() }</code><br />
                         { _t("Identity server is") } <code>{ MatrixClientPeg.get().getIdentityServerUrl() }</code><br />
                         <br />
-                        <details>
+                        {/* <details>
                             <summary>{ _t("Access Token") }</summary><br />
                             <b>{ _t("Your access token gives full access to your account."
                                + " Do not share it with anyone." ) }</b>
@@ -346,7 +346,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
                                     className="mx_HelpUserSettingsTab_copyButton"
                                 />
                             </div>
-                        </details><br />
+                        </details><br /> */}
                         <div className='mx_HelpUserSettingsTab_debugButton'>
                             <AccessibleButton onClick={this.onClearCacheAndReload} kind='danger'>
                                 { _t("Clear cache and reload") }
