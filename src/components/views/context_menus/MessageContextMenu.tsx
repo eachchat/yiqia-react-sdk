@@ -48,6 +48,7 @@ import EndPollDialog from '../dialogs/EndPollDialog';
 import { isPollEnded } from '../messages/MPollBody';
 import { createMapSiteLink } from "../messages/MLocationBody";
 import { UIFeature } from '../../../settings/UIFeature';
+import SdkConfig from '../../../SdkConfig';
 
 export function canCancel(eventStatus: EventStatus): boolean {
     return eventStatus === EventStatus.QUEUED || eventStatus === EventStatus.NOT_SENT;
@@ -383,7 +384,7 @@ export default class MessageContextMenu extends React.Component<IProps, IState> 
 
         let permalink: string | null = null;
         let permalinkButton: ReactElement | null = null;
-        if (canShare(mxEvent)) {
+        if (SdkConfig.get()['messagePermalinkEnabled'] && canShare(mxEvent)) {
             if (this.props.permalinkCreator) {
                 permalink = this.props.permalinkCreator.forEvent(this.props.mxEvent.getId());
             }
