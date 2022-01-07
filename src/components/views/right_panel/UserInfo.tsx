@@ -355,8 +355,10 @@ const UserOptionsSection: React.FC<{
     let insertPillButton = null;
     let inviteUserButton = null;
     let readReceiptButton = null;
+    let hasOptions = false;
 
     const isMe = member.userId === cli.getUserId();
+    const userPermalinkEnabled = SdkConfig.get()['userPermalinkEnabled'];
 
     const onShareUserClick = () => {
         Modal.createTrackedDialog('share room member dialog', '', ShareDialog, {
@@ -421,6 +423,7 @@ const UserOptionsSection: React.FC<{
                     { _t('Mention') }
                 </AccessibleButton>
             );
+            hasOptions = true;
         }
 
         if (canInvite && (member?.membership ?? 'leave') === 'leave' && shouldShowComponent(UIComponent.InviteUsers)) {
@@ -448,23 +451,32 @@ const UserOptionsSection: React.FC<{
                     { _t('Invite') }
                 </AccessibleButton>
             );
+            hasOptions = true;
         }
     }
-
-    const shareUserButton = (
-        <AccessibleButton onClick={onShareUserClick} className="mx_UserInfo_field">
-            { _t('Share Link to User') }
-        </AccessibleButton>
-    );
+    
+    let shareUserButton;
+    if(userPermalinkEnabled) {
+        shareUserButton = (
+            <AccessibleButton onClick={onShareUserClick} className="mx_UserInfo_field">
+                { _t('Share Link to User') }
+            </AccessibleButton>
+        );
+        hasOptions = true;
+    }
 
     let directMessageButton: JSX.Element;
     if (!isMe) {
         directMessageButton = <MessageButton userId={member.userId} />;
+        hasOptions = true;
     }
 
     return (
         <div className="mx_UserInfo_container">
-            <h3>{ _t("Options") }</h3>
+            {
+                hasOptions &&
+                <h3>{ _t("Options") }</h3>
+            }
             <div>
                 { directMessageButton }
                 { readReceiptButton }

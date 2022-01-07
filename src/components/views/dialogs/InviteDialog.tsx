@@ -1410,22 +1410,24 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                 <span>{ _t("Some suggestions may be hidden for privacy.") }</span>
                 <p>{ _t("If you can't see who you're looking for, send them your invite link below.") }</p>
             </div>;
-            const link = makeUserPermalink(MatrixClientPeg.get().getUserId());
-            footer = <div className="mx_InviteDialog_footer">
-                <h3>{ _t("Or send invite link") }</h3>
-                <div className="mx_InviteDialog_footer_link">
-                    <a href={link} onClick={this.onLinkClick}>
-                        { link }
-                    </a>
-                    <AccessibleTooltipButton
-                        title={_t("Copy")}
-                        onClick={this.onCopyClick}
-                        className="mx_InviteDialog_footer_link_copy"
-                    >
-                        <div />
-                    </AccessibleTooltipButton>
-                </div>
-            </div>;
+            if(SdkConfig.get()['userPermalinkEnabled']) {
+                const link = makeUserPermalink(MatrixClientPeg.get().getUserId());
+                footer = <div className="mx_InviteDialog_footer">
+                    <h3>{ _t("Or send invite link") }</h3>
+                    <div className="mx_InviteDialog_footer_link">
+                        <a href={link} onClick={this.onLinkClick}>
+                            { link }
+                        </a>
+                        <AccessibleTooltipButton
+                            title={_t("Copy")}
+                            onClick={this.onCopyClick}
+                            className="mx_InviteDialog_footer_link_copy"
+                        >
+                            <div />
+                        </AccessibleTooltipButton>
+                    </div>
+                </div>;
+            }
         } else if (this.props.kind === KIND_INVITE) {
             const room = MatrixClientPeg.get()?.getRoom(this.props.roomId);
             const isSpace = SpaceStore.spacesEnabled && room?.isSpaceRoom();
