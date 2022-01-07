@@ -401,7 +401,16 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
 
                 <div className="mx_SettingsTab_section">
                     <span className="mx_SettingsTab_subheading">{ _t("General") }</span>
-                    { this.renderGroup(PreferencesUserSettingsTab.GENERAL_SETTINGS) }
+                    { this.renderGroup(PreferencesUserSettingsTab.GENERAL_SETTINGS.filter(item => {
+                        if(!SettingsStore.getValue(UIFeature.Communities)) {
+                            if(item !== "TagPanel.enableTagPanel") {
+                                return item;
+                            }
+                        }
+                        else {
+                            return item;
+                        }
+                    })) }
                     { minimizeToTrayOption }
                     { autoHideMenuOption }
                     { autoLaunchOption }
