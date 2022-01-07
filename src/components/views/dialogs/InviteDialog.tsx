@@ -1457,11 +1457,15 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                         "(like <userId/>) or <a>share this room</a>.");
                 }
             }
+            
+            if(!SettingsStore.getValue(UIFeature.ShareRoomEnabled)) {
+                helpTextUntranslated = helpTextUntranslated.split(' or ')[0];
+            }
 
             helpText = _t(helpTextUntranslated, {}, {
                 userId: () =>
                     <a href={makeUserPermalink(userId)} rel="noreferrer noopener" target="_blank">{ userId }</a>,
-                a: (sub) =>
+                a: (sub) => 
                     <a href={makeRoomPermalink(this.props.roomId)} rel="noreferrer noopener" target="_blank">{ sub }</a>,
             });
 
