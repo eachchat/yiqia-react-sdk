@@ -221,7 +221,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
             },
             {
                 'a': (sub) => <a
-                    href="https://element.io/help"
+                    href="static/faq.html"
                     rel="noreferrer noopener"
                     target="_blank"
                 >
