@@ -223,7 +223,7 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
 
     render() {
         let aliasField;
-        const explorePublicEnabled = SettingsStore.getValue(UIFeature.ExplorePublicEnabled);
+        const explorePublicEnabled = SdkConfig.get()['createPublicRoomEnabled'];
         if (this.state.joinRule === JoinRule.Public) {
             const domain = MatrixClientPeg.get().getDomain();
             aliasField = (
