@@ -359,21 +359,22 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         }
 
         let advancedSection;
-        if (SettingsStore.getValue(UIFeature.AdvancedSettings)) {
-            const ignoreUsersPanel = this.renderIgnoredUsers();
-            const invitesPanel = this.renderManageInvites();
-            const e2ePanel = isE2eAdvancedPanelPossible() ? <E2eAdvancedPanel /> : null;
-            // only show the section if there's something to show
-            if (ignoreUsersPanel || invitesPanel || e2ePanel) {
-                advancedSection = <>
-                    <div className="mx_SettingsTab_heading">{ _t("Advanced") }</div>
-                    <div className="mx_SettingsTab_section">
-                        { ignoreUsersPanel }
-                        { invitesPanel }
-                        { e2ePanel }
-                    </div>
-                </>;
-            }
+        const ignoreUsersPanel = this.renderIgnoredUsers();
+        const invitesPanel = this.renderManageInvites();
+        let e2ePanel;
+        if(this.state.isEncryptEnable) {
+            e2ePanel = isE2eAdvancedPanelPossible() ? <E2eAdvancedPanel /> : null;
+        }
+        // only show the section if there's something to show
+        if (ignoreUsersPanel || invitesPanel || e2ePanel) {
+            advancedSection = <>
+                <div className="mx_SettingsTab_heading">{ _t("Advanced") }</div>
+                <div className="mx_SettingsTab_section">
+                    { ignoreUsersPanel }
+                    { invitesPanel }
+                    { e2ePanel }
+                </div>
+            </>;
         }
 
         return (
