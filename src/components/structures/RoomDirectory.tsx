@@ -683,6 +683,7 @@ export default class RoomDirectory extends React.Component<IProps, IState> {
 
     render() {
         let content;
+        const createPublicRoomEnabled = SdkConfig.get()['createPublicRoomEnabled'];
         if (this.state.error) {
             content = this.state.error;
         } else if (this.state.protocolsLoading) {
@@ -715,13 +716,16 @@ export default class RoomDirectory extends React.Component<IProps, IState> {
                         { _t("Try different words or check for typos. " +
                             "Some results may not be visible as they're private and you need an invite to join them.") }
                     </p>
-                    { createNewButton }
+                    {
+                        createPublicRoomEnabled &&
+                        createNewButton
+                    }
                 </>;
             } else {
                 scrollPanelContent = <div className="mx_RoomDirectory_table">
                     { cells }
                 </div>;
-                if (!this.state.loading && !this.nextBatch) {
+                if (createPublicRoomEnabled && !this.state.loading && !this.nextBatch) {
                     footer = createNewButton;
                 }
             }
@@ -821,7 +825,10 @@ export default class RoomDirectory extends React.Component<IProps, IState> {
                 title={title}
             >
                 <div className="mx_RoomDirectory">
-                    { explanation }
+                    {
+                        createPublicRoomEnabled &&
+                        explanation
+                    }
                     <div className="mx_RoomDirectory_list">
                         { listHeader }
                         { content }
