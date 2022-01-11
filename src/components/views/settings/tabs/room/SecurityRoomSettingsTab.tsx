@@ -37,6 +37,7 @@ import CreateRoomDialog from '../../../dialogs/CreateRoomDialog';
 import JoinRuleSettings from "../../JoinRuleSettings";
 import ErrorDialog from "../../../dialogs/ErrorDialog";
 import SettingsFieldset from '../../SettingsFieldset';
+import SdkConfig from '../../../../../SdkConfig';
 
 interface IProps {
     roomId: string;
@@ -333,7 +334,7 @@ export default class SecurityRoomSettingsTab extends React.Component<IProps, ISt
         const client = MatrixClientPeg.get();
         const history = this.state.history;
         const state = client.getRoom(this.props.roomId).currentState;
-        const canChangeHistory = state.mayClientSendStateEvent(EventType.RoomHistoryVisibility, client);
+        const canChangeHistory = SdkConfig.get()['canChangeHistory'] && state.mayClientSendStateEvent(EventType.RoomHistoryVisibility, client);
 
         const options = [
             {
