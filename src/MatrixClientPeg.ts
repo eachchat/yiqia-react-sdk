@@ -37,6 +37,7 @@ import * as StorageManager from './utils/StorageManager';
 import IdentityAuthClient from './IdentityAuthClient';
 import { crossSigningCallbacks, tryToUnlockSecretStorageWithDehydrationKey } from './SecurityManager';
 import SecurityCustomisations from "./customisations/Security";
+import { UIFeature } from './settings/UIFeature';
 
 export interface IMatrixClientCreds {
     homeserverUrl: string;
@@ -189,7 +190,7 @@ class MatrixClientPegClass implements IMatrixClientPeg {
         // try to initialise e2e on the new client
         try {
             // check that we have a version of the js-sdk which includes initCrypto
-            if (!SettingsStore.getValue("lowBandwidth") && this.matrixClient.initCrypto) {
+            if (SettingsStore.getValue(UIFeature.EnableEncrypt) && !SettingsStore.getValue("lowBandwidth") && this.matrixClient.initCrypto) {
                 await this.matrixClient.initCrypto();
                 this.matrixClient.setCryptoTrustCrossSignedDevices(
                     !SettingsStore.getValue('e2ee.manuallyVerifyAllSessions'),

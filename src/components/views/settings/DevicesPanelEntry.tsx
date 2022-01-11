@@ -149,13 +149,27 @@ export default class DevicesPanelEntry extends React.Component<IProps, IState> {
             </AccessibleButton>;
         }
 
-        const left = this.props.isOwnDevice ?
-            <div className="mx_DevicesPanel_deviceTrust">
-                <span className={"mx_DevicesPanel_icon mx_E2EIcon " + iconClass} />
-            </div> :
-            <div className="mx_DevicesPanel_checkbox">
-                <StyledCheckbox kind={CheckboxStyle.Outline} onChange={this.onDeviceToggled} checked={this.props.selected} />
-            </div>;
+        let left;
+        if(this.props.isEncryptEnabled) {
+            if(this.props.isOwnDevice) {
+                left = <div className="mx_DevicesPanel_deviceTrust">
+                        <span className={"mx_DevicesPanel_icon mx_E2EIcon " + iconClass} />
+                    </div>
+            }
+            else {
+                left = <div className="mx_DevicesPanel_checkbox">
+                        <StyledCheckbox kind={CheckboxStyle.Outline} onChange={this.onDeviceToggled} checked={this.props.selected} />
+                    </div>;
+            }
+        }
+        else {
+            if(!this.props.isOwnDevice) {
+                left = <div className="mx_DevicesPanel_checkbox">
+                        <StyledCheckbox kind={CheckboxStyle.Outline} onChange={this.onDeviceToggled} checked={this.props.selected} />
+                    </div>;
+            }
+        }
+
 
         const deviceName = device.display_name ?
             <React.Fragment>
@@ -193,9 +207,7 @@ export default class DevicesPanelEntry extends React.Component<IProps, IState> {
 
         return (
             <div className={"mx_DevicesPanel_device" + myDeviceClass}>
-                {   this.props.isEncryptEnabled &&
-                    left
-                }
+                { left }
                 <div className="mx_DevicesPanel_deviceInfo">
                     <div className="mx_DevicesPanel_deviceName">
                         { deviceName }

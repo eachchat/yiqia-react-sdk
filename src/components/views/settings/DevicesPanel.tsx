@@ -69,8 +69,13 @@ export default class DevicesPanel extends React.Component<IProps, IState> {
         cli.getDevices().then(
             (resp) => {
                 if (this.unmounted) { return; }
-
-                const crossSigningInfo = cli.getStoredCrossSigningForUser(cli.getUserId());
+                let crossSigningInfo;
+                try{
+                    crossSigningInfo = cli.getStoredCrossSigningForUser(cli.getUserId());
+                }
+                catch(error) {
+                    console.error("Client End-to-end encryption disabled");
+                }
                 this.setState((state, props) => {
                     const deviceIds = resp.devices.map((device) => device.device_id);
                     const selectedDevices = state.selectedDevices.filter(
@@ -257,7 +262,7 @@ export default class DevicesPanel extends React.Component<IProps, IState> {
 
         // If our own device is unverified, it can't verify other
         // devices, it can only request verification for itself
-        const canBeVerified = (myDevice && this.isDeviceVerified(myDevice)) || isOwnDevice;
+        const canBeVerified = (myDevice && this.state.crossSigningInfo && this.isDeviceVerified(myDevice)) || isOwnDevice;
 
         return <DevicesPanelEntry
             key={device.device_id}
@@ -301,14 +306,16 @@ export default class DevicesPanel extends React.Component<IProps, IState> {
         const verifiedDevices = [];
         const unverifiedDevices = [];
         const nonCryptoDevices = [];
-        for (const device of otherDevices) {
-            const verified = this.isDeviceVerified(device);
-            if (verified === true) {
-                verifiedDevices.push(device);
-            } else if (verified === false) {
-                unverifiedDevices.push(device);
-            } else {
-                nonCryptoDevices.push(device);
+        if(this.state.crossSigningInfo) {
+            for (const device of otherDevices) {
+                const verified = this.isDeviceVerified(device);
+                if (verified === true) {
+                    verifiedDevices.push(device);
+                } else if (verified === false) {
+                    unverifiedDevices.push(device);
+                } else {
+                    nonCryptoDevices.push(device);
+                }
             }
         }
 
@@ -371,6 +378,12 @@ export default class DevicesPanel extends React.Component<IProps, IState> {
             nonCryptoDevices,
         );
 
+        const devicesSectionWithNoLabel = section(
+            <span></span>,
+            "设备列表",
+            otherDevices,
+        )
+
         const deleteButton = this.state.deleting ?
             <Spinner w={22} h={22} /> :
             <AccessibleButton
@@ -387,6 +400,7 @@ export default class DevicesPanel extends React.Component<IProps, IState> {
                 { verifiedDevicesSection }
                 { unverifiedDevicesSection }
                 { nonCryptoDevicesSection }
+                { devicesSectionWithNoLabel }
                 { deleteButton }
             </React.Fragment> :
             <React.Fragment>
