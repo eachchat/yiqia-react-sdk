@@ -37,6 +37,7 @@ import { CreateEventField, IGroupSummary } from "../../../dialogs/CreateSpaceFro
 import { createSpaceFromCommunity } from "../../../../../utils/space";
 import Spinner from "../../../elements/Spinner";
 import { UIFeature } from '../../../../../settings/UIFeature';
+import SdkConfig from '../../../../../SdkConfig';
 
 interface IProps {
     closeSettingsFn(success: boolean): void;
@@ -329,6 +330,9 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
                 label={_t('Show tray icon and minimise window to it on close')} />;
         }
 
+        const forceHideAvatarChanges = SdkConfig.get()['forceHideAvatarChanges'];
+        const forceHideDisplaynameChanges = SdkConfig.get()['forceHideDisplaynameChanges'];
+
         return (
             <div className="mx_SettingsTab mx_PreferencesUserSettingsTab">
                 <div className="mx_SettingsTab_heading">{ _t("Preferences") }</div>
@@ -396,7 +400,25 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
 
                 <div className="mx_SettingsTab_section">
                     <span className="mx_SettingsTab_subheading">{ _t("Timeline") }</span>
-                    { this.renderGroup(PreferencesUserSettingsTab.TIMELINE_SETTINGS) }
+                    { this.renderGroup(PreferencesUserSettingsTab.TIMELINE_SETTINGS.filter(item => {
+                        if(forceHideAvatarChanges) {
+                            if(item !== "showAvatarChanges") {
+                                return item;
+                            }
+                        }
+                        else {
+                            return item;
+                        }
+                    }).filter(item => {
+                        if(forceHideDisplaynameChanges) {
+                            if(item !== "showDisplaynameChanges") {
+                                return item;
+                            }
+                        }
+                        else {
+                            return item;
+                        }
+                    })) }
                 </div>
 
                 <div className="mx_SettingsTab_section">

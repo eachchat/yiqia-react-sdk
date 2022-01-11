@@ -18,6 +18,7 @@ import { MatrixEvent } from "matrix-js-sdk/src/models/event";
 
 import SettingsStore from "./settings/SettingsStore";
 import { IRoomState } from "./components/structures/RoomView";
+import SdkConfig from "./SdkConfig";
 
 interface IDiff {
     isMemberEvent: boolean;
@@ -71,8 +72,8 @@ export default function shouldHideEvent(ev: MatrixEvent, ctx?: IRoomState): bool
 
     if (eventDiff.isMemberEvent) {
         if ((eventDiff.isJoin || eventDiff.isPart) && !isEnabled('showJoinLeaves')) return true;
-        if (eventDiff.isAvatarChange && !isEnabled('showAvatarChanges')) return true;
-        if (eventDiff.isDisplaynameChange && !isEnabled('showDisplaynameChanges')) return true;
+        if (eventDiff.isAvatarChange && (SdkConfig.get()['forceHideAvatarChanges'] || !isEnabled('showAvatarChanges'))) return true;
+        if (eventDiff.isDisplaynameChange && (SdkConfig.get()['forceHideDisplaynameChanges'] || !isEnabled('showDisplaynameChanges'))) return true;
     }
 
     return false;
