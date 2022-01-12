@@ -1406,11 +1406,15 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             }
             buttonText = _t("Go");
             goButtonFn = this.startDm;
+            const userPermalinkEnabled = SdkConfig.get()['userPermalinkEnabled'];
             extraSection = <div className="mx_InviteDialog_section_hidden_suggestions_disclaimer">
                 <span>{ _t("Some suggestions may be hidden for privacy.") }</span>
-                <p>{ _t("If you can't see who you're looking for, send them your invite link below.") }</p>
+                {
+                    userPermalinkEnabled &&
+                    <p>{ _t("If you can't see who you're looking for, send them your invite link below.") }</p>
+                }
             </div>;
-            if(SdkConfig.get()['userPermalinkEnabled']) {
+            if(userPermalinkEnabled) {
                 const link = makeUserPermalink(MatrixClientPeg.get().getUserId());
                 footer = <div className="mx_InviteDialog_footer">
                     <h3>{ _t("Or send invite link") }</h3>
