@@ -51,6 +51,7 @@ interface IProps {
 interface IState {
     searchQuery: string;
     defaultCountry: PhoneNumberCountryDefinition;
+    forceOnlyDefaultCountry?: boolean;
 }
 
 @replaceableComponent("views.auth.CountryDropdown")
@@ -60,6 +61,7 @@ export default class CountryDropdown extends React.Component<IProps, IState> {
 
         let defaultCountry: PhoneNumberCountryDefinition = COUNTRIES[0];
         const defaultCountryCode = SdkConfig.get()["defaultCountryCode"];
+        const forceOnlyDefaultCountry = SdkConfig.get()["forceOnlyDefaultCountry"];
         if (defaultCountryCode) {
             const country = COUNTRIES.find(c => c.iso2 === defaultCountryCode.toUpperCase());
             if (country) defaultCountry = country;
@@ -68,6 +70,7 @@ export default class CountryDropdown extends React.Component<IProps, IState> {
         this.state = {
             searchQuery: '',
             defaultCountry,
+            forceOnlyDefaultCountry: forceOnlyDefaultCountry,
         };
     }
 
@@ -111,9 +114,16 @@ export default class CountryDropdown extends React.Component<IProps, IState> {
     public render(): React.ReactNode {
         let displayedCountries;
         if (this.state.searchQuery) {
-            displayedCountries = COUNTRIES.filter(
-                countryMatchesSearchQuery.bind(this, this.state.searchQuery),
-            );
+            if(this.state.forceOnlyDefaultCountry) {
+                displayedCountries = COUNTRIES.filter(c => c.iso2 === this.state.defaultCountry.iso2).filter(
+                    countryMatchesSearchQuery.bind(this, this.state.searchQuery),
+                );
+            }
+            else {
+                displayedCountries = COUNTRIES.filter(
+                    countryMatchesSearchQuery.bind(this, this.state.searchQuery),
+                );
+            }
             if (
                 this.state.searchQuery.length == 2 &&
                 COUNTRIES_BY_ISO2[this.state.searchQuery.toUpperCase()]
@@ -126,7 +136,12 @@ export default class CountryDropdown extends React.Component<IProps, IState> {
                 displayedCountries.unshift(matched);
             }
         } else {
-            displayedCountries = COUNTRIES;
+            if(this.state.forceOnlyDefaultCountry) {
+                displayedCountries = COUNTRIES.filter(c => c.iso2 === this.state.defaultCountry.iso2);
+            }
+            else {
+                displayedCountries = COUNTRIES;
+            }
         }
 
         const options = displayedCountries.map((country) => {
