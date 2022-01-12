@@ -233,7 +233,7 @@ function DeviceItem({ userId, device, EnableEncrypt }: {userId: string, device: 
     }
 }
 
-function DevicesSection({ devices, userId, loading }: {devices: IDevice[], userId: string, loading: boolean}) {
+function DevicesSection({ devices, userId, loading, EnableEncrypt }: {devices: IDevice[], userId: string, loading: boolean, EnableEncrypt?: boolean}) {
     const cli = useContext(MatrixClientContext);
     const userTrust = cli.checkUserTrust(userId);
 
@@ -246,7 +246,6 @@ function DevicesSection({ devices, userId, loading }: {devices: IDevice[], userI
     if (devices === null) {
         return <>{ _t("Unable to load session list") }</>;
     }
-    const EnableEncrypt = SettingsStore.getValue(UIFeature.EnableEncrypt);
     const isMe = userId === cli.getUserId();
     const deviceTrusts = devices.map(d => cli.checkDeviceTrust(userId, d.deviceId));
 
@@ -1429,16 +1428,21 @@ const BasicUserInfo: React.FC<{
 
     // only display the devices list if our client supports E2E
     const cryptoEnabled = cli.isCryptoEnabled();
+    const EnableEncrypt = SettingsStore.getValue(UIFeature.EnableEncrypt);
+    let securitySectionEmpty = true;
 
     let text;
-    if (!isRoomEncrypted) {
-        if (!cryptoEnabled) {
-            text = _t("This client does not support end-to-end encryption.");
-        } else if (room && (!SpaceStore.spacesEnabled || !room.isSpaceRoom())) {
-            text = _t("Messages in this room are not end-to-end encrypted.");
+    if(EnableEncrypt) {
+        if (!isRoomEncrypted) {
+            if (!cryptoEnabled) {
+                text = _t("This client does not support end-to-end encryption.");
+            } else if (room && (!SpaceStore.spacesEnabled || !room.isSpaceRoom())) {
+                text = _t("Messages in this room are not end-to-end encrypted.");
+            }
+        } else if (!SpaceStore.spacesEnabled || !room.isSpaceRoom()) {
+            text = _t("Messages in this room are end-to-end encrypted.");
         }
-    } else if (!SpaceStore.spacesEnabled || !room.isSpaceRoom()) {
-        text = _t("Messages in this room are end-to-end encrypted.");
+        securitySectionEmpty = false;
     }
 
     let verifyButton;
@@ -1496,6 +1500,7 @@ const BasicUserInfo: React.FC<{
                 { _t("Edit devices") }
             </AccessibleButton>
         </p>);
+        securitySectionEmpty = false;
     }
 
     const securitySection = (
@@ -1506,7 +1511,8 @@ const BasicUserInfo: React.FC<{
             { cryptoEnabled && <DevicesSection
                 loading={showDeviceListSpinner}
                 devices={devices}
-                userId={member.userId} /> }
+                userId={member.userId}
+                EnableEncrypt={EnableEncrypt} /> }
             { editDevices }
         </div>
     );
@@ -1514,7 +1520,7 @@ const BasicUserInfo: React.FC<{
     return <React.Fragment>
         { memberDetails }
 
-        { securitySection }
+        { !securitySectionEmpty && securitySection }
         <UserOptionsSection
             canInvite={roomPermissions.canInvite}
             isIgnored={isIgnored}
