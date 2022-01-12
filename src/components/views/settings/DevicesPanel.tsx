@@ -380,7 +380,7 @@ export default class DevicesPanel extends React.Component<IProps, IState> {
 
         const devicesSectionWithNoLabel = section(
             <span></span>,
-            "设备列表",
+            _t("Device List"),
             otherDevices,
         )
 

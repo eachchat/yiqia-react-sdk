@@ -1459,15 +1459,21 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             }
             
             if(!SettingsStore.getValue(UIFeature.ShareRoomEnabled)) {
-                helpTextUntranslated = helpTextUntranslated.split(' or ')[0];
+                helpText = _t("Invite someone using their name, username " + "(like <userId/>).", {}, {
+                    userId: () =>
+                        <a href={makeUserPermalink(userId)} rel="noreferrer noopener" target="_blank">{ userId }</a>,
+                    a: (sub) => 
+                        <a href={makeRoomPermalink(this.props.roomId)} rel="noreferrer noopener" target="_blank">{ sub }</a>,
+                });
             }
-
-            helpText = _t(helpTextUntranslated, {}, {
-                userId: () =>
-                    <a href={makeUserPermalink(userId)} rel="noreferrer noopener" target="_blank">{ userId }</a>,
-                a: (sub) => 
-                    <a href={makeRoomPermalink(this.props.roomId)} rel="noreferrer noopener" target="_blank">{ sub }</a>,
-            });
+            else {
+                helpText = _t(helpTextUntranslated, {}, {
+                    userId: () =>
+                        <a href={makeUserPermalink(userId)} rel="noreferrer noopener" target="_blank">{ userId }</a>,
+                    a: (sub) => 
+                        <a href={makeRoomPermalink(this.props.roomId)} rel="noreferrer noopener" target="_blank">{ sub }</a>,
+                });
+            }
 
             buttonText = _t("Invite");
             goButtonFn = this.inviteUsers;
