@@ -51,6 +51,7 @@ import ChangePassword from "../../ChangePassword";
 import InlineTermsAgreement from "../../../terms/InlineTermsAgreement";
 import SetIdServer from "../../SetIdServer";
 import SetIntegrationManager from "../../SetIntegrationManager";
+import SdkConfig from '../../../../../SdkConfig';
 
 interface IProps {
     closeSettingsFn: () => void;
@@ -449,6 +450,7 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
     public render(): JSX.Element {
         const plaf = PlatformPeg.get();
         const supportsMultiLanguageSpellCheck = plaf.supportsMultiLanguageSpellCheck();
+        const forceSpellCheckDisabled = SdkConfig.get()['forceSpellCheckDisabled'];
 
         const discoWarning = this.state.requiredPolicyInfo.hasTerms
             ? <img
@@ -485,7 +487,7 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
                     SettingsStore.getValue(UIFeature.CanChangeLanguage) &&
                     this.renderLanguageSection()
                 }
-                { supportsMultiLanguageSpellCheck ? this.renderSpellCheckSection() : null }
+                { (forceSpellCheckDisabled && supportsMultiLanguageSpellCheck) ? this.renderSpellCheckSection() : null }
                 { discoverySection }
                 { this.renderIntegrationManagerSection() /* Has its own title */ }
                 { accountManagementSection }
