@@ -24,6 +24,7 @@ import { RightPanelPhases, RIGHT_PANEL_PHASES_NO_ARGS } from "./RightPanelStoreP
 import { ActionPayload } from "../dispatcher/payloads";
 import { Action } from '../dispatcher/actions';
 import { SettingLevel } from "../settings/SettingLevel";
+import { UIFeature } from '../settings/UIFeature';
 
 interface RightPanelStoreState {
     // Whether or not to show the right panel at all. We split out rooms and groups
@@ -170,7 +171,7 @@ export default class RightPanelStore extends Store<ActionPayload> {
                 let refireParams = payload.refireParams;
                 const allowClose = payload.allowClose ?? true;
                 // redirect to EncryptionPanel if there is an ongoing verification request
-                if (targetPhase === RightPanelPhases.RoomMemberInfo && payload.refireParams) {
+                if (SettingsStore.getValue(UIFeature.EnableEncrypt) && targetPhase === RightPanelPhases.RoomMemberInfo && payload.refireParams) {
                     const { member } = payload.refireParams;
                     const pendingRequest = pendingVerificationRequestForUser(member);
                     if (pendingRequest) {
