@@ -121,7 +121,7 @@
     "Invited": "已邀请",
     "Invites": "邀请",
     "Invites user with given id to current room": "按照 ID 邀请指定用户加入当前聊天室",
-    "Sign in with": "第三方登录",
+    "Sign in with": "登录方式",
     "Missing room_id in request": "请求中没有 聊天室 ID",
     "Missing user_id in request": "请求中没有 user_id",
     "Moderator": "协管员",
