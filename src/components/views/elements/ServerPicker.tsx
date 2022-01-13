@@ -83,6 +83,9 @@ const ServerPicker = ({ title, dialogTitle, serverConfig, onServerConfigChange }
         </span>;
     }
 
+    if(serverConfig.isDefault){
+        serverName = '';
+    }
     return <div className="mx_ServerPicker">
         <h3>{ title || _t("Homeserver") }</h3>
         { !disableCustomUrls ? <AccessibleButton className="mx_ServerPicker_help" onClick={onHelpClick} /> : null }
