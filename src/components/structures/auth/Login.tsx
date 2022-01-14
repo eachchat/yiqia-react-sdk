@@ -599,7 +599,7 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
                 <AuthHeader disableLanguageSelector={this.props.isSyncing || this.state.busyLoggingIn} />
                 <AuthBody>
                     <h2>
-                        { _t('Sign in') }
+                        { _t('Sign in YiQia') }
                         { loader }
                     </h2>
                     { errorTextSection }
