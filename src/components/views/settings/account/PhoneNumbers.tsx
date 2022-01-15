@@ -187,9 +187,9 @@ export default class PhoneNumbers extends React.Component<IProps, IState> {
         }).catch((err) => {
             logger.error("Unable to add phone number " + phoneNumber + " " + err);
             this.setState({ verifying: false, continueDisabled: false, addTask: null });
-            Modal.createTrackedDialog('Add Phone Number Error', '', ErrorDialog, {
+            Modal.createTrackedDialog(_t('Add Phone Number Error'), '', ErrorDialog, {
                 title: _t("Error"),
-                description: ((err && err.message) ? err.message : _t("Operation failed")),
+                description: ((err && err.message) ? _t('Add Phone Number Error') : _t("Operation failed")),
             });
         });
     };
@@ -224,9 +224,9 @@ export default class PhoneNumbers extends React.Component<IProps, IState> {
             this.setState({ continueDisabled: false });
             if (err.errcode !== 'M_THREEPID_AUTH_FAILED') {
                 logger.error("Unable to verify phone number: " + err);
-                Modal.createTrackedDialog('Unable to verify phone number', '', ErrorDialog, {
+                Modal.createTrackedDialog(_t("Unable to verify phone number."), '', ErrorDialog, {
                     title: _t("Unable to verify phone number."),
-                    description: ((err && err.message) ? err.message : _t("Operation failed")),
+                    description: ((err && err.message) ? _t("Unable to verify phone number.") : _t("Operation failed")),
                 });
             } else {
                 this.setState({ verifyError: _t("Incorrect verification code") });
