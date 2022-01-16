@@ -450,7 +450,7 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
     public render(): JSX.Element {
         const plaf = PlatformPeg.get();
         const supportsMultiLanguageSpellCheck = plaf.supportsMultiLanguageSpellCheck();
-        const forceSpellCheckDisabled = SdkConfig.get()['forceSpellCheckDisabled'];
+        const forceSpellCheckEnabled = SdkConfig.get()['forceSpellCheckEnabled'];
 
         const discoWarning = this.state.requiredPolicyInfo.hasTerms
             ? <img
@@ -487,7 +487,7 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
                     SettingsStore.getValue(UIFeature.CanChangeLanguage) &&
                     this.renderLanguageSection()
                 }
-                { (forceSpellCheckDisabled && supportsMultiLanguageSpellCheck) ? this.renderSpellCheckSection() : null }
+                { (forceSpellCheckEnabled && supportsMultiLanguageSpellCheck) ? this.renderSpellCheckSection() : null }
                 { discoverySection }
                 { this.renderIntegrationManagerSection() /* Has its own title */ }
                 { accountManagementSection }
