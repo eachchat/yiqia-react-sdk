@@ -190,15 +190,18 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
                 <p>
                     { _t("We call the places where you can host your account 'homeservers'.") } { text }
                 </p>
-
-                <StyledRadioButton
-                    name="defaultChosen"
-                    value="true"
-                    checked={this.state.defaultChosen}
-                    onChange={this.onDefaultChosen}
-                >
-                    { defaultServerName }
-                </StyledRadioButton>
+                {
+                    false && 
+                    <StyledRadioButton
+                        name="defaultChosen"
+                        value="true"
+                        checked={this.state.defaultChosen}
+                        onChange={this.onDefaultChosen}
+                    >
+                        { defaultServerName }
+                    </StyledRadioButton>
+                }
+                
 
                 <StyledRadioButton
                     name="defaultChosen"
