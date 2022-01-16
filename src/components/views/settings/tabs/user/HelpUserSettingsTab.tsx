@@ -317,7 +317,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
                     <span className='mx_SettingsTab_subheading'>{ _t("Versions") }</span>
                     <div className='mx_SettingsTab_subsectionText'>
                         <div className="mx_HelpUserSettingsTab_copy">
-                            { appVersion }<br />
+                            { appVersion }
                             {
                                 SettingsStore.getValue(UIFeature.EnableEncrypt) &&
                                 olmVersion
