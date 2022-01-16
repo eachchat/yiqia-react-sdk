@@ -33,6 +33,8 @@ import * as ContextMenu from "../../../../structures/ContextMenu";
 import { toRightOf } from "../../../../structures/ContextMenu";
 import BugReportDialog from '../../../dialogs/BugReportDialog';
 import GenericTextContextMenu from "../../../context_menus/GenericTextContextMenu";
+import SettingsStore from '../../../../../settings/SettingsStore';
+import { UIFeature } from '../../../../../settings/UIFeature';
 
 interface IProps {
     closeSettingsFn: () => void;
@@ -73,7 +75,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
 
     private getVersionInfo(): { appVersion: string, olmVersion: string } {
         const brand = SdkConfig.get().brand;
-        const appVersion = this.state.appVersion || 'unknown';
+        const appVersion = "2.5.0-rc1";//this.state.appVersion || 'unknown';
         const olmVersionTuple = MatrixClientPeg.get().olmVersion;
         const olmVersion = olmVersionTuple
             ? `${olmVersionTuple[0]}.${olmVersionTuple[1]}.${olmVersionTuple[2]}`
@@ -316,7 +318,10 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
                     <div className='mx_SettingsTab_subsectionText'>
                         <div className="mx_HelpUserSettingsTab_copy">
                             { appVersion }<br />
-                            { olmVersion }<br />
+                            {
+                                SettingsStore.getValue(UIFeature.EnableEncrypt) &&
+                                olmVersion
+                            }<br />
                             <AccessibleTooltipButton
                                 title={_t("Copy")}
                                 onClick={this.onCopyVersionClicked}
