@@ -223,7 +223,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
             },
             {
                 'a': (sub) => <a
-                    href="https://bbs.yiqia.com/faq"
+                    href="https://yiqia.com/#/help"
                     rel="noreferrer noopener"
                     target="_blank"
                 >
