@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import SettingsStore from "../../settings/SettingsStore";
+import { UIFeature } from "../../settings/UIFeature";
 import { TagID } from "./models";
 
 const TILE_HEIGHT_PX = 44;
@@ -26,7 +28,7 @@ interface ISerializedListLayout {
 
 export class ListLayout {
     private _n = 0;
-    private _previews = false;
+    private _previews = SettingsStore.getValue(UIFeature.MessagePreviewEnabled);
     private _collapsed = false;
 
     constructor(public readonly tagId: TagID) {

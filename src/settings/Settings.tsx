@@ -1004,5 +1004,9 @@ export const SETTINGS: {[setting: string]: ISetting} = {
     [UIFeature.SpaceEnabled]: {
         supportedLevels: LEVELS_UI_FEATURE,
         default: false,
+    },
+    [UIFeature.MessagePreviewEnabled]: {
+        supportedLevels: LEVELS_UI_FEATURE,
+        default: true,
     }
 };
