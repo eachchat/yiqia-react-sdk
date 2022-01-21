@@ -210,7 +210,12 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
 
     private onCopyVersionClicked = (e: ButtonEvent) => {
         const { appVersion, olmVersion } = this.getVersionInfo();
-        this.copy(`${appVersion}\n${olmVersion}`, e);
+        if(SettingsStore.getValue(UIFeature.EnableEncrypt)) {
+            this.copy(`${appVersion}\n${olmVersion}`, e);
+        }
+        else {
+            this.copy(`${appVersion}`, e);
+        }
     };
 
     render() {
