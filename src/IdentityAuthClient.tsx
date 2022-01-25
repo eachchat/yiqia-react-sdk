@@ -166,8 +166,10 @@ export default class IdentityAuthClient {
                 });
             const [confirmed] = await finished;
             if (confirmed) {
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                useDefaultIdentityServer();
+                // here we can set the url which we just trusted
+                MatrixClientPeg.get().setAccountData("m.identity_server", {
+                    base_url: identityServerUrl,
+                });
             } else {
                 throw new AbortedIdentityActionError(
                     "User aborted identity server action without terms",
