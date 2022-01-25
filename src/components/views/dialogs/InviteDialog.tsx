@@ -28,6 +28,7 @@ import { makeRoomPermalink, makeUserPermalink } from "../../../utils/permalinks/
 import DMRoomMap from "../../../utils/DMRoomMap";
 import SdkConfig from "../../../SdkConfig";
 import * as Email from "../../../email";
+import * as PhoneNumber from '../../../phonenumber';
 import { getDefaultIdentityServerUrl, useDefaultIdentityServer } from "../../../utils/IdentityServerUtils";
 import { abbreviateUrl } from "../../../utils/UrlUtils";
 import dis from "../../../dispatcher/dispatcher";
@@ -842,6 +843,20 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         this.props.onFinished([]);
     };
 
+    // If there have set an default country and set force only default country, we can try to add the country code.
+    private packagePhoneNumberWithDefaultCountry = (phoneNumber) => {
+        let finalPhoneNumber = phoneNumber;
+        const defaultCountryCode = SdkConfig.get()['defaultCountryCode'];
+        const forceOnlyDefaultCountry = SdkConfig.get()["forceOnlyDefaultCountry"];
+        if(defaultCountryCode && forceOnlyDefaultCountry) {
+            const country = PhoneNumber.COUNTRIES.find(c => c.iso2 === defaultCountryCode.toUpperCase());
+            if(country && finalPhoneNumber.indexOf(country.prefix) !== 0) {
+                finalPhoneNumber = country.prefix + finalPhoneNumber;
+            }
+        }
+        return finalPhoneNumber;
+    };
+
     private updateSuggestions = async (term) => {
         MatrixClientPeg.get().searchUserDirectory({ term }).then(async r => {
             if (term !== this.state.filterText) {
@@ -901,24 +916,50 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             this.setState({ tryingIdentityServer: true });
             return;
         }
-        if (term.indexOf('@') > 0 && Email.looksValid(term) && SettingsStore.getValue(UIFeature.IdentityServer)) {
+        if (SettingsStore.getValue(UIFeature.IdentityServer)) {
             // Start off by suggesting the plain email while we try and resolve it
             // to a real account.
-            this.setState({
-                // per above: the userId is a lie here - it's just a regular identifier
-                threepidResultsMixin: [{ user: new ThreepidMember(term), userId: term }],
-            });
+            if(term.indexOf('@') > 0 && Email.looksValid(term)) {
+                if(this.state.threepidResultsMixin.map(item => {
+                    return item.userId
+                }).indexOf(term) < 0) {
+                    this.setState({
+                        // per above: the userId is a lie here - it's just a regular identifier
+                        threepidResultsMixin: [{ user: new ThreepidMember(term), userId: term }],
+                    });
+                }
+            }
             try {
                 const authClient = new IdentityAuthClient();
                 const token = await authClient.getAccessToken();
                 if (term !== this.state.filterText) return; // abandon hope
+                let lookup;
+                if(term.indexOf('@') > 0 && Email.looksValid(term)) {
+                    lookup = await MatrixClientPeg.get().lookupThreePid(
+                        'email',
+                        term,
+                        undefined, // callback
+                        token,
+                    );
+                }
+                else if(PhoneNumber.looksValid(term)) {
+                    const phoneNumber = this.packagePhoneNumberWithDefaultCountry(term);
+                    lookup = await MatrixClientPeg.get().lookupThreePid(
+                        'msisdn',
+                        phoneNumber,
+                        undefined, // callback
+                        token,
+                    );
 
-                const lookup = await MatrixClientPeg.get().lookupThreePid(
-                    'email',
-                    term,
-                    undefined, // callback
-                    token,
-                );
+                    if(!lookup || !lookup.mxid) {
+                        lookup = await MatrixClientPeg.get().lookupThreePid(
+                            'msisdn',
+                            term,
+                            undefined, // callback
+                            token,
+                        );
+                    }
+                }
                 if (term !== this.state.filterText) return; // abandon hope
 
                 if (!lookup || !lookup.mxid) {
@@ -933,16 +974,20 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                 // person!"
                 const profile = await MatrixClientPeg.get().getProfileInfo(lookup.mxid);
                 if (term !== this.state.filterText || !profile) return; // abandon hope
-                this.setState({
-                    threepidResultsMixin: [...this.state.threepidResultsMixin, {
-                        user: new DirectoryMember({
-                            user_id: lookup.mxid,
-                            display_name: profile.displayname,
-                            avatar_url: profile.avatar_url,
-                        }),
-                        userId: lookup.mxid,
-                    }],
-                });
+                if(this.state.threepidResultsMixin.map(item => {
+                    return item.userId
+                }).indexOf(lookup.mxid) < 0) {
+                    this.setState({
+                        threepidResultsMixin: [...this.state.threepidResultsMixin, {
+                            user: new DirectoryMember({
+                                user_id: lookup.mxid,
+                                display_name: profile.displayname,
+                                avatar_url: profile.avatar_url,
+                            }),
+                            userId: lookup.mxid,
+                        }],
+                    });
+                }
             } catch (e) {
                 logger.error("Error searching identity server:");
                 logger.error(e);
@@ -1016,9 +1061,6 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             return;
         }
 
-        // Prevent the text being pasted into the input
-        e.preventDefault();
-
         // Process it as a list of addresses to add instead
         const text = e.clipboardData.getData("text");
         const possibleMembers = [
@@ -1030,6 +1072,14 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         ];
         const toAdd = [];
         const failed = [];
+
+        // Prevent the text being pasted into the input except the phone numbers
+        if(PhoneNumber.looksValid(text.trim())) {
+            return;
+        }
+
+        e.preventDefault();
+
         const potentialAddresses = text.split(/[\s,]+/).map(p => p.trim()).filter(p => !!p); // filter empty strings
         for (const address of potentialAddresses) {
             const member = possibleMembers.find(m => m.userId === address);
