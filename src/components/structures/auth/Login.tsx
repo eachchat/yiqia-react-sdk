@@ -650,6 +650,13 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
                     { errorTextSection }
                     { serverDeadSection }
                     {
+                        (!this.hasGMS && this.state.loginPhase === LoginPhase.Login) &&
+                        <ServerPicker
+                            serverConfig={this.props.serverConfig}
+                            onServerConfigChange={this.props.onServerConfigChange}
+                        />
+                    }
+                    {
                         (this.hasGMS && this.state.loginPhase === LoginPhase.Login) &&
                         this.renderDomainName()
                     }
