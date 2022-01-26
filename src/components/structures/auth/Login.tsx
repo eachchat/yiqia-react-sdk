@@ -38,6 +38,8 @@ import ServerPicker from "../../views/elements/ServerPicker";
 import { replaceableComponent } from "../../../utils/replaceableComponent";
 import AuthBody from "../../views/auth/AuthBody";
 import AuthHeader from "../../views/auth/AuthHeader";
+import { DomainDetector } from '../../views/auth/DomainDetector';
+import AccessibleButton from '../../views/elements/AccessibleButton';
 
 // These are used in several places, and come from the js-sdk's autodiscovery
 // stuff. We define them here so that they'll be picked up by i18n.
@@ -49,6 +51,13 @@ _td("Invalid identity server discovery response");
 _td("Invalid base_url for m.identity_server");
 _td("Identity server URL does not appear to be a valid identity server");
 _td("General failure");
+
+enum LoginPhase {
+    // Show domain detector page which support input the domain name
+    DomainDetection = 1,
+    // Show login page
+    Login = 2,
+}
 
 interface IProps {
     serverConfig: ValidatedServerConfig;
@@ -77,6 +86,8 @@ interface IProps {
 }
 
 interface IState {
+    loginPhase: LoginPhase,
+    domainName: string,
     busy: boolean;
     busyLoggingIn?: boolean;
     errorText?: ReactNode;
@@ -107,13 +118,17 @@ interface IState {
 export default class LoginComponent extends React.PureComponent<IProps, IState> {
     private unmounted = false;
     private loginLogic: Login;
+    private hasGMS: false;
 
     private readonly stepRendererMap: Record<string, () => ReactNode>;
 
     constructor(props) {
         super(props);
 
+        this.hasGMS = SdkConfig.get()["hasGMS"];
         this.state = {
+            loginPhase: this.hasGMS ? LoginPhase.DomainDetection : LoginPhase.Login,
+            domainName: "",
             busy: false,
             busyLoggingIn: null,
             errorText: null,
@@ -510,6 +525,21 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
         </React.Fragment>;
     }
 
+    domainSelected = (matrixInfo) => {
+        console.log("Login domain info is ", matrixInfo);
+        this.setState({
+            domainName: matrixInfo.domainName,
+            loginPhase: LoginPhase.Login,
+        });
+        this.initLoginLogic(matrixInfo);
+    }
+
+    goBackToDomainDetection = () => {
+        this.setState({
+            loginPhase: LoginPhase.DomainDetection,
+        })
+    }
+
     private renderPasswordStep = () => {
         return (
             <PasswordLogin
@@ -543,6 +573,21 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
             />
         );
     };
+
+    private renderDomainDetectionStep = () => {
+        return(
+            <DomainDetector
+                onDomainSelected={this.domainSelected}
+                lastDomainName={this.state.domainName}
+            ></DomainDetector>
+        )
+    }
+
+    private renderDomainName = () => {
+        return(
+            <div>{this.state.domainName}</div>
+        )
+    }
 
     render() {
         const loader = this.isBusy() && !this.state.busyLoggingIn ?
@@ -604,11 +649,27 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
                     </h2>
                     { errorTextSection }
                     { serverDeadSection }
-                    <ServerPicker
-                        serverConfig={this.props.serverConfig}
-                        onServerConfigChange={this.props.onServerConfigChange}
-                    />
-                    { this.renderLoginComponentForFlows() }
+                    {
+                        (this.hasGMS && this.state.loginPhase === LoginPhase.Login) &&
+                        this.renderDomainName()
+                    }
+                    {
+                        this.state.loginPhase === LoginPhase.Login &&
+                        this.renderLoginComponentForFlows()
+                    }
+                    {
+                        this.state.loginPhase === LoginPhase.DomainDetection &&
+                        this.renderDomainDetectionStep()
+                    }
+                    {
+                        (this.hasGMS && this.state.loginPhase === LoginPhase.Login &&
+                            !this.props.isSyncing && !this.state.busyLoggingIn) &&
+                        <AccessibleButton
+                        className='mx_Login_back_to_domain_detection'
+                            onClick={this.goBackToDomainDetection}>
+                            { _t("Previous step") }
+                        </AccessibleButton>
+                    }
                     { footer }
                 </AuthBody>
             </AuthPage>

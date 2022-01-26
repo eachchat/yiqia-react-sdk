@@ -33,6 +33,48 @@ limitations under the License.
     cursor: default;
 }
 
+.mx_DomainListDropdown_Label {
+    margin-top: 24px;
+    margin-bottom: 24px;
+    flex: 1;
+}
+
+.mx_Login_domain_confirm {
+    @mixin mx_DialogButton;
+    width: 100%;
+    margin-top: 72px;
+    margin-bottom: 24px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.mx_Login_domain_confirm:hover {
+    @mixin mx_DialogButton_hover;
+}
+
+.mx_Login_domain_confirm:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.mx_Login_back_to_domain_detection {
+    @mixin mx_DialogButton;
+    width: 100%;
+    margin-top: -12px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.mx_Login_back_to_domain_detection:hover {
+    @mixin mx_DialogButton_hover;
+}
+
+.mx_Login_back_to_domain_detection:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
 .mx_Login_loader {
     display: inline;
     position: relative;

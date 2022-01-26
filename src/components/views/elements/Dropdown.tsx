@@ -93,6 +93,8 @@ interface IProps {
     // unspecified, the appropriate child element is used as
     // in the dropped-down menu.
     getShortOption?(value: string): ReactNode;
+    hideDropdownArrow?: boolean;
+    onFocus?: () => void;
 }
 
 interface IState {
@@ -190,7 +192,7 @@ export default class Dropdown extends React.Component<IProps, IState> {
             this.close();
         } else if (!(ev as React.KeyboardEvent).key) {
             // collapse on other non-keyboard event activations
-            this.setState({ expanded: false });
+            if(!this.props.hideDropdownArrow) this.setState({ expanded: false });
             ev.preventDefault();
         }
     };
@@ -212,6 +214,7 @@ export default class Dropdown extends React.Component<IProps, IState> {
 
     private onKeyDown = (e: React.KeyboardEvent) => {
         let handled = true;
+        if(this.props.onFocus) this.props.onFocus();
 
         // These keys don't generate keypress events and so needs to be on keyup
         switch (e.key) {
@@ -295,6 +298,10 @@ export default class Dropdown extends React.Component<IProps, IState> {
         }
     }
 
+    private onFocus = () => {
+        if(this.props.onFocus) this.props.onFocus();
+    }
+
     private getMenuOptions() {
         const options = React.Children.map(this.props.children, (child) => {
             const highlighted = this.state.highlightedOption === child.key;
@@ -312,7 +319,7 @@ export default class Dropdown extends React.Component<IProps, IState> {
                 </MenuOption>
             );
         });
-        if (options.length === 0) {
+        if (options.length === 0 && this.state.searchQuery.trim().length != 0) {
             return [<div key="0" className="mx_Dropdown_option" role="option">
                 { _t("No results") }
             </div>];
@@ -343,14 +350,17 @@ export default class Dropdown extends React.Component<IProps, IState> {
                         aria-disabled={this.props.disabled}
                         aria-label={this.props.label}
                         onKeyDown={this.onKeyDown}
+                        onFocus={this.onFocus}
                     />
                 );
             }
-            menu = (
-                <div className="mx_Dropdown_menu" style={menuStyle} role="listbox" id={`${this.props.id}_listbox`}>
-                    { this.getMenuOptions() }
-                </div>
-            );
+            if(this.props.children.length !== 0) {
+                menu = (
+                    <div className="mx_Dropdown_menu" style={menuStyle} role="listbox" id={`${this.props.id}_listbox`}>
+                        { this.getMenuOptions() }
+                    </div>
+                );
+            }
         }
 
         if (!currentValue) {
@@ -385,7 +395,10 @@ export default class Dropdown extends React.Component<IProps, IState> {
                 onKeyDown={this.onKeyDown}
             >
                 { currentValue }
-                <span className="mx_Dropdown_arrow" />
+                {
+                    !this.props.hideDropdownArrow &&
+                    <span className="mx_Dropdown_arrow" />
+                }
                 { menu }
             </AccessibleButton>
         </div>;
