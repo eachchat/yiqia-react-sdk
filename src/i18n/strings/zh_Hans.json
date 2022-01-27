@@ -2681,6 +2681,7 @@
     "This won't invite them to %(communityName)s. To invite someone to %(communityName)s, click <a>here</a>": "这不会邀请他们加入 %(communityName)s。要邀请某人加入 %(communityName)s，请点击<a>这里</a>",
     "Start a conversation with someone using their name or username (like <userId/>).": "使用某人的名字或用户名开始与其进行对话（如 <userId/>）。",
     "Start a conversation with someone using their name, email address or username (like <userId/>).": "使用某人的名称、电子邮箱地址或用户名来与其开始对话（如 <userId/>）。",
+    "Start a conversation with someone using their name, email address, phone number or username (like <userId/>).": "使用某人的名称、电子邮箱地址、手机号或用户名来与其开始对话（如 <userId/>）。",
     "May include members not in %(communityName)s": "可能不包括 %(communityName)s 中的成员",
     "A call can only be transferred to a single user.": "通话只能转移到单个用户。",
     "We couldn't create your DM.": "我们无法创建你的私聊。",

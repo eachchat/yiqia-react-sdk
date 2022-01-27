@@ -373,7 +373,7 @@ interface IInviteDialogState {
     suggestions: { user: Member, userId: string }[];
     numSuggestionsShown: number;
     serverResultsMixin: { user: Member, userId: string }[];
-    threepidResultsMixin: { user: Member, userId: string}[];
+    threepidResultsMixin: { user: Member, userId: string, threePid?: string}[];
     canUseIdentityServer: boolean;
     tryingIdentityServer: boolean;
     consultFirst: boolean;
@@ -974,19 +974,35 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                 // person!"
                 const profile = await MatrixClientPeg.get().getProfileInfo(lookup.mxid);
                 if (term !== this.state.filterText || !profile) return; // abandon hope
-                if(this.state.threepidResultsMixin.map(item => {
+                const uidWithThreePid = this.state.threepidResultsMixin.map(item => {
                     return item.userId
-                }).indexOf(lookup.mxid) < 0) {
+                })
+                if(uidWithThreePid.indexOf(lookup.mxid) < 0) {
+                    const newThreepidResult = [...this.state.threepidResultsMixin.filter(item => {
+                        return item.userId !== term;
+                    }), {
+                        user: new DirectoryMember({
+                            user_id: lookup.mxid,
+                            display_name: profile.displayname,
+                            avatar_url: profile.avatar_url,
+                        }),
+                        userId: lookup.mxid,
+                        threePid: term,
+                    }]
+                    const needBeReplacedUid = [...uidWithThreePid, lookup.mxid];
+                    // If the threepidResultsMixin is not empyt, we should check the show result belong the threepidResultMixin but not the hs result
+                    const newSuggestions = this.state.suggestions.filter(member => {
+                        if(needBeReplacedUid.indexOf(member.userId) < 0) return member;
+                    })
+                    const newRecents = this.state.recents.filter(member => {
+                        if(needBeReplacedUid.indexOf(member.userId) < 0) return member;
+                    })
                     this.setState({
-                        threepidResultsMixin: [...this.state.threepidResultsMixin, {
-                            user: new DirectoryMember({
-                                user_id: lookup.mxid,
-                                display_name: profile.displayname,
-                                avatar_url: profile.avatar_url,
-                            }),
-                            userId: lookup.mxid,
-                        }],
+                        recents: newRecents,
+                        suggestions: newSuggestions,
+                        threepidResultsMixin: newThreepidResult,
                     });
+
                 }
             } catch (e) {
                 logger.error("Error searching identity server:");
@@ -1405,7 +1421,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
             if (identityServersEnabled) {
                 helpText = _t(
-                    "Start a conversation with someone using their name, email address or username (like <userId/>).",
+                    "Start a conversation with someone using their name, email address, phone number or username (like <userId/>).",
                     {},
                     { userId: () => {
                         return (
