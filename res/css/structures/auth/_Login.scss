@@ -91,6 +91,12 @@ limitations under the License.
     height: 16px;
 }
 
+.mx_Login_domain_name {
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(141, 151, 165, 0.2);
+    margin-bottom: 12px;
+}
+
 .mx_Login_error {
     color: $alert;
     font-weight: bold;

@@ -585,7 +585,9 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
 
     private renderDomainName = () => {
         return(
-            <div>{this.state.domainName}</div>
+            <div className='mx_Login_domain_name'>
+                <span>{_t("Access")}</span>{" " + this.state.domainName }
+            </div>
         )
     }
 
@@ -672,8 +674,9 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
                         (this.hasGMS && this.state.loginPhase === LoginPhase.Login &&
                             !this.props.isSyncing && !this.state.busyLoggingIn) &&
                         <AccessibleButton
-                        className='mx_Login_back_to_domain_detection'
-                            onClick={this.goBackToDomainDetection}>
+                        className='mx_Login_forgot'
+                            onClick={this.goBackToDomainDetection}
+                            kind='link'>
                             { _t("Previous step") }
                         </AccessibleButton>
                     }

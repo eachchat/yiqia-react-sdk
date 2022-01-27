@@ -5,7 +5,6 @@ import SdkConfig from '../../../SdkConfig';
 import AccessibleButton from '../elements/AccessibleButton';
 import Dropdown from '../elements/Dropdown';
 import * as sdk from '../../../index';
-import withValidation from '../elements/Validation';
 
 const GMS_URL = SdkConfig.get()["gms_url"];
 
