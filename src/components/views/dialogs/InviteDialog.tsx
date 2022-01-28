@@ -942,19 +942,19 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                 const token = await authClient.getAccessToken();
                 if (term !== this.state.filterText) return; // abandon hope
                 let lookup;
-                if(term.indexOf('@') > 0 && Email.looksValid(term)) {
+                if(term.indexOf('@') > 0 && Email.looksValid(term.trim())) {
                     lookup = await MatrixClientPeg.get().lookupThreePid(
                         'email',
-                        term,
+                        term.trim(),
                         undefined, // callback
                         token,
                     );
                 }
-                else if(PhoneNumber.looksValid(term)) {
+                else if(PhoneNumber.looksValid(term.trim())) {
                     const phoneNumber = this.packagePhoneNumberWithDefaultCountry(term);
                     lookup = await MatrixClientPeg.get().lookupThreePid(
                         'msisdn',
-                        phoneNumber,
+                        phoneNumber.trim(),
                         undefined, // callback
                         token,
                     );
@@ -962,7 +962,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                     if(!lookup || !lookup.mxid) {
                         lookup = await MatrixClientPeg.get().lookupThreePid(
                             'msisdn',
-                            term,
+                            term.trim(),
                             undefined, // callback
                             token,
                         );
