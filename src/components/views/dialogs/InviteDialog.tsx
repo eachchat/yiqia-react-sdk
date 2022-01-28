@@ -648,15 +648,23 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         // Check to see if there's anything to convert first
         if (!this.state.filterText || !this.state.filterText.includes('@')) return this.state.targets || [];
 
-        let newMember: Member;
+        let newMembers: Member[];
         if (this.state.filterText.startsWith('@')) {
             // Assume mxid
-            newMember = new DirectoryMember({ user_id: this.state.filterText, display_name: null, avatar_url: null });
+            newMembers = [new DirectoryMember({ user_id: this.state.filterText, display_name: null, avatar_url: null })];
         } else if (SettingsStore.getValue(UIFeature.IdentityServer)) {
             // Assume email
-            newMember = new ThreepidMember(this.state.filterText);
+            const checkMember = this.state.threepidResultsMixin.filter(item => {
+                if(item.threePid && item.threePid === this.state.filterText) return item;
+            });
+            if(checkMember.length === 0) {
+                newMembers = [new ThreepidMember(this.state.filterText)];
+            }
+            else {
+                newMembers = checkMember.map(item => item.user);
+            }
         }
-        const newTargets = [...(this.state.targets || []), newMember];
+        const newTargets = [...(this.state.targets || []), ...newMembers];
         this.setState({ targets: newTargets, filterText: '' });
         return newTargets;
     }
@@ -1090,7 +1098,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         const failed = [];
 
         // Prevent the text being pasted into the input except the phone numbers
-        if(PhoneNumber.looksValid(text.trim())) {
+        if(PhoneNumber.looksValid(text.trim()) || Email.looksValid(text.trim())) {
             return;
         }
 
