@@ -1,26 +1,216 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { _t } from '../../../languageHandler';
 import SdkConfig from '../../../SdkConfig';
 import AccessibleButton from '../elements/AccessibleButton';
-import Dropdown from '../elements/Dropdown';
+import { Key } from "../../../Keyboard";
 import * as sdk from '../../../index';
 
 const GMS_URL = SdkConfig.get()["gms_url"];
+let hoveredNode;
+
+const DomainList = ({
+    initValue,
+    onOptionChange,
+    onSearchChange,
+    onFocus,
+    searchedDomains,
+    domainValid,
+}) => {
+
+    const [expanded, setExpanded] = useState(false);
+    const inputRef = useRef(null);
+    const listRef = useRef(null);
+    
+    const onInputChange = (e) => {
+        onSearchChange(e.currentTarget.value);
+    };
+
+    const updateScroll = (hoverItem) => {
+        const scrollTop = listRef.current.scrollTop;
+
+        let { top, bottom } = hoverItem.getBoundingClientRect();
+        const { top: topContainer } = listRef.current.getBoundingClientRect();
+        top = top - topContainer + scrollTop;
+        bottom = bottom - topContainer + scrollTop;
+    
+        if (top < scrollTop) {
+            listRef.current.scrollTop = top;
+        } else if (bottom > listRef.current.offsetHeight) {
+            listRef.current.scrollTop = bottom - listRef.current.offsetHeight;
+        }
+    };
+
+    const nextOption = () => {
+        if(listRef.current.childNodes.length === 0) return;
+        if(hoveredNode) {
+            hoveredNode.style.backgroundColor = "white";
+            if(!hoveredNode.nextSibling) {
+                hoveredNode = listRef.current.childNodes[0];
+            }
+            else {
+                hoveredNode = hoveredNode.nextSibling;
+            }
+            hoveredNode.style.backgroundColor = "#dddddd";
+        }
+        else {
+            hoveredNode = listRef.current.childNodes[0];
+            hoveredNode.style.backgroundColor = "#dddddd";
+        }
+
+        updateScroll(hoveredNode);
+    }
+
+    const prevOption = () => {
+        if(listRef.current.childNodes.length === 0) return;
+        if(hoveredNode) {
+            hoveredNode.style.backgroundColor = "white";
+            if(!hoveredNode.previousSibling) {
+                hoveredNode = listRef.current.childNodes[listRef.current.childNodes.length - 1];
+            }
+            else {
+                hoveredNode = hoveredNode.previousSibling;
+            }
+            hoveredNode.style.backgroundColor = "#dddddd";
+        }
+        else {
+            hoveredNode = listRef.current.childNodes[listRef.current.childNodes.length - 1];
+            hoveredNode.style.backgroundColor = "#dddddd";
+        }
+
+        updateScroll(hoveredNode);
+    }
+
+    const onKeyDown = (e) => {
+        let handled = true;
+        if(onFocus) onFocus();
+
+        // These keys don't generate keypress events and so needs to be on keyup
+        switch (e.key) {
+            case Key.ENTER:
+                if(expanded) {
+                    if(hoveredNode) {
+                        onItemClicked(hoveredNode.id);
+                    }
+                    else {
+                        onItemClicked(inputRef.current.value);
+                    }
+                }
+                else {
+                    handled = false;
+                }
+                break;
+                // fallthrough
+            case Key.ESCAPE:
+                close();
+                break;
+            case Key.ARROW_DOWN:
+                if (expanded) {
+                    nextOption();
+                } else {
+                    setExpanded(true);
+                }
+                break;
+            case Key.ARROW_UP:
+                if (expanded) {
+                    prevOption();
+                } else {
+                    setExpanded(true);
+                }
+                break;
+            default:
+                handled = false;
+        }
+
+        if (handled) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+
+    const inputOnFocus = () => {
+        if(onFocus) onFocus();
+    }
+
+    const onItemClicked = (item) => {
+        onOptionChange(item);
+        inputRef.current.value = item;
+        setExpanded(false);
+    }
+
+    useEffect(() => {
+        if(searchedDomains.length === 0) {
+            hoveredNode = null;
+            setExpanded(false);
+        }
+        else {
+            setExpanded(true);
+        }
+    }, [searchedDomains]);
+
+    useEffect(() => {
+        if(inputRef.current) {
+            if(domainValid) {
+                inputRef.current.style.border = "1px solid #F34A36";
+            }
+            else {
+                inputRef.current.style.border = "1px solid #DDDDDD";
+            }
+        }
+    }, [domainValid]);
+
+    useEffect(() => {
+        if(inputRef.current && initValue && initValue.trim().length !== 0) {
+            inputRef.current.value = initValue;
+            onSearchChange(initValue);
+        }
+    }, []);
+
+    return(
+        <div className='mx_DomainList'>
+            <input
+                ref={inputRef}
+                type="text"
+                autoFocus={true}
+                className="mx_DomainList_input"
+                onChange={onInputChange}
+                role="combobox"
+                onKeyDown={onKeyDown}
+                onFocus={inputOnFocus}
+                placeholder={_t("Enter your organization.")}
+            />
+            {
+                expanded &&
+                <div className='mx_Domain_candidates' ref={listRef}>
+                    {
+                        searchedDomains.map(item => {
+                            return (
+                                <div className='mx_Domain_candidate'
+                                    id={item}
+                                    onClick={() => {onItemClicked(item)}}
+                                >
+                                    {item}
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+            }
+        </div>
+    )
+}
 
 export const DomainDetector = ({
     lastDomainName,
     onDomainSelected
 }) => {
-    const [detectionResult, setDetectionResult] = useState([]);
-    const [selectedDomain, setSelectedDomain] = useState(lastDomainName);
     const [matrixInfo, updateMatrixInfo] = useState(null);
+    const [searchedDomains, setSearchedDomains] = useState([]);
     const [domainValidTooltip, setDomainValid] = useState(null);
 
     const toDetect = (key) => {
-        closeInvalidAlert();
         if(key.trim().length === 0) {
-            setDetectionResult([]);
+            setSearchedDomains([]);
             return;
         }
         try {
@@ -39,23 +229,24 @@ export const DomainDetector = ({
                 return resp.json();
             })
             .then((data) => {
-                if(data && data.results) {
-                    setDetectionResult(data.results);
-                    console.log("detectionResult ", detectionResult);
+                if(data && data.results && data.results.length !== 0) {
+                    setSearchedDomains(data.results);
+                    console.log("detectionResult ", searchedDomains);
                 }
                 else {
-
+                    setSearchedDomains([]);
                 }
             })
             .catch((err) => {
+                setSearchedDomains([]);
                 console.log("err ", err);
             })
         }
         catch(error) {
-            
+            setSearchedDomains([]);
         }
     }
-
+    
     const toGetDomainInfo = (domainName) => {
         try {
             fetch(GMS_URL + "/gms/v1/configuration", {
@@ -73,7 +264,7 @@ export const DomainDetector = ({
                 return resp.json();
             })
             .then((data) => {
-                if(data && data.obj) {
+                if(data && data.obj && data.obj.matrix) {
                     console.log("domain info matrix is ", data.obj.matrix);
                     const matrixInfoObj = {
                         hsUrl: data.obj.matrix.homeServer,
@@ -84,17 +275,25 @@ export const DomainDetector = ({
                     updateMatrixInfo(matrixInfoObj);
                 }
                 else {
-
+                    showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
                 }
             })
             .catch((err) => {
+                showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
                 console.log("err ", err);
             })
         }
         catch(error) {
-            
+            showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
         }
     }
+
+    const onKeyDown = (e) => {
+        switch (e.key) {
+            case Key.ENTER:
+                domainConfirm();
+        }
+    };
 
     const showInvalidAlert = (alertContent) => {
         const details = <ul className="mx_Validation_details">
@@ -118,25 +317,15 @@ export const DomainDetector = ({
             onDomainSelected(matrixInfo);
         }
         else {
+            if(domainValidTooltip) return;
             showInvalidAlert(_t("Enter an organization"));
         }
     }
-
-    const detectedDomain = detectionResult.map((domain) => {
-        return <div className='mx_CountryDropdown_option' key={domain}>
-            {domain}
-        </div>
-    })
-
+    
     function onSelected(domainName) {
         console.log("domainName ", domainName);
-        setSelectedDomain(domainName);
         toGetDomainInfo(domainName);
     }
-
-    useEffect(() => {
-        if(lastDomainName) setDetectionResult([lastDomainName]);
-    }, []);
 
     const Tooltip = sdk.getComponent("elements.Tooltip");
     let domainEmptyTooltip;
@@ -149,7 +338,8 @@ export const DomainDetector = ({
     }
 
     return (
-        <form onSubmit={domainConfirm}>
+        <form onSubmit={domainConfirm}
+            onKeyDown={onKeyDown}>
             <div
                 className='mx_DomainListDropdown_Label'
             >
@@ -157,22 +347,19 @@ export const DomainDetector = ({
             </div>
             <div style={{
                 flex:1}}>
-                <Dropdown
-                    id="mx_DomainListDropdown"
-                    className='mx_DomainListDropdown_option mx_DomainListDropdown'
-                    label={ _t("Organization") }
-                    onOptionChange={onSelected}
+                <DomainList
+                    searchedDomains={searchedDomains}
                     onSearchChange={toDetect}
-                    value={selectedDomain}
-                    searchEnabled={true}
-                    hideDropdownArrow={true}
+                    initValue={lastDomainName}
+                    onOptionChange={onSelected}
                     onFocus={closeInvalidAlert}
+                    domainValid={domainValidTooltip}
                 >
-                    { detectedDomain }
-                </Dropdown>
+                </DomainList>
                 { domainEmptyTooltip }
             </div>
             <AccessibleButton
+                type="submit"
                 className='mx_Login_domain_confirm'
                 onClick={domainConfirm}
             >

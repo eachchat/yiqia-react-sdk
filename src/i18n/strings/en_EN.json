@@ -2765,6 +2765,7 @@
     "Previous step": "Previous step",
     "Enter an organization": "Enter an organization",
     "Organization": "Organization",
+    "Enter your organization.": "Enter your organization.",
     "You signed in to a new session without verifying it:": "You signed in to a new session without verifying it:",
     "Verify your other session using one of the options below.": "Verify your other session using one of the options below.",
     "%(name)s (%(userId)s) signed in to a new session without verifying it:": "%(name)s (%(userId)s) signed in to a new session without verifying it:",

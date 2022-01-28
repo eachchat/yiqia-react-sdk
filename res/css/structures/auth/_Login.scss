@@ -15,6 +15,47 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+.mx_DomainList {
+    display: flex;
+    width: 100%;
+    position: relative;
+}
+
+.mx_DomainList_input {
+    flex: 1;
+    border: 1px solid #E7E7E7;
+    border-radius: 4px;
+    color: #61708b !important;
+    font-weight: normal !important;
+}
+
+.mx_Domain_candidates {
+    flex: 1;
+    position: absolute;
+    left: 0px;
+    top: 36px;
+    max-height: 140px;
+    overflow: auto;
+    background-color: #FFFFFF;
+    border: 1px solid #E7E7E7;
+    border-radius: 4px;
+    width: calc(100% - 2px);
+}
+
+.mx_Domain_candidate {
+    height: 35px;
+    line-height: $font-35px;
+    padding-left: 8px;
+    padding-right: 8px;
+    cursor: pointer;
+}
+
+.mx_DomainList_input::placeholder {
+    font-size: 14px;
+    color: #C3C8D0;
+    font-weight: 400;
+}
+
 .mx_Login_submit {
     @mixin mx_DialogButton;
     width: 100%;
@@ -35,14 +76,16 @@ limitations under the License.
 
 .mx_DomainListDropdown_Label {
     margin-top: 24px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
+    color: #61708B;
+    font-weight: 500;
     flex: 1;
 }
 
 .mx_Login_domain_confirm {
     @mixin mx_DialogButton;
     width: 100%;
-    margin-top: 72px;
+    margin-top: 152px;
     margin-bottom: 24px;
     box-sizing: border-box;
     text-align: center;
