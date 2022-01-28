@@ -79,13 +79,14 @@ limitations under the License.
     margin-bottom: 16px;
     color: #61708B;
     font-weight: 500;
+    font-size: 14px;
     flex: 1;
 }
 
 .mx_Login_domain_confirm {
     @mixin mx_DialogButton;
     width: 100%;
-    margin-top: 152px;
+    margin-top: 120px;
     margin-bottom: 24px;
     box-sizing: border-box;
     text-align: center;

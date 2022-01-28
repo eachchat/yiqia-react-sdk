@@ -207,8 +207,10 @@ export const DomainDetector = ({
     const [matrixInfo, updateMatrixInfo] = useState(null);
     const [searchedDomains, setSearchedDomains] = useState([]);
     const [domainValidTooltip, setDomainValid] = useState(null);
+    const [curInputValud, setCurInputValud] = useState("");
 
     const toDetect = (key) => {
+        setCurInputValud(key.trim());
         if(key.trim().length === 0) {
             setSearchedDomains([]);
             return;
@@ -248,44 +250,50 @@ export const DomainDetector = ({
     }
     
     const toGetDomainInfo = (domainName) => {
-        try {
-            fetch(GMS_URL + "/gms/v1/configuration", {
-                method: "POST",
-                mode: "cors",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    'tenantName': domainName
+        return new Promise((resolve, reject) => {
+            try {
+                fetch(GMS_URL + "/gms/v1/configuration", {
+                    method: "POST",
+                    mode: "cors",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        'tenantName': domainName
+                    })
                 })
-            })
-            .then((resp) => {
-                return resp.json();
-            })
-            .then((data) => {
-                if(data && data.obj && data.obj.matrix) {
-                    console.log("domain info matrix is ", data.obj.matrix);
-                    const matrixInfoObj = {
-                        hsUrl: data.obj.matrix.homeServer,
-                        isUrl: "",
-                        domainName: domainName
+                .then((resp) => {
+                    return resp.json();
+                })
+                .then((data) => {
+                    if(data && data.obj && data.obj.matrix) {
+                        console.log("domain info matrix is ", data.obj.matrix);
+                        const matrixInfoObj = {
+                            hsUrl: data.obj.matrix.homeServer,
+                            isUrl: "",
+                            domainName: domainName
+                        }
+                        console.log("matrixInfo is ", matrixInfoObj);
+                        updateMatrixInfo(matrixInfoObj);
+                        resolve(matrixInfoObj);
                     }
-                    console.log("matrixInfo is ", matrixInfoObj);
-                    updateMatrixInfo(matrixInfoObj);
-                }
-                else {
+                    else {
+                        showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
+                        reject();
+                    }
+                })
+                .catch((err) => {
                     showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
-                }
-            })
-            .catch((err) => {
+                    console.log("err ", err);
+                    reject();
+                })
+            }
+            catch(error) {
                 showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
-                console.log("err ", err);
-            })
-        }
-        catch(error) {
-            showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
-        }
+                reject();
+            }
+        })
     }
 
     const onKeyDown = (e) => {
@@ -312,9 +320,28 @@ export const DomainDetector = ({
         setDomainValid(null);
     }
 
-    const domainConfirm = () => {
+    const toDomainConfirm = () => {
+        if(matrixInfo) {
+            domainConfirm();
+        }
+        else {
+            toGetDomainInfo(curInputValud)
+                .then((resp) => {
+                    updateMatrixInfo(resp);
+                    domainConfirm(resp);
+                })
+                .catch((err) => {
+
+                })
+        }
+    }
+
+    const domainConfirm = (info = null) => {
         if(matrixInfo) {
             onDomainSelected(matrixInfo);
+        }
+        else if(info) {
+            onDomainSelected(info);
         }
         else {
             if(domainValidTooltip) return;
@@ -324,7 +351,12 @@ export const DomainDetector = ({
     
     function onSelected(domainName) {
         console.log("domainName ", domainName);
-        toGetDomainInfo(domainName);
+        if(domainName && domainName.length === 0) {
+            toGetDomainInfo(curInputValud);
+        }
+        else {
+            toGetDomainInfo(domainName);
+        }
     }
 
     const Tooltip = sdk.getComponent("elements.Tooltip");
@@ -361,7 +393,7 @@ export const DomainDetector = ({
             <AccessibleButton
                 type="submit"
                 className='mx_Login_domain_confirm'
-                onClick={domainConfirm}
+                onClick={toDomainConfirm}
             >
                 { _t("Next step") }
             </AccessibleButton>

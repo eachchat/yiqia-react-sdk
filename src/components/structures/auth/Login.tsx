@@ -586,7 +586,7 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
     private renderDomainName = () => {
         return(
             <div className='mx_Login_domain_name'>
-                <span>{_t("Access")}</span>{" " + this.state.domainName }
+                <span>{_t("Access")}</span>{"  " + this.state.domainName }
             </div>
         )
     }
