@@ -254,7 +254,9 @@ export const DomainDetector = ({
         return new Promise((resolve, reject) => {
             if(!domainName || (domainName && domainName.length === 0)) {
                 showInvalidAlert(_t("Enter an organization"));
-                reject();
+                return new Promise((resolve, reject) => {
+                    reject();
+                });
             }
             try {
                 fetch(GMS_URL + "/gms/v1/configuration", {
@@ -311,7 +313,7 @@ export const DomainDetector = ({
     const onKeyDown = (e) => {
         switch (e.key) {
             case Key.ENTER:
-                domainConfirm();
+                toDomainConfirm();
                 break;
             default:
                 ;
