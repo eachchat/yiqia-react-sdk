@@ -187,6 +187,7 @@ const DomainList = ({
                             return (
                                 <div className='mx_Domain_candidate'
                                     id={item}
+                                    key={item}
                                     onClick={() => {onItemClicked(item)}}
                                 >
                                     {item}
@@ -250,11 +251,11 @@ export const DomainDetector = ({
     }
     
     const toGetDomainInfo = (domainName) => {
-        if(!domainName || (domainName && domainName.length === 0)) {
-            showInvalidAlert(_t("Enter an organization"));
-            return;
-        }
         return new Promise((resolve, reject) => {
+            if(!domainName || (domainName && domainName.length === 0)) {
+                showInvalidAlert(_t("Enter an organization"));
+                reject();
+            }
             try {
                 fetch(GMS_URL + "/gms/v1/configuration", {
                     method: "POST",
@@ -268,7 +269,9 @@ export const DomainDetector = ({
                     })
                 })
                 .then((resp) => {
-                    return resp.json();
+                    return new Promise((resolve) => {
+                        resolve(resp.json());
+                    });
                 })
                 .then((data) => {
                     if(data && data.code === 200 && data.obj && data.obj.matrix) {
