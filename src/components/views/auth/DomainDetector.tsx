@@ -250,6 +250,10 @@ export const DomainDetector = ({
     }
     
     const toGetDomainInfo = (domainName) => {
+        if(!domainName || (domainName && domainName.length === 0)) {
+            showInvalidAlert(_t("Enter an organization"));
+            return;
+        }
         return new Promise((resolve, reject) => {
             try {
                 fetch(GMS_URL + "/gms/v1/configuration", {
@@ -267,7 +271,7 @@ export const DomainDetector = ({
                     return resp.json();
                 })
                 .then((data) => {
-                    if(data && data.obj && data.obj.matrix) {
+                    if(data && data.code === 200 && data.obj && data.obj.matrix) {
                         console.log("domain info matrix is ", data.obj.matrix);
                         const matrixInfoObj = {
                             hsUrl: data.obj.matrix.homeServer,
@@ -279,7 +283,12 @@ export const DomainDetector = ({
                         resolve(matrixInfoObj);
                     }
                     else {
-                        showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
+                        if(data.message) {
+                            showInvalidAlert(data.message);
+                        }
+                        else {
+                            showInvalidAlert(_t("Unexpected error resolving homeserver configuration"));
+                        }
                         reject();
                     }
                 })
@@ -300,6 +309,9 @@ export const DomainDetector = ({
         switch (e.key) {
             case Key.ENTER:
                 domainConfirm();
+                break;
+            default:
+                ;
         }
     };
 
@@ -352,7 +364,12 @@ export const DomainDetector = ({
     function onSelected(domainName) {
         console.log("domainName ", domainName);
         if(domainName && domainName.length === 0) {
-            toGetDomainInfo(curInputValud);
+            if(curInputValud && curInputValud.length === 0) {
+                domainConfirm(null)
+            }
+            else {
+                toGetDomainInfo(curInputValud);
+            }
         }
         else {
             toGetDomainInfo(domainName);
@@ -370,7 +387,7 @@ export const DomainDetector = ({
     }
 
     return (
-        <form onSubmit={domainConfirm}
+        <form
             onKeyDown={onKeyDown}>
             <div
                 className='mx_DomainListDropdown_Label'
