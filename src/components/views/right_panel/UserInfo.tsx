@@ -44,7 +44,7 @@ import E2EIcon from "../rooms/E2EIcon";
 import { useEventEmitter } from "../../../hooks/useEventEmitter";
 import { textualPowerLevel } from '../../../Roles';
 import MatrixClientContext from "../../../contexts/MatrixClientContext";
-import { RightPanelPhases } from "../../../stores/RightPanelStorePhases";
+import { RightPanelPhases } from '../../../stores/right-panel/RightPanelStorePhases';
 import EncryptionPanel from "./EncryptionPanel";
 import { useAsyncMemo } from '../../../hooks/useAsyncMemo';
 import { legacyVerifyUser, verifyDevice, verifyUser } from '../../../verification';
@@ -63,7 +63,6 @@ import ErrorDialog from "../dialogs/ErrorDialog";
 import QuestionDialog from "../dialogs/QuestionDialog";
 import ConfirmUserActionDialog from "../dialogs/ConfirmUserActionDialog";
 import InfoDialog from "../dialogs/InfoDialog";
-import { SetRightPanelPhasePayload } from "../../../dispatcher/payloads/SetRightPanelPhasePayload";
 import RoomAvatar from "../avatars/RoomAvatar";
 import RoomName from "../elements/RoomName";
 import { mediaFromMxc } from "../../../customisations/Media";
@@ -75,8 +74,11 @@ import { bulkSpaceBehaviour } from "../../../utils/space";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
 import { UIComponent, UIFeature } from "../../../settings/UIFeature";
 import { TimelineRenderingType } from "../../../contexts/RoomContext";
+import RightPanelStore from '../../../stores/right-panel/RightPanelStore';
+import { IRightPanelCardState } from '../../../stores/right-panel/RightPanelStoreIPanelState';
 import { useUserStatusMessage } from "../../../hooks/useUserStatusMessage";
 import SettingsStore from '../../../settings/SettingsStore';
+import UserIdentifierCustomisations from '../../../customisations/UserIdentifier';
 
 export interface IDevice {
     deviceId: string;
@@ -94,7 +96,7 @@ const disambiguateDevices = (devices: IDevice[]) => {
     }
     for (const name in names) {
         if (names[name].length > 1) {
-            names[name].forEach((j)=>{
+            names[name].forEach((j) => {
                 devices[j].ambiguous = true;
             });
         }
@@ -582,10 +584,10 @@ const RoomKickButton = ({ room, member, startUpdating, stopUpdating }: Omit<IBas
             room.isSpaceRoom() ? ConfirmSpaceUserActionDialog : ConfirmUserActionDialog,
             {
                 member,
-                action: member.membership === "invite" ? _t("Disinvite") : _t("Kick"),
+                action: member.membership === "invite" ? _t("Disinvite") : _t("Remove from chat"),
                 title: member.membership === "invite"
                     ? _t("Disinvite from %(roomName)s", { roomName: room.name })
-                    : _t("Kick from %(roomName)s", { roomName: room.name }),
+                    : _t("Remove from %(roomName)s", { roomName: room.name }),
                 askReason: member.membership === "join",
                 danger: true,
                 // space-specific props
@@ -598,8 +600,8 @@ const RoomKickButton = ({ room, member, startUpdating, stopUpdating }: Omit<IBas
                         myMember.powerLevel > theirMember.powerLevel &&
                         child.currentState.hasSufficientPowerLevelFor("kick", myMember.powerLevel);
                 },
-                allLabel: _t("Kick them from everything I'm able to"),
-                specificLabel: _t("Kick them from specific things I'm able to"),
+                allLabel: _t("Remove them from everything I'm able to"),
+                specificLabel: _t("Remove them from specific things I'm able to"),
                 warningMessage: _t("They'll still be able to access whatever you're not an admin of."),
             },
             room.isSpaceRoom() ? "mx_ConfirmSpaceUserActionDialog_wrapper" : undefined,
@@ -617,7 +619,7 @@ const RoomKickButton = ({ room, member, startUpdating, stopUpdating }: Omit<IBas
         }, function(err) {
             logger.error("Kick error: " + err);
             Modal.createTrackedDialog('Failed to kick', '', ErrorDialog, {
-                title: _t("Failed to kick"),
+                title: _t("Failed to remove user"),
                 description: ((err && err.message) ? err.message : "Operation failed"),
             });
         }).finally(() => {
@@ -625,7 +627,7 @@ const RoomKickButton = ({ room, member, startUpdating, stopUpdating }: Omit<IBas
         });
     };
 
-    const kickLabel = member.membership === "invite" ? _t("Disinvite") : _t("Kick");
+    const kickLabel = member.membership === "invite" ? _t("Disinvite") : _t("Remove from room");
     return <AccessibleButton className="mx_UserInfo_field mx_UserInfo_destructive" onClick={onKick}>
         { kickLabel }
     </AccessibleButton>;
@@ -1539,7 +1541,8 @@ export type Member = User | RoomMember | GroupMember;
 const UserInfoHeader: React.FC<{
     member: Member;
     e2eStatus: E2EStatus;
-}> = ({ member, e2eStatus }) => {
+    roomId?: string;
+}> = ({ member, e2eStatus, roomId }) => {
     const cli = useContext(MatrixClientContext);
     const statusMessage = useUserStatusMessage(member);
 
@@ -1626,7 +1629,7 @@ const UserInfoHeader: React.FC<{
                         </span>
                     </h2>
                 </div>
-                <div>{ member.userId }</div>
+                <div>{ UserIdentifierCustomisations.getDisplayUserIdentifier(member.userId, { roomId, withDisplayName: true }) }</div>
                 <div className="mx_UserInfo_profileStatus">
                     { presenceLabel }
                     { statusLabel }
@@ -1672,25 +1675,16 @@ const UserInfo: React.FC<IProps> = ({
 
     const classes = ["mx_UserInfo"];
 
-    let refireParams;
-    let previousPhase: RightPanelPhases;
+    let cardState: IRightPanelCardState;
     // We have no previousPhase for when viewing a UserInfo from a Group or without a Room at this time
     if (room && phase === RightPanelPhases.EncryptionPanel) {
-        previousPhase = RightPanelPhases.RoomMemberInfo;
-        refireParams = { member };
+        cardState = { member };
     } else if (room?.isSpaceRoom() && SpaceStore.spacesEnabled) {
-        previousPhase = previousPhase = RightPanelPhases.SpaceMemberList;
-        refireParams = { space: room };
-    } else if (room) {
-        previousPhase = RightPanelPhases.RoomMemberList;
+        cardState = { spaceId: room.roomId };
     }
 
     const onEncryptionPanelClose = () => {
-        dis.dispatch<SetRightPanelPhasePayload>({
-            action: Action.SetRightPanelPhase,
-            phase: previousPhase,
-            refireParams: refireParams,
-        });
+        RightPanelStore.instance.popCard();
     };
 
     let content;
@@ -1704,7 +1698,8 @@ const UserInfo: React.FC<IProps> = ({
                     member={member as User}
                     groupId={groupId as string}
                     devices={devices}
-                    isRoomEncrypted={isRoomEncrypted} />
+                    isRoomEncrypted={isRoomEncrypted}
+                />
             );
             break;
         case RightPanelPhases.EncryptionPanel:
@@ -1738,15 +1733,14 @@ const UserInfo: React.FC<IProps> = ({
 
     const header = <React.Fragment>
         { scopeHeader }
-        <UserInfoHeader member={member} e2eStatus={e2eStatus} />
+        <UserInfoHeader member={member} e2eStatus={e2eStatus} roomId={room?.roomId} />
     </React.Fragment>;
     return <BaseCard
         className={classes.join(" ")}
         header={header}
         onClose={onClose}
         closeLabel={closeLabel}
-        previousPhase={previousPhase}
-        refireParams={refireParams}
+        cardState={cardState}
     >
         { content }
     </BaseCard>;

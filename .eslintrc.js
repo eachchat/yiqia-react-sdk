@@ -43,10 +43,8 @@ module.exports = {
         // There are too many a11y violations to fix at once
         // Turn violated rules off until they are fixed
         "jsx-a11y/alt-text": "off",
-        "jsx-a11y/anchor-is-valid": "off",
         "jsx-a11y/aria-activedescendant-has-tabindex": "off",
         "jsx-a11y/click-events-have-key-events": "off",
-        "jsx-a11y/iframe-has-title": "off",
         "jsx-a11y/interactive-supports-focus": "off",
         "jsx-a11y/label-has-associated-control": "off",
         "jsx-a11y/media-has-caption": "off",
@@ -56,7 +54,6 @@ module.exports = {
         "jsx-a11y/no-noninteractive-element-to-interactive-role": "off",
         "jsx-a11y/no-noninteractive-tabindex": "off",
         "jsx-a11y/no-static-element-interactions": "off",
-        "jsx-a11y/role-has-required-aria-props": "off",
         "jsx-a11y/role-supports-aria-props": "off",
         "jsx-a11y/tabindex-no-positive": "off",
     },

@@ -73,6 +73,7 @@ import BaseDialog from "./BaseDialog";
 import DialPadBackspaceButton from "../elements/DialPadBackspaceButton";
 import SpaceStore from "../../../stores/spaces/SpaceStore";
 import CallHandler from "../../../CallHandler";
+import UserIdentifierCustomisations from '../../../customisations/UserIdentifier';
 
 // we have a number of types defined from the Matrix spec which can't reasonably be altered here.
 /* eslint-disable camelcase */
@@ -330,9 +331,13 @@ class DMRoomTile extends React.PureComponent<IDMRoomTileProps> {
             </span>
         );
 
+        const userIdentifier = UserIdentifierCustomisations.getDisplayUserIdentifier(
+            this.props.member.userId, { withDisplayName: true },
+        );
+
         const caption = (this.props.member as ThreepidMember).isEmail
             ? _t("Invite by email")
-            : this.highlightName(this.props.member.userId);
+            : this.highlightName(userIdentifier);
 
         return (
             <div className='mx_InviteDialog_roomTile' onClick={this.onClick}>
@@ -1329,8 +1334,14 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                         defaultIdentityServerName: abbreviateUrl(defaultIdentityServerUrl),
                     },
                     {
-                        default: sub => <a href="#" onClick={this.onUseDefaultIdentityServerClick}>{ sub }</a>,
-                        settings: sub => <a href="#" onClick={this.onManageSettingsClick}>{ sub }</a>,
+                        default: sub =>
+                            <AccessibleButton kind='link_inline' onClick={this.onUseDefaultIdentityServerClick}>
+                                { sub }
+                            </AccessibleButton>,
+                        settings: sub =>
+                            <AccessibleButton kind='link_inline' onClick={this.onManageSettingsClick}>
+                                { sub }
+                            </AccessibleButton>,
                     },
                 ) }</div>
             );
@@ -1340,7 +1351,10 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                     "Use an identity server to invite by email. " +
                     "Manage in <settings>Settings</settings>.",
                     {}, {
-                        settings: sub => <a href="#" onClick={this.onManageSettingsClick}>{ sub }</a>,
+                        settings: sub =>
+                            <AccessibleButton kind='link_inline' onClick={this.onManageSettingsClick}>
+                                { sub }
+                            </AccessibleButton>,
                     },
                 ) }</div>
             );

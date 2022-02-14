@@ -635,7 +635,10 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
             footer = (
                 <span className="mx_AuthBody_changeFlow">
                     { _t("New? <a>Create account</a>", {}, {
-                        a: sub => <a onClick={this.onTryRegisterClick} href="#">{ sub }</a>,
+                        a: sub =>
+                            <AccessibleButton kind='link_inline' onClick={this.onTryRegisterClick}>
+                                { sub }
+                            </AccessibleButton>,
                     }) }
                 </span>
             );

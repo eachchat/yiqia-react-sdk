@@ -34,6 +34,7 @@ import { useLocalEcho } from "../../../hooks/useLocalEcho";
 import dis from "../../../dispatcher/dispatcher";
 import { ROOM_SECURITY_TAB } from "../dialogs/RoomSettingsDialog";
 import SdkConfig from "../../../SdkConfig";
+import { Action } from "../../../dispatcher/actions";
 
 interface IProps {
     room: Room;
@@ -62,9 +63,9 @@ const JoinRuleSettings = ({ room, promptUpgrade, aliasWarning, onError, beforeCh
         onError,
     );
 
-    const { join_rule: joinRule } = content;
+    const { join_rule: joinRule = JoinRule.Invite } = content || {};
     const restrictedAllowRoomIds = joinRule === JoinRule.Restricted
-        ? content.allow.filter(o => o.type === RestrictedAllowType.RoomMembership).map(o => o.room_id)
+        ? content.allow?.filter(o => o.type === RestrictedAllowType.RoomMembership).map(o => o.room_id)
         : undefined;
 
     const editRestrictedRoomIds = async (): Promise<string[] | undefined> => {
@@ -268,7 +269,7 @@ const JoinRuleSettings = ({ room, promptUpgrade, aliasWarning, onError, beforeCh
 
                         // switch to the new room in the background
                         dis.dispatch({
-                            action: "view_room",
+                            action: Action.ViewRoom,
                             room_id: roomId,
                         });
 

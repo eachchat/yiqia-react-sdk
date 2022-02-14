@@ -15,24 +15,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
+.mx_KeyboardUserSettingsTab .mx_SettingsTab_section {
+    .mx_KeyboardShortcut_shortcutRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-import CallPreview from './CallPreview';
-import { replaceableComponent } from "../../../utils/replaceableComponent";
+    kbd {
+        padding: 5px;
+        border-radius: 4px;
+        background-color: $header-panel-bg-color;
+        margin-right: 5px;
+        min-width: 20px;
+        text-align: center;
+        display: inline-block;
+        border: 1px solid $kbd-border-color;
+        box-shadow: 0 2px $kbd-border-color;
+        margin-bottom: 4px;
+        text-transform: capitalize;
 
-interface IProps {
-
-}
-
-interface IState {
-
-}
-
-@replaceableComponent("views.voip.CallContainer")
-export default class CallContainer extends React.PureComponent<IProps, IState> {
-    public render() {
-        return <div className="mx_CallContainer">
-            <CallPreview />
-        </div>;
+        & + kbd {
+            margin-left: 5px;
+        }
     }
 }

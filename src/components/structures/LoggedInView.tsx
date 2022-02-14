@@ -32,7 +32,6 @@ import SettingsStore from "../../settings/SettingsStore";
 import ResizeHandle from '../views/elements/ResizeHandle';
 import { CollapseDistributor, Resizer } from '../../resizer';
 import MatrixClientContext from "../../contexts/MatrixClientContext";
-import * as KeyboardShortcuts from "../../accessibility/KeyboardShortcuts";
 import HomePage from "./HomePage";
 import ResizeNotifier from "../../utils/ResizeNotifier";
 import PlatformPeg from "../../PlatformPeg";
@@ -40,11 +39,10 @@ import { DefaultTagID } from "../../stores/room-list/models";
 import { hideToast as hideServerLimitToast, showToast as showServerLimitToast } from "../../toasts/ServerLimitToast";
 import { Action } from "../../dispatcher/actions";
 import LeftPanel from "./LeftPanel";
-import CallContainer from '../views/voip/CallContainer';
+import PipContainer from '../views/voip/PipContainer';
 import { ViewRoomDeltaPayload } from "../../dispatcher/payloads/ViewRoomDeltaPayload";
 import RoomListStore from "../../stores/room-list/RoomListStore";
 import NonUrgentToastContainer from "./NonUrgentToastContainer";
-import { ToggleRightPanelPayload } from "../../dispatcher/payloads/ToggleRightPanelPayload";
 import { IOOBData, IThreepidInvite } from "../../stores/ThreepidInviteStore";
 import Modal from "../../Modal";
 import { ICollapseConfig } from "../../resizer/distributors/collapse";
@@ -68,6 +66,10 @@ import GroupFilterPanel from './GroupFilterPanel';
 import CustomRoomTagPanel from './CustomRoomTagPanel';
 import { mediaFromMxc } from "../../customisations/Media";
 import LegacyCommunityPreview from "./LegacyCommunityPreview";
+import { UserTab } from "../views/dialogs/UserSettingsDialog";
+import { OpenToTabPayload } from "../../dispatcher/payloads/OpenToTabPayload";
+import RightPanelStore from '../../stores/right-panel/RightPanelStore';
+import { TimelineRenderingType } from "../../contexts/RoomContext";
 
 // We need to fetch each pinned message individually (if we don't already have it)
 // so each pinned message may trigger a request. Limit the number per room for sanity.
@@ -386,14 +388,19 @@ class LoggedInView extends React.Component<IProps, IState> {
     private onPaste = (ev: ClipboardEvent) => {
         const element = ev.target as HTMLElement;
         const inputableElement = getInputableElement(element);
+        if (inputableElement === document.activeElement) return; // nothing to do
 
-        if (inputableElement) {
+        if (inputableElement?.focus) {
             inputableElement.focus();
         } else {
+            const inThread = !!document.activeElement.closest(".mx_ThreadView");
             // refocusing during a paste event will make the
             // paste end up in the newly focused element,
             // so dispatch synchronously before paste happens
-            dis.fire(Action.FocusSendMessageComposer, true);
+            dis.dispatch({
+                action: Action.FocusSendMessageComposer,
+                context: inThread ? TimelineRenderingType.Thread : TimelineRenderingType.Room,
+            }, true);
         }
     };
 
@@ -472,8 +479,11 @@ class LoggedInView extends React.Component<IProps, IState> {
                 dis.fire(Action.ToggleUserMenu);
                 handled = true;
                 break;
-            case NavigationAction.ToggleShortCutDialog:
-                KeyboardShortcuts.toggleDialog();
+            case NavigationAction.OpenShortCutDialog:
+                dis.dispatch<OpenToTabPayload>({
+                    action: Action.ViewUserSettings,
+                    initialTabId: UserTab.Keyboard,
+                });
                 handled = true;
                 break;
             case NavigationAction.GoToHome:
@@ -489,10 +499,7 @@ class LoggedInView extends React.Component<IProps, IState> {
                 break;
             case NavigationAction.ToggleRoomSidePanel:
                 if (this.props.page_type === "room_view" || this.props.page_type === "group_view") {
-                    dis.dispatch<ToggleRightPanelPayload>({
-                        action: Action.ToggleRightPanel,
-                        type: this.props.page_type === "room_view" ? "room" : "group",
-                    });
+                    RightPanelStore.instance.togglePanel();
                     handled = true;
                 }
                 break;
@@ -551,8 +558,12 @@ class LoggedInView extends React.Component<IProps, IState> {
             // If the user is entering a printable character outside of an input field
             // redirect it to the composer for them.
             if (!isClickShortcut && isPrintable && !getInputableElement(ev.target as HTMLElement)) {
+                const inThread = !!document.activeElement.closest(".mx_ThreadView");
                 // synchronous dispatch so we focus before key generates input
-                dis.fire(Action.FocusSendMessageComposer, true);
+                dis.dispatch({
+                    action: Action.FocusSendMessageComposer,
+                    context: inThread ? TimelineRenderingType.Thread : TimelineRenderingType.Room,
+                }, true);
                 ev.stopPropagation();
                 // we should *not* preventDefault() here as that would prevent typing in the now-focused composer
             }
@@ -677,7 +688,7 @@ class LoggedInView extends React.Component<IProps, IState> {
                         </div>
                     </div>
                 </div>
-                <CallContainer />
+                <PipContainer />
                 <NonUrgentToastContainer />
                 <HostSignupContainer />
                 { audioFeedArraysForCalls }

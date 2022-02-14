@@ -319,8 +319,8 @@ export default class Dropdown extends React.Component<IProps, IState> {
                 </MenuOption>
             );
         });
-        if (options.length === 0 && this.state.searchQuery.trim().length != 0) {
-            return [<div key="0" className="mx_Dropdown_option" role="option">
+        if (options.length === 0) {
+            return [<div key="0" className="mx_Dropdown_option" role="option" aria-selected={false}>
                 { _t("No results") }
             </div>];
         }
@@ -338,6 +338,7 @@ export default class Dropdown extends React.Component<IProps, IState> {
             if (this.props.searchEnabled) {
                 currentValue = (
                     <input
+                        id={`${this.props.id}_input`}
                         type="text"
                         autoFocus={true}
                         className="mx_Dropdown_option"
@@ -346,7 +347,8 @@ export default class Dropdown extends React.Component<IProps, IState> {
                         role="combobox"
                         aria-autocomplete="list"
                         aria-activedescendant={`${this.props.id}__${this.state.highlightedOption}`}
-                        aria-owns={`${this.props.id}_listbox`}
+                        aria-expanded={this.state.expanded}
+                        aria-controls={`${this.props.id}_listbox`}
                         aria-disabled={this.props.disabled}
                         aria-label={this.props.label}
                         onKeyDown={this.onKeyDown}
@@ -392,6 +394,7 @@ export default class Dropdown extends React.Component<IProps, IState> {
                 inputRef={this.buttonRef}
                 aria-label={this.props.label}
                 aria-describedby={`${this.props.id}_value`}
+                aria-owns={`${this.props.id}_input`}
                 onKeyDown={this.onKeyDown}
             >
                 { currentValue }
