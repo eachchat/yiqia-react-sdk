@@ -27,7 +27,6 @@ import PlatformPeg from "../../../../../PlatformPeg";
 import UpdateCheckButton from "../../UpdateCheckButton";
 import { replaceableComponent } from "../../../../../utils/replaceableComponent";
 import BugReportDialog from '../../../dialogs/BugReportDialog';
-import GenericTextContextMenu from "../../../context_menus/GenericTextContextMenu";
 import SettingsStore from '../../../../../settings/SettingsStore';
 import { UIFeature } from '../../../../../settings/UIFeature';
 import { OpenToTabPayload } from "../../../../../dispatcher/payloads/OpenToTabPayload";
@@ -185,18 +184,14 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
 
     private getVersionTextToCopy = (): string => {
         const { appVersion, olmVersion } = this.getVersionInfo();
-        return `${appVersion}\n${olmVersion}`;
-    };
-
-    private onCopyVersionClicked = (e: ButtonEvent) => {
-        const { appVersion, olmVersion } = this.getVersionInfo();
+        
         if(SettingsStore.getValue(UIFeature.EnableEncrypt)) {
-            this.copy(`${appVersion}\n${olmVersion}`, e);
+            return `${appVersion}\n${olmVersion}`;
         }
         else {
-            this.copy(`${appVersion}`, e);
+            return `${appVersion}`;
         }
-    }
+    };
 
     private onKeyboardShortcutsClicked = (): void => {
         dis.dispatch<OpenToTabPayload>({
@@ -291,6 +286,22 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
         }
 
         const { appVersion, olmVersion } = this.getVersionInfo();
+        let versionsForm = null;
+        if(SettingsStore.getValue(UIFeature.EnableEncrypt)) {
+            versionsForm = (
+                <CopyableText getTextToCopy={this.getVersionTextToCopy}>
+                    { appVersion }<br />
+                    { olmVersion }<br />
+                </CopyableText>
+            )
+        }
+        else {
+            versionsForm = (
+                <CopyableText getTextToCopy={this.getVersionTextToCopy}>
+                    { appVersion }
+                </CopyableText>
+            )
+        }
 
         return (
             <div className="mx_SettingsTab mx_HelpUserSettingsTab">
@@ -308,13 +319,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
                 <div className='mx_SettingsTab_section mx_HelpUserSettingsTab_versions'>
                     <span className='mx_SettingsTab_subheading'>{ _t("Versions") }</span>
                     <div className='mx_SettingsTab_subsectionText'>
-                        <CopyableText getTextToCopy={this.getVersionTextToCopy}>
-                            { appVersion }<br />
-                            {
-                                SettingsStore.getValue(UIFeature.EnableEncrypt) &&
-                                olmVersion
-                            }<br />
-                        </CopyableText>
+                        { versionsForm }
                         { updateButton }
                     </div>
                 </div>

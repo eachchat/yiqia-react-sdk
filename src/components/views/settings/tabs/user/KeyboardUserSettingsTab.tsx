@@ -77,8 +77,12 @@ interface IKeyboardShortcutRowProps {
 }
 
 const KeyboardShortcutRow: React.FC<IKeyboardShortcutRowProps> = ({ name }) => {
+    let shortcutLabelOrg = KEYBOARD_SHORTCUTS[name].displayName;
+    if(typeof shortcutLabelOrg === "string") {
+        shortcutLabelOrg = _t(shortcutLabelOrg);
+    }
     return <div className="mx_KeyboardShortcut_shortcutRow">
-        { KEYBOARD_SHORTCUTS[name].displayName }
+        { shortcutLabelOrg }
         <KeyboardShortcut name={name} />
     </div>;
 };
@@ -99,7 +103,7 @@ const KeyboardShortcutSection: React.FC<IKeyboardShortcutSectionProps> = ({ cate
 
 const KeyboardUserSettingsTab: React.FC = () => {
     return <div className="mx_SettingsTab mx_KeyboardUserSettingsTab">
-        <div className="mx_SettingsTab_heading">{ _t("Keyboard") }</div>
+        <div className="mx_SettingsTab_heading">{ _t("Keyboard shortcuts") }</div>
         { Object.entries(CATEGORIES).map(([categoryName, category]: [CategoryName, ICategory]) => {
             return <KeyboardShortcutSection key={categoryName} categoryName={categoryName} category={category} />;
         }) }
