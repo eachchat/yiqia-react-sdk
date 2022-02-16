@@ -77,6 +77,11 @@ interface IState {
     loading3pids: boolean; // whether or not the emails and msisdns have been loaded
     canChangePassword: boolean;
     idServerName: string;
+    domainGMS: {
+        authType: string,
+        threeAuthType: string,
+        passwordChangeInfo: string,
+    };
 }
 
 @replaceableComponent("views.settings.tabs.user.GeneralUserSettingsTab")
@@ -103,6 +108,11 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
             loading3pids: true, // whether or not the emails and msisdns have been loaded
             canChangePassword: false,
             idServerName: null,
+            domainGMS: {
+                authType: null,
+                threeAuthType: null,
+                passwordChangeInfo: null,
+            },
         };
 
         this.dispatcherRef = dis.register(this.onAction);
@@ -112,6 +122,28 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
     // eslint-disable-next-line @typescript-eslint/naming-convention, camelcase
     public async UNSAFE_componentWillMount(): Promise<void> {
         const cli = MatrixClientPeg.get();
+        let domainGMS = {
+            authType: null,
+            threeAuthType: null,
+            passwordChangeInfo: null,
+        };
+        if(SdkConfig.get()['hasGMS']) {
+            try{
+                const homeserver_base_url = cli.getHomeserverUrl();
+                const domainGmsConfigResp = await (await fetch(homeserver_base_url + "/api/services/auth/v1/auth/setting")).json();
+                const domainGmsConfig = domainGmsConfigResp.obj;
+                if(domainGmsConfig?.authType && domainGmsConfig?.threeAuthType) {
+                    domainGMS = {
+                        authType: domainGmsConfig?.authType,
+                        threeAuthType: domainGmsConfig?.threeAuthType,
+                        passwordChangeInfo: domainGmsConfig?.passwordChangeInfo,
+                    };
+                }
+            }
+            catch(error) {
+                console.error("Get domain gms configure error ", error);
+            }
+        }
 
         const serverSupportsSeparateAddAndBind = await cli.doesServerSupportSeparateAddAndBind();
 
@@ -123,7 +155,7 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
         // the enabled flag value.
         const canChangePassword = SettingsStore.getValue(UIFeature.CanChangePassword) && (!changePasswordCap || changePasswordCap['enabled'] !== false);
 
-        this.setState({ serverSupportsSeparateAddAndBind, canChangePassword });
+        this.setState({ serverSupportsSeparateAddAndBind, canChangePassword, domainGMS });
 
         this.getThreepidState();
     }
@@ -334,6 +366,20 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
         }
 
         let passwordChangeText = _t("Set a new account password...");
+        if(this.state.domainGMS.authType === "three" && this.state.domainGMS.threeAuthType === "ldap") {
+            const ldapChangePasswordNotice = this.state.domainGMS.passwordChangeInfo;
+            const sliceIndex = ldapChangePasswordNotice.indexOf("http");
+            const ldapChangePasswordNoticeLabel = ldapChangePasswordNotice.slice(0, sliceIndex);
+            let ldapChangePasswordNoticeURL = ldapChangePasswordNotice.slice(sliceIndex).trim();
+            if(ldapChangePasswordNoticeURL.endsWith("/")) {
+                ldapChangePasswordNoticeURL = ldapChangePasswordNoticeURL.slice(0, ldapChangePasswordNoticeURL.length - 1);
+            }
+
+            passwordChangeText = ldapChangePasswordNoticeLabel + ":";
+            passwordChangeForm = (
+                <a href={ldapChangePasswordNoticeURL} target="_blank" rel="noreferrer noopener">{ldapChangePasswordNoticeURL}</a>
+            );
+        }
         if (!this.state.canChangePassword) {
             // Just don't show anything if you can't do anything.
             passwordChangeText = null;
