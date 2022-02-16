@@ -1308,6 +1308,7 @@
     "We recommend that you remove your email addresses and phone numbers from the identity server before disconnecting.": "我们推荐你在断开连接前从身份服务器上删除你的邮箱地址和电话号码。",
     "not stored": "未存储",
     "You are currently using <server></server> to discover and be discoverable by existing contacts you know. You can change your identity server below.": "你正在使用 <server></server> 以发现你认识的现存联系人并被其发现。你可以在下方更改你的身份服务器。",
+    "You are currently using <server></server> to discover and be discoverable by existing contacts you know.": "你正在使用 <server></server> 以发现你认识的现存联系人并被其发现。",
     "If you don't want to use <server /> to discover and be discoverable by existing contacts you know, enter another identity server below.": "如果你不想使用 <server /> 以发现你认识的现存联系人并被其发现，请在下方输入另一个身份服务器。",
     "You are not currently using an identity server. To discover and be discoverable by existing contacts you know, add one below.": "你现在没有使用身份服务器。若想发现你认识的现存联系人并被其发现，请在下方添加一个身份服务器。",
     "Disconnecting from your identity server will mean you won't be discoverable by other users and you won't be able to invite others by email or phone.": "断开身份服务器连接意味着你将无法被其他用户发现，同时你也将无法使用电子邮件或电话邀请别人。",

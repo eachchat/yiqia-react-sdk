@@ -33,6 +33,7 @@ import InlineSpinner from '../elements/InlineSpinner';
 import AccessibleButton from '../elements/AccessibleButton';
 import Field from '../elements/Field';
 import QuestionDialog from "../dialogs/QuestionDialog";
+import SdkConfig from '../../../SdkConfig';
 
 // We'll wait up to this long when checking for 3PID bindings on the IS.
 const REACHABILITY_TIMEOUT = 10000; // ms
@@ -354,14 +355,14 @@ export default class SetIdServer extends React.Component<IProps, IState> {
     };
 
     render() {
+        const canChangeIdeneityServer = SdkConfig.get()["canChangeIdentityServer"];
         const idServerUrl = this.state.currentClientIdServer;
         let sectionTitle;
         let bodyText;
         if (idServerUrl) {
             sectionTitle = _t("Identity server (%(server)s)", { server: abbreviateUrl(idServerUrl) });
             bodyText = _t(
-                "You are currently using <server></server> to discover and be discoverable by " +
-                "existing contacts you know. You can change your identity server below.",
+                "You are currently using <server></server> to discover and be discoverable by existing contacts you know.",
                 {},
                 { server: sub => <b>{ abbreviateUrl(idServerUrl) }</b> },
             );
@@ -382,7 +383,7 @@ export default class SetIdServer extends React.Component<IProps, IState> {
         }
 
         let discoSection;
-        if (idServerUrl) {
+        if (idServerUrl && canChangeIdeneityServer) {
             let discoButtonContent: React.ReactNode = _t("Disconnect");
             let discoBodyText = _t(
                 "Disconnecting from your identity server will mean you " +
@@ -416,24 +417,29 @@ export default class SetIdServer extends React.Component<IProps, IState> {
                 <span className="mx_SettingsTab_subsectionText">
                     { bodyText }
                 </span>
-                <Field
-                    label={_t("Enter a new identity server")}
-                    type="text"
-                    autoComplete="off"
-                    placeholder={this.state.defaultIdServer}
-                    value={this.state.idServer}
-                    onChange={this.onIdentityServerChanged}
-                    tooltipContent={this.getTooltip()}
-                    tooltipClassName="mx_SetIdServer_tooltip"
-                    disabled={this.state.busy}
-                    forceValidity={this.state.error ? false : null}
-                />
-                <AccessibleButton
-                    type="submit"
-                    kind="primary_sm"
-                    onClick={this.checkIdServer}
-                    disabled={!this.idServerChangeEnabled()}
-                >{ _t("Change") }</AccessibleButton>
+                {
+                    canChangeIdeneityServer &&
+                    <div>
+                        <Field
+                            label={_t("Enter a new identity server")}
+                            type="text"
+                            autoComplete="off"
+                            placeholder={this.state.defaultIdServer}
+                            value={this.state.idServer}
+                            onChange={this.onIdentityServerChanged}
+                            tooltipContent={this.getTooltip()}
+                            tooltipClassName="mx_SetIdServer_tooltip"
+                            disabled={this.state.busy}
+                            forceValidity={this.state.error ? false : null}
+                        />
+                        <AccessibleButton
+                            type="submit"
+                            kind="primary_sm"
+                            onClick={this.checkIdServer}
+                            disabled={!this.idServerChangeEnabled()}
+                        >{ _t("Change") }</AccessibleButton>
+                    </div>
+                }
                 { discoSection }
             </form>
         );
