@@ -127,12 +127,15 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
             "mx_UserSettingsDialog_keyboardIcon",
             <KeyboardUserSettingsTab />,
         ));
-        tabs.push(new Tab(
-            UserTab.Sidebar,
-            _td("Sidebar"),
-            "mx_UserSettingsDialog_sidebarIcon",
-            <SidebarUserSettingsTab />,
-        ));
+        
+        if(SettingsStore.getValue('TagPanel.enableTagPanel')) {
+            tabs.push(new Tab(
+                UserTab.Sidebar,
+                _td("Sidebar"),
+                "mx_UserSettingsDialog_sidebarIcon",
+                <SidebarUserSettingsTab />,
+            ));
+        }
 
         if (SettingsStore.getValue(UIFeature.Voip)) {
             tabs.push(new Tab(
