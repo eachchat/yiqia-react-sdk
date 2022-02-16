@@ -29,6 +29,8 @@ import { GroupMember, IDevice } from "./components/views/right_panel/UserInfo";
 import ManualDeviceKeyVerificationDialog from "./components/views/dialogs/ManualDeviceKeyVerificationDialog";
 import RightPanelStore from "./stores/right-panel/RightPanelStore";
 import { IRightPanelCardState } from "./stores/right-panel/RightPanelStoreIPanelState";
+import SettingsStore from "./settings/SettingsStore";
+import { UIFeature } from "./settings/UIFeature";
 
 async function enable4SIfNeeded() {
     const cli = MatrixClientPeg.get();
@@ -127,7 +129,7 @@ function setRightPanel(state: IRightPanelCardState) {
 export function pendingVerificationRequestForUser(user: User | RoomMember | GroupMember) {
     const cli = MatrixClientPeg.get();
     const dmRoom = findDMForUser(cli, user.userId);
-    if (dmRoom) {
+    if (dmRoom && SettingsStore.getValue(UIFeature.EnableEncrypt)) {
         return cli.findVerificationRequestDMInProgress(dmRoom.roomId);
     }
 }
