@@ -121,12 +121,16 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
             "mx_UserSettingsDialog_preferencesIcon",
             <PreferencesUserSettingsTab closeSettingsFn={this.props.onFinished} />,
         ));
-        tabs.push(new Tab(
-            UserTab.Keyboard,
-            _td("Keyboard"),
-            "mx_UserSettingsDialog_keyboardIcon",
-            <KeyboardUserSettingsTab />,
-        ));
+        // For there is no zh_Hans.json transmit
+        {
+            false &&
+            tabs.push(new Tab(
+                UserTab.Keyboard,
+                _td("Keyboard"),
+                "mx_UserSettingsDialog_keyboardIcon",
+                <KeyboardUserSettingsTab />,
+            ));
+        }
         
         if(SettingsStore.getValue('TagPanel.enableTagPanel')) {
             tabs.push(new Tab(
