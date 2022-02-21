@@ -25,6 +25,7 @@ export enum DefaultTagID {
     DM = "im.vector.fake.direct",
     ServerNotice = "m.server_notice",
     Suggested = "im.vector.fake.suggested",
+    Chats = "im.yiqia.fake.chats",
 }
 
 export const OrderedDefaultTagIDs = [
@@ -36,6 +37,7 @@ export const OrderedDefaultTagIDs = [
     DefaultTagID.ServerNotice,
     DefaultTagID.Suggested,
     DefaultTagID.Archived,
+    DefaultTagID.Chats,
 ];
 
 export type TagID = string | DefaultTagID;

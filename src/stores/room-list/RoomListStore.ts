@@ -45,6 +45,7 @@ import { IRoomTimelineActionPayload } from "../../actions/MatrixActionCreators";
 
 interface IState {
     tagsEnabled?: boolean;
+    showByChats: boolean;
 }
 
 /**
@@ -75,6 +76,7 @@ export class RoomListStoreClass extends AsyncStoreWithClient<IState> {
 
     private readonly watchedSettings = [
         'feature_custom_tags',
+        'mixedChatsWithDmAndRoom',
     ];
 
     constructor() {
@@ -144,8 +146,10 @@ export class RoomListStoreClass extends AsyncStoreWithClient<IState> {
 
     private async readAndCacheSettingsFromStore() {
         const tagsEnabled = SettingsStore.getValue("feature_custom_tags");
+        const showByChats = SettingsStore.getValue("mixedChatsWithDmAndRoom");
         await this.updateState({
             tagsEnabled,
+            showByChats,
         });
         this.updateAlgorithmInstances();
     }
@@ -512,6 +516,8 @@ export class RoomListStoreClass extends AsyncStoreWithClient<IState> {
                 this.setAndPersistListOrder(tag, listOrder);
             }
         }
+
+        this.algorithm.setChatsList(this.state.showByChats);
     }
 
     private onAlgorithmListUpdated = () => {
@@ -676,7 +682,15 @@ export class RoomListStoreClass extends AsyncStoreWithClient<IState> {
      */
     public getTagsForRoom(room: Room): TagID[] {
         const algorithmTags = this.algorithm.getTagsForRoom(room);
-        if (!algorithmTags) return [DefaultTagID.Untagged];
+        if (!algorithmTags) {
+            if (this.state.showByChats) {
+                return [DefaultTagID.Chats];
+            } else {
+                return [DefaultTagID.Untagged];
+
+            }
+        }
+        
         return algorithmTags;
     }
 

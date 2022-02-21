@@ -88,6 +88,19 @@ export default class AppearanceUserSettingsTab extends React.Component<IProps, I
         this.setState({ layout: layout });
     };
 
+    private rendererRoomListSection() {
+        return <>
+            <div className="mx_SettingsTab_heading">{ _t("Room list") }</div>
+            <div className="mx_SettingsTab_section mx_AppearanceUserSettingsTab_fontScaling">
+                <SettingsFlag
+                    name="mixedChatsWithDmAndRoom"
+                    level={SettingLevel.DEVICE}
+                    useCheckbox={true}
+                />
+            </div>
+        </>;
+    }
+
     private renderAdvancedSection() {
         if (!SettingsStore.getValue(UIFeature.AdvancedSettings)) return null;
 
@@ -148,6 +161,7 @@ export default class AppearanceUserSettingsTab extends React.Component<IProps, I
                     { _t("Appearance Settings only affect this %(brand)s session.", { brand }) }
                 </div>
                 <ThemeChoicePanel />
+                { this.rendererRoomListSection() }
                 <LayoutSwitcher
                     userId={this.state.userId}
                     displayName={this.state.displayName}

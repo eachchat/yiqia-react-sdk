@@ -84,6 +84,7 @@ export class Algorithm extends EventEmitter {
      * Set to true to suspend emissions of algorithm updates.
      */
     public updatesInhibited = false;
+    public showByChats: boolean;
 
     public constructor() {
         super();
@@ -165,6 +166,10 @@ export class Algorithm extends EventEmitter {
         this._cachedRooms[tagId] = algorithm.orderedRooms;
         this.recalculateFilteredRoomsForTag(tagId); // update filter to re-sort the list
         this.recalculateStickyRoom(tagId); // update sticky room to make sure it appears if needed
+    }
+
+    public setChatsList(showByChats: boolean) {
+        this.showByChats = showByChats;
     }
 
     public addFilterCondition(filterCondition: IFilterCondition): void {
@@ -540,9 +545,19 @@ export class Algorithm extends EventEmitter {
 
             if (!inTag) {
                 if (DMRoomMap.shared().getUserIdForRoomId(room.roomId)) {
-                    newTags[DefaultTagID.DM].push(room);
+                    // yiqia: Chats list mixed direct message and rooms
+                    if (this.showByChats) {
+                        newTags[DefaultTagID.Chats].push(room);
+                    } else {
+                        newTags[DefaultTagID.DM].push(room);
+                    }
                 } else {
-                    newTags[DefaultTagID.Untagged].push(room);
+                    // yiqia: Chats list mixed direct message and rooms
+                    if (this.showByChats) {
+                        newTags[DefaultTagID.Chats].push(room);
+                    } else {
+                        newTags[DefaultTagID.Untagged].push(room);
+                    }
                 }
             }
         }
@@ -579,7 +594,14 @@ export class Algorithm extends EventEmitter {
             tags.push(...this.getTagsOfJoinedRoom(room));
         }
 
-        if (!tags.length) tags.push(DefaultTagID.Untagged);
+        if (!tags.length) {
+            // yiqia: if showByChats all room should be tag of chats
+            if (this.showByChats) {
+                tags.push(DefaultTagID.Chats);
+            } else {
+                tags.push(DefaultTagID.Untagged);
+            }
+        }
 
         return tags;
     }
@@ -590,7 +612,12 @@ export class Algorithm extends EventEmitter {
         if (tags.length === 0) {
             // Check to see if it's a DM if it isn't anything else
             if (DMRoomMap.shared().getUserIdForRoomId(room.roomId)) {
-                tags = [DefaultTagID.DM];
+                // yiqia: if showByChats all room should be tag of chats
+                if (this.showByChats) {
+                    tags = [DefaultTagID.Chats];
+                } else {
+                    tags = [DefaultTagID.DM];
+                }
             }
         }
 

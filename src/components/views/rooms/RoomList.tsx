@@ -81,6 +81,7 @@ interface IState {
     isNameFiltering: boolean;
     currentRoomId?: string;
     suggestedRooms: ISuggestedRoom[];
+    showByChats: boolean;
 }
 
 export const TAG_ORDER: TagID[] = [
@@ -88,6 +89,7 @@ export const TAG_ORDER: TagID[] = [
     DefaultTagID.Favourite,
     DefaultTagID.DM,
     DefaultTagID.Untagged,
+    DefaultTagID.Chats,
 
     // -- Custom Tags Placeholder --
 
@@ -101,6 +103,10 @@ const ALWAYS_VISIBLE_TAGS: TagID[] = [
     DefaultTagID.DM,
     DefaultTagID.Untagged,
 ];
+const ALWAYS_VISIBLE_Chats_TAGS: TagID[] = [
+    DefaultTagID.Chats,
+];
+
 
 interface ITagAesthetics {
     sectionLabel: string;
@@ -122,6 +128,76 @@ const auxButtonContextMenuPosition = (handle: RefObject<HTMLDivElement>) => {
         left: rect.left - 7,
         top: rect.top + rect.height,
     };
+};
+
+const ChatsAuxButton = ({ tabIndex }: IAuxButtonProps) => {
+    const [menuDisplayed, handle, openMenu, closeMenu] = useContextMenu<HTMLDivElement>();
+    
+    const showCreateRoom = shouldShowComponent(UIComponent.CreateRooms);
+    const ExplorePublicEnabled = SettingsStore.getValue(UIFeature.ExplorePublicEnabled);
+
+    let contextMenuContent: JSX.Element;
+    if (menuDisplayed) {
+        contextMenuContent = <IconizedContextMenuOptionList first>
+            { showCreateRoom && <IconizedContextMenuOption
+                label={_t("Start chat")}
+                iconClassName="mx_RoomList_iconStartChat"
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMenu();
+                    defaultDispatcher.dispatch({ action: "view_create_chat" });
+                }}
+            /> }
+            { showCreateRoom && <IconizedContextMenuOption
+                label={_t("Create new room")}
+                iconClassName="mx_RoomList_iconCreateNewRoom"
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMenu();
+                    defaultDispatcher.dispatch({ action: "view_create_room" });
+                }}
+            /> }
+            {
+                ExplorePublicEnabled &&
+                <IconizedContextMenuOption
+                    label={CommunityPrototypeStore.instance.getSelectedCommunityId()
+                        ? _t("Explore community rooms")
+                        : _t("Explore public rooms")}
+                    iconClassName="mx_RoomList_iconExplore"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeMenu();
+                        defaultDispatcher.fire(Action.ViewRoomDirectory);
+                    }}
+                />
+            }
+        </IconizedContextMenuOptionList>;
+    }
+
+    let contextMenu: JSX.Element;
+    if (menuDisplayed) {
+        contextMenu = <IconizedContextMenu {...auxButtonContextMenuPosition(handle)} onFinished={closeMenu} compact>
+            { contextMenuContent }
+        </IconizedContextMenu>;
+    }
+
+    return <>
+        <ContextMenuTooltipButton
+            tabIndex={tabIndex}
+            onClick={openMenu}
+            className="mx_RoomSublist_auxButton"
+            tooltipClassName="mx_RoomSublist_addRoomTooltip"
+            aria-label={_t("Add room")}
+            title={_t("Add room")}
+            isExpanded={menuDisplayed}
+            inputRef={handle}
+        />
+
+        { contextMenu }
+    </>;
 };
 
 const DmAuxButton = ({ tabIndex, dispatcher = defaultDispatcher }: IAuxButtonProps) => {
@@ -321,6 +397,12 @@ const TAG_AESTHETICS: ITagAestheticsMap = {
         isInvite: false,
         defaultHidden: false,
     },
+    [DefaultTagID.Chats]: {
+        sectionLabel: _td("Chats"),
+        isInvite: false,
+        defaultHidden: false,
+        AuxButtonComponent: ChatsAuxButton,
+    },
     [DefaultTagID.DM]: {
         sectionLabel: _td("People"),
         isInvite: false,
@@ -376,6 +458,7 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
     private customTagStoreRef;
     private roomStoreToken: fbEmitter.EventSubscription;
     private treeRef = createRef<HTMLDivElement>();
+    private readonly chatsWatcherRef: string;
 
     static contextType = MatrixClientContext;
     public context!: React.ContextType<typeof MatrixClientContext>;
@@ -387,7 +470,10 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
             sublists: {},
             isNameFiltering: !!RoomListStore.instance.getFirstNameFilterCondition(),
             suggestedRooms: SpaceStore.instance.suggestedRooms,
+            showByChats: SettingsStore.getValue("mixedChatsWithDmAndRoom"),
         };
+
+        this.chatsWatcherRef = SettingsStore.watchSetting("mixedChatsWithDmAndRoom", null, this.onShowChats)
     }
 
     public componentDidMount(): void {
@@ -405,6 +491,14 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
         defaultDispatcher.unregister(this.dispatcherRef);
         if (this.customTagStoreRef) this.customTagStoreRef.remove();
         if (this.roomStoreToken) this.roomStoreToken.remove();
+
+        SettingsStore.unwatchSetting(this.chatsWatcherRef);
+    }
+
+    private onShowChats = () => {
+        this.setState({
+            showByChats: SettingsStore.getValue("mixedChatsWithDmAndRoom"),
+        })
     }
 
     private onRoomViewStoreUpdate = () => {
@@ -616,7 +710,7 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
                     : TAG_AESTHETICS[orderedTagId];
                 if (!aesthetics) throw new Error(`Tag ${orderedTagId} does not have aesthetics`);
 
-                let alwaysVisible = ALWAYS_VISIBLE_TAGS.includes(orderedTagId);
+                let alwaysVisible = (this.state.showByChats ? ALWAYS_VISIBLE_Chats_TAGS : ALWAYS_VISIBLE_TAGS).includes(orderedTagId);
                 if (
                     (this.props.activeSpace === MetaSpace.Favourites && orderedTagId !== DefaultTagID.Favourite) ||
                     (this.props.activeSpace === MetaSpace.People && orderedTagId !== DefaultTagID.DM) ||
