@@ -73,24 +73,27 @@ export default class LayoutSwitcher extends React.Component<IProps, IState> {
                 </span>
 
                 <div className="mx_LayoutSwitcher_RadioButtons">
-                    <label className={ircClasses}>
-                        <EventTilePreview
-                            className="mx_LayoutSwitcher_RadioButton_preview"
-                            message={this.props.messagePreviewText}
-                            layout={Layout.IRC}
-                            userId={this.props.userId}
-                            displayName={this.props.displayName}
-                            avatarUrl={this.props.avatarUrl}
-                        />
-                        <StyledRadioButton
-                            name="layout"
-                            value={Layout.IRC}
-                            checked={this.state.layout === Layout.IRC}
-                            onChange={this.onLayoutChange}
-                        >
-                            { _t("IRC (Experimental)") }
-                        </StyledRadioButton>
-                    </label>
+                    {
+                        false &&
+                        <label className={ircClasses}>
+                            <EventTilePreview
+                                className="mx_LayoutSwitcher_RadioButton_preview"
+                                message={this.props.messagePreviewText}
+                                layout={Layout.IRC}
+                                userId={this.props.userId}
+                                displayName={this.props.displayName}
+                                avatarUrl={this.props.avatarUrl}
+                            />
+                            <StyledRadioButton
+                                name="layout"
+                                value={Layout.IRC}
+                                checked={this.state.layout === Layout.IRC}
+                                onChange={this.onLayoutChange}
+                            >
+                                { _t("IRC (Experimental)") }
+                            </StyledRadioButton>
+                        </label>
+                    }
                     <label className={groupClasses}>
                         <EventTilePreview
                             className="mx_LayoutSwitcher_RadioButton_preview"
