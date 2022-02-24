@@ -2967,6 +2967,7 @@
     "Identity server URL must be HTTPS": "必须以 HTTPS 协议连接身份服务器",
     "Send pseudonymous analytics data": "发送匿名统计数据",
     "User %(userId)s is already invited to the room": "%(userId)s 已经被邀请过",
+    "Keyboard shortcuts": "键盘快捷键",
     "Only invited people can join.": "只有受邀的人才能加入。",
     "Private (invite only)": "私有（仅邀请）",
     "This upgrade will allow members of selected spaces access to this room without an invite.": "此升级将允许选定的空间成员无需邀请即可访问此聊天室。",
