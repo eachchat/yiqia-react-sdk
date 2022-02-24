@@ -2974,7 +2974,6 @@
     "Code blocks": "代码块",
     "Displaying time": "显示的时间戳",
     "To view all keyboard shortcuts, click here.": "要查看所有键盘快捷键，请单击此处。",
-    "Keyboard shortcuts": "键盘快捷键",
     "If a community isn't shown you may not have permission to convert it.": "如果社群未显示，你可能无权转换它。",
     "Show my Communities": "显示我的社群",
     "Communities have been archived to make way for Spaces but you can convert your communities into Spaces below. Converting will ensure your conversations get the latest features.": "社区已存档以便为空间腾出位置，但你可以在下方将你的社群转换为空间。转换将确保你的对话获得最新功能。",
@@ -3519,5 +3518,7 @@
     "Chats": "聊天",
     "Show direct message and rooms in a combined list": "将联系人和聊天室合并在一个消息列表中展示",
     "Recent contacts": "最近联系人",
-    "No validated 3pid session found": "未发现有效的第三方id会话控制，请确认已点击认证邮件中的地址"
+    "No validated 3pid session found": "未发现有效的第三方id会话控制，请确认已点击认证邮件中的地址",
+    "Start direct message": "发起单聊",
+    "Start a room chat": "发起群聊"
 }

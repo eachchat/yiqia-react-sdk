@@ -140,7 +140,7 @@ const ChatsAuxButton = ({ tabIndex }: IAuxButtonProps) => {
     if (menuDisplayed) {
         contextMenuContent = <IconizedContextMenuOptionList first>
             { showCreateRoom && <IconizedContextMenuOption
-                label={_t("Start chat")}
+                label={_t("Start direct message")}
                 iconClassName="mx_RoomList_iconStartChat"
                 onClick={(e) => {
                     e.preventDefault();
@@ -150,7 +150,7 @@ const ChatsAuxButton = ({ tabIndex }: IAuxButtonProps) => {
                 }}
             /> }
             { showCreateRoom && <IconizedContextMenuOption
-                label={_t("Create new room")}
+                label={_t("Start a room chat")}
                 iconClassName="mx_RoomList_iconCreateNewRoom"
                 onClick={(e) => {
                     e.preventDefault();

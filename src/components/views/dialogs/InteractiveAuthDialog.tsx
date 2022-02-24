@@ -146,10 +146,14 @@ export default class InteractiveAuthDialog extends React.Component<IProps, IStat
         // Let's pick a title, body, and other params text that we'll show to the user. The order
         // is most specific first, so stagePhase > our props > defaults.
 
-        let title = this.state.authError ? 'Error' : (this.props.title || _t('Authentication'));
+        let title = this.state.authError ? _t('Error') : (this.props.title || _t('Authentication'));
         let body = this.state.authError ? null : this.props.body;
         let continueText = null;
         let continueKind = null;
+        let errorMessage = null;
+        if(this.state.authError?.message === "No validated 3pid session found") {
+            errorMessage = _t("No validated 3pid session found");
+        }
         const dialogAesthetics = this.props.aestheticsForStagePhases || this.getDefaultDialogAesthetics();
         if (!this.state.authError && dialogAesthetics) {
             if (dialogAesthetics[this.state.uiaStage]) {
@@ -165,7 +169,7 @@ export default class InteractiveAuthDialog extends React.Component<IProps, IStat
         if (this.state.authError) {
             content = (
                 <div id='mx_Dialog_content'>
-                    <div role="alert">{ this.state.authError.message || this.state.authError.toString() }</div>
+                    <div role="alert">{ errorMessage || this.state.authError.message || this.state.authError.toString() }</div>
                     <br />
                     <AccessibleButton onClick={this.onDismissClick}
                         className="mx_GeneralButton"

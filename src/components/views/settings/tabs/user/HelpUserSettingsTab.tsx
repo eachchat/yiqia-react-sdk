@@ -312,9 +312,6 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
                     <div className='mx_SettingsTab_subsectionText'>
                         { faqText }
                     </div>
-                    <AccessibleButton kind="primary" onClick={this.onKeyboardShortcutsClicked}>
-                        { _t("Keyboard Shortcuts") }
-                    </AccessibleButton>
                 </div>
                 <div className='mx_SettingsTab_section mx_HelpUserSettingsTab_versions'>
                     <span className='mx_SettingsTab_subheading'>{ _t("Versions") }</span>
