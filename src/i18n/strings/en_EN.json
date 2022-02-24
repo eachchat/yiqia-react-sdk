@@ -3426,5 +3426,7 @@
     "Previous autocomplete suggestion": "Previous autocomplete suggestion",
     "Toggle space panel": "Toggle space panel",
     "Chats": "Chats",
-    "Show direct message and rooms in a combined list": "Show direct message and rooms in a combined list"
+    "Show direct message and rooms in a combined list": "Show direct message and rooms in a combined list",
+    "Recent contacts": "Recent contacts",
+    "No validated 3pid session found": "No validated 3pid session found"
 }

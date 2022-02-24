@@ -3516,6 +3516,8 @@
     "Generating a ZIP": "生成 ZIP",
     "Failed to load list of rooms.": "加载聊天室列表失败。",
     "Open in OpenStreetMap": "在 OpenStreetMap 中打开",
-    "Chats": "消息",
-    "Show direct message and rooms in a combined list": "将联系人和聊天室合并在一个消息列表中展示"
+    "Chats": "聊天",
+    "Show direct message and rooms in a combined list": "将联系人和聊天室合并在一个消息列表中展示",
+    "Recent contacts": "最近联系人",
+    "No validated 3pid session found": "未发现有效的第三方id会话控制，请确认已点击认证邮件中的地址"
 }
