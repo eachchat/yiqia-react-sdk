@@ -327,7 +327,8 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
             const name = CommunityPrototypeStore.instance.getSelectedCommunityName();
             title = _t("Create a room in %(communityName)s", { communityName: name });
         } else if (!this.props.parentSpace) {
-            title = this.state.joinRule === JoinRule.Public ? _t('Create a public room') : _t('Create a private room');
+            const privateRoomTitle = SettingsStore.getValue("mixedChatsWithDmAndRoom") ? _t('Start a room chat') : _t("Create a private room");
+            title = this.state.joinRule === JoinRule.Public ? _t('Create a public room') : privateRoomTitle;
         }
 
         return (
