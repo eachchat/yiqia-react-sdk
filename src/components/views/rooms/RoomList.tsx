@@ -190,8 +190,8 @@ const ChatsAuxButton = ({ tabIndex }: IAuxButtonProps) => {
             onClick={openMenu}
             className="mx_RoomSublist_auxButton"
             tooltipClassName="mx_RoomSublist_addRoomTooltip"
-            aria-label={_t("Add room")}
-            title={_t("Add room")}
+            aria-label={_t("Start chat")}
+            title={_t("Start chat")}
             isExpanded={menuDisplayed}
             inputRef={handle}
         />

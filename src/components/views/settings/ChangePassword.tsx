@@ -31,6 +31,8 @@ import { replaceableComponent } from "../../../utils/replaceableComponent";
 import { PASSWORD_MIN_SCORE } from '../auth/RegistrationForm';
 import SetEmailDialog from "../dialogs/SetEmailDialog";
 import QuestionDialog from "../dialogs/QuestionDialog";
+import SettingsStore from '../../../settings/SettingsStore';
+import { UIFeature } from '../../../settings/UIFeature';
 
 const FIELD_OLD_PASSWORD = 'field_old_password';
 const FIELD_NEW_PASSWORD = 'field_new_password';
@@ -87,36 +89,57 @@ export default class ChangePassword extends React.Component<IProps, IState> {
 
     private onChangePassword(oldPassword: string, newPassword: string): void {
         const cli = MatrixClientPeg.get();
+        const encryptEnabled = SettingsStore.getValue(UIFeature.EnableEncrypt);
 
         if (!this.props.confirm) {
             this.changePassword(cli, oldPassword, newPassword);
             return;
         }
 
-        Modal.createTrackedDialog('Change Password', '', QuestionDialog, {
-            title: _t("Warning!"),
-            description:
-                <div>
-                    { _t(
+        let alertBody = (
+            <div>
+                {
+                    _t(
                         'Changing password will currently reset any end-to-end encryption keys on all sessions, ' +
                         'making encrypted chat history unreadable, unless you first export your room keys ' +
                         'and re-import them afterwards. ' +
                         'In future this will be improved.',
-                    ) }
+                    )
+                }
+                { ' ' }
+                <a href="https://github.com/vector-im/element-web/issues/2671" target="_blank" rel="noreferrer noopener">
+                    https://github.com/vector-im/element-web/issues/2671
+                </a>
+            </div>
+        );
+        if(!encryptEnabled) {
+            alertBody = (
+                <div>
+                    {
+                        _t("Changing password will logout all other devices.")
+                    }
                     { ' ' }
-                    <a href="https://github.com/vector-im/element-web/issues/2671" target="_blank" rel="noreferrer noopener">
-                        https://github.com/vector-im/element-web/issues/2671
-                    </a>
-                </div>,
+                </div>
+            )
+        }
+
+        const exportRoomKeysButton = (
+            encryptEnabled && 
+            <button
+                key="exportRoomKeys"
+                className="mx_Dialog_primary"
+                onClick={this.onExportE2eKeysClicked}
+            >
+                { _t('Export E2E room keys') }
+            </button>
+        )
+
+        Modal.createTrackedDialog('Change Password', '', QuestionDialog, {
+            title: _t("Warning!"),
+            description: alertBody,
             button: _t("Continue"),
             extraButtons: [
-                <button
-                    key="exportRoomKeys"
-                    className="mx_Dialog_primary"
-                    onClick={this.onExportE2eKeysClicked}
-                >
-                    { _t('Export E2E room keys') }
-                </button>,
+                exportRoomKeysButton,
             ],
             onFinished: (confirmed) => {
                 if (confirmed) {

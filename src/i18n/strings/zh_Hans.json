@@ -3520,6 +3520,7 @@
     "Show direct message and rooms in a combined list": "将联系人和聊天室合并在一个消息列表中展示",
     "Recent contacts": "最近联系人",
     "No validated 3pid session found": "未发现有效的第三方id会话控制，请确认已点击认证邮件中的地址",
-    "Start direct message": "发起单聊",
-    "Start a room chat": "发起群聊"
+    "Start direct message": "开始私聊",
+    "Start a room chat": "发起群聊",
+    "Changing password will logout all other devices.": "修改密码将会登出您其他设备上的账号。"
 }
