@@ -651,7 +651,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
     private convertFilter(): Member[] {
         // Check to see if there's anything to convert first
-        if (!this.state.filterText || !this.state.filterText.includes('@')) return this.state.targets || [];
+        if (!this.state.filterText) return this.state.targets || [];
 
         let newMembers: Member[];
         if (this.state.filterText.startsWith('@')) {
@@ -1416,6 +1416,21 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         this.closeCopiedTooltip = target.onmouseleave = close;
     };
 
+    private checkHasSelection = () => {
+        if(this.state.targets.length > 0) return true;
+        if(this.state.filterText) {
+            const checkMember = this.state.threepidResultsMixin.filter(item => {
+                if(item.threePid && item.threePid === this.state.filterText) return item;
+            });
+            if(checkMember.length === 0) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+    }
+
     render() {
         let spinner = null;
         if (this.state.busy) {
@@ -1433,8 +1448,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
         const identityServersEnabled = SettingsStore.getValue(UIFeature.IdentityServer);
 
-        const hasSelection = this.state.targets.length > 0
-            || (this.state.filterText && this.state.filterText.includes('@'));
+        const hasSelection = this.checkHasSelection();
 
         const cli = MatrixClientPeg.get();
         const userId = cli.getUserId();
