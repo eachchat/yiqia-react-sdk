@@ -59,6 +59,7 @@ import PollCreateDialog from "../elements/PollCreateDialog";
 import { SettingUpdatedPayload } from "../../../dispatcher/payloads/SettingUpdatedPayload";
 import { CollapsibleButton, ICollapsibleButtonProps } from './CollapsibleButton';
 import LocationButton from '../location/LocationButton';
+import SdkConfig from '../../../SdkConfig';
 
 let instanceCount = 0;
 const NARROW_MODE_BREAKPOINT = 500;
@@ -517,13 +518,15 @@ export default class MessageComposer extends React.Component<IProps, IState> {
         let uploadButtonIndex = 0;
         const buttons: JSX.Element[] = [];
         if (!this.state.haveRecording) {
-            buttons.push(
-                <PollButton
-                    key="polls"
-                    room={this.props.room}
-                    narrowMode={this.state.narrowMode}
-                />,
-            );
+            if(SdkConfig.get()["showPoll"]) {
+                buttons.push(
+                    <PollButton
+                        key="polls"
+                        room={this.props.room}
+                        narrowMode={this.state.narrowMode}
+                    />,
+                );
+            }
             uploadButtonIndex = buttons.length;
             buttons.push(
                 <UploadButton key="controls_upload" roomId={this.props.room.roomId} relation={this.props.relation} />,
