@@ -366,7 +366,7 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
         }
 
         let passwordChangeText = _t("Set a new account password...");
-        if(this.state.domainGMS.authType === "three" && this.state.domainGMS.threeAuthType === "ldap") {
+        if(this.state.domainGMS.authType === "three" && this.state.domainGMS.threeAuthType === "ldap" && this.state.domainGMS.passwordChangeInfo) {
             const ldapChangePasswordNotice = this.state.domainGMS.passwordChangeInfo;
             const sliceIndex = ldapChangePasswordNotice.indexOf("http");
             const ldapChangePasswordNoticeLabel = ldapChangePasswordNotice.slice(0, sliceIndex);
