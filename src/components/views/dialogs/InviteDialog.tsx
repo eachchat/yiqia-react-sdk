@@ -1417,7 +1417,15 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
     };
 
     private checkHasSelection = () => {
-        if(this.state.targets.length > 0) return true;
+        if(this.state.targets.length > 0) {
+            let hasSelection = true;
+            this.state.targets.forEach((target) => {
+                if(target instanceof ThreepidMember) {
+                    hasSelection = false;
+                }
+            })
+            return hasSelection;
+        }
         if(this.state.filterText) {
             const checkMember = this.state.threepidResultsMixin.filter(item => {
                 if(item.threePid && item.threePid === this.state.filterText) return item;
