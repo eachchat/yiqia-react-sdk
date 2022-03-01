@@ -517,7 +517,7 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
         }
 
         let discoverySection;
-        if (SettingsStore.getValue(UIFeature.IdentityServer)) {
+        if (SettingsStore.getValue(UIFeature.IdentityServer) && !SdkConfig.get()["shareThreepidWhenBind"]) {
             discoverySection = <>
                 <div className="mx_SettingsTab_heading">{ discoWarning } { _t("Discovery") }</div>
                 { this.renderDiscoverySection() }

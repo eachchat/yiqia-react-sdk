@@ -29,6 +29,7 @@ import Modal from '../../../../Modal';
 import { replaceableComponent } from "../../../../utils/replaceableComponent";
 import ErrorDialog from "../../dialogs/ErrorDialog";
 import { PhoneNumberCountryDefinition } from "../../../../phonenumber";
+import SdkConfig from '../../../../SdkConfig';
 
 /*
 TODO: Improve the UX for everything in here.
@@ -204,22 +205,53 @@ export default class PhoneNumbers extends React.Component<IProps, IState> {
         this.state.addTask.haveMsisdnToken(token).then(([finished]) => {
             let newPhoneNumber = this.state.newPhoneNumber;
             if (finished) {
-                const msisdns = [
-                    ...this.props.msisdns,
-                    { address, medium: ThreepidMedium.Phone },
-                ];
-                this.props.onMsisdnsChange(msisdns);
-                newPhoneNumber = "";
+                if(SdkConfig.get()["shareThreepidWhenBind"]) {
+                    this.state.addTask.haveMsisdnToken(token, true).then(() => {
+                        const msisdns = [
+                            ...this.props.msisdns,
+                            { address, medium: ThreepidMedium.Phone },
+                        ];
+                        this.props.onMsisdnsChange(msisdns);
+                        newPhoneNumber = "";
+                        this.setState({
+                            addTask: null,
+                            continueDisabled: false,
+                            verifying: false,
+                            verifyMsisdn: "",
+                            verifyError: null,
+                            newPhoneNumber,
+                            newPhoneNumberCode: "",
+                        });
+                    }).catch((err) => {
+                        this.setState({ continueDisabled: false });
+                        if (err.errcode !== 'M_THREEPID_AUTH_FAILED') {
+                            logger.error("Unable to verify phone number: " + err);
+                            Modal.createTrackedDialog(_t("Unable to verify phone number."), '', ErrorDialog, {
+                                title: _t("Unable to verify phone number."),
+                                description: ((err && err.message) ? _t("Unable to verify phone number.") : _t("Operation failed")),
+                            });
+                        } else {
+                            this.setState({ verifyError: _t("Incorrect verification code") });
+                        }
+                    });
+                } else {
+                    const msisdns = [
+                        ...this.props.msisdns,
+                        { address, medium: ThreepidMedium.Phone },
+                    ];
+                    this.props.onMsisdnsChange(msisdns);
+                    newPhoneNumber = "";
+                    this.setState({
+                        addTask: null,
+                        continueDisabled: false,
+                        verifying: false,
+                        verifyMsisdn: "",
+                        verifyError: null,
+                        newPhoneNumber,
+                        newPhoneNumberCode: "",
+                    });
+                }
             }
-            this.setState({
-                addTask: null,
-                continueDisabled: false,
-                verifying: false,
-                verifyMsisdn: "",
-                verifyError: null,
-                newPhoneNumber,
-                newPhoneNumberCode: "",
-            });
         }).catch((err) => {
             this.setState({ continueDisabled: false });
             if (err.errcode !== 'M_THREEPID_AUTH_FAILED') {

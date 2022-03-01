@@ -28,6 +28,7 @@ import AddThreepid from "../../../../AddThreepid";
 import Modal from '../../../../Modal';
 import { replaceableComponent } from "../../../../utils/replaceableComponent";
 import ErrorDialog from "../../dialogs/ErrorDialog";
+import SdkConfig from '../../../../SdkConfig';
 
 /*
 TODO: Improve the UX for everything in here.
@@ -202,18 +203,46 @@ export default class EmailAddresses extends React.Component<IProps, IState> {
             if (finished) {
                 const email = this.state.newEmailAddress;
                 const emails = [
-                    ...this.props.emails,
                     { address: email, medium: ThreepidMedium.Email },
+                    ...this.props.emails
                 ];
-                this.props.onEmailsChange(emails);
-                newEmailAddress = "";
+                if(SdkConfig.get()["shareThreepidWhenBind"]) {
+                    this.state.addTask.checkEmailLinkClicked(true).then(() => {
+                        this.props.onEmailsChange(emails);
+                        newEmailAddress = "";
+                        this.setState({
+                            addTask: null,
+                            continueDisabled: false,
+                            verifying: false,
+                            newEmailAddress,
+                        });
+                    }).catch((error) => {
+                        this.setState({ continueDisabled: false });
+                        if (error.errcode === 'M_THREEPID_AUTH_FAILED') {
+                            Modal.createTrackedDialog("Email hasn't been verified yet", "", ErrorDialog, {
+                                title: _t("Your email address hasn't been verified yet"),
+                                description: _t("Click the link in the email you received to verify " +
+                                    "and then click continue again."),
+                            });
+                        } else {
+                            logger.error("Unable to verify email address: ", error);
+                            Modal.createTrackedDialog('Unable to verify email address', '', ErrorDialog, {
+                                title: _t("Unable to verify email address."),
+                                description: ((error && error.message) ? error.message : _t("Operation failed")),
+                            });
+                        }
+                    })
+                } else {
+                    this.props.onEmailsChange(emails);
+                    newEmailAddress = "";
+                    this.setState({
+                        addTask: null,
+                        continueDisabled: false,
+                        verifying: false,
+                        newEmailAddress,
+                    });
+                }
             }
-            this.setState({
-                addTask: null,
-                continueDisabled: false,
-                verifying: false,
-                newEmailAddress,
-            });
         }).catch((err) => {
             this.setState({ continueDisabled: false });
             if (err.errcode === 'M_THREEPID_AUTH_FAILED') {

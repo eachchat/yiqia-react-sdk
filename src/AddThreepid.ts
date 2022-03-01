@@ -166,10 +166,10 @@ export default class AddThreepid {
      * with a "message" property which contains a human-readable message detailing why
      * the request failed.
      */
-    public async checkEmailLinkClicked(): Promise<any[]> {
+    public async checkEmailLinkClicked(addAndBind: boolean = false): Promise<any[]> {
         try {
             if (await MatrixClientPeg.get().doesServerSupportSeparateAddAndBind()) {
-                if (this.bind) {
+                if (this.bind || addAndBind) {
                     const authClient = new IdentityAuthClient();
                     const identityAccessToken = await authClient.getAccessToken();
                     await MatrixClientPeg.get().bindThreePid({
@@ -256,7 +256,7 @@ export default class AddThreepid {
      * with a "message" property which contains a human-readable message detailing why
      * the request failed.
      */
-    public async haveMsisdnToken(msisdnToken: string): Promise<any[]> {
+    public async haveMsisdnToken(msisdnToken: string, addAndBind: boolean = false): Promise<any[]> {
         const authClient = new IdentityAuthClient();
         const supportsSeparateAddAndBind =
             await MatrixClientPeg.get().doesServerSupportSeparateAddAndBind();
@@ -269,7 +269,7 @@ export default class AddThreepid {
                 this.clientSecret,
                 msisdnToken,
             );
-        } else if (this.bind || !supportsSeparateAddAndBind) {
+        } else if (this.bind || !supportsSeparateAddAndBind || addAndBind) {
             result = await MatrixClientPeg.get().submitMsisdnToken(
                 this.sessionId,
                 this.clientSecret,
@@ -284,7 +284,7 @@ export default class AddThreepid {
         }
 
         if (supportsSeparateAddAndBind) {
-            if (this.bind) {
+            if (this.bind || addAndBind) {
                 await MatrixClientPeg.get().bindThreePid({
                     sid: this.sessionId,
                     client_secret: this.clientSecret,
