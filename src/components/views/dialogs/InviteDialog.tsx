@@ -653,7 +653,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         // Check to see if there's anything to convert first
         if (!this.state.filterText) return this.state.targets || [];
 
-        let newMembers: Member[];
+        let newMembers: Member[] = [];
         if (this.state.filterText.startsWith('@')) {
             // Assume mxid
             newMembers = [new DirectoryMember({ user_id: this.state.filterText, display_name: null, avatar_url: null })];
@@ -662,10 +662,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             const checkMember = this.state.threepidResultsMixin.filter(item => {
                 if(item.threePid && item.threePid === this.state.filterText) return item;
             });
-            if(checkMember.length === 0) {
-                newMembers = [new ThreepidMember(this.state.filterText)];
-            }
-            else {
+            if(checkMember.length !== 0) {
                 newMembers = checkMember.map(item => item.user);
             }
         }
@@ -902,11 +899,11 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
                     // Add a result anyways, just without a profile. We stick it at the
                     // top so it is most obviously presented to the user.
-                    r.results.splice(0, 0, {
-                        user_id: term,
-                        display_name: term,
-                        avatar_url: null,
-                    });
+                    // r.results.splice(0, 0, {
+                    //     user_id: term,
+                    //     display_name: term,
+                    //     avatar_url: null,
+                    // });
                 }
             }
 
@@ -930,18 +927,6 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             return;
         }
         if (SettingsStore.getValue(UIFeature.IdentityServer)) {
-            // Start off by suggesting the plain email while we try and resolve it
-            // to a real account.
-            if(term.indexOf('@') > 0 && Email.looksValid(term)) {
-                if(this.state.threepidResultsMixin.map(item => {
-                    return item.userId
-                }).indexOf(term) < 0) {
-                    this.setState({
-                        // per above: the userId is a lie here - it's just a regular identifier
-                        threepidResultsMixin: [{ user: new ThreepidMember(term), userId: term }],
-                    });
-                }
-            }
             try {
                 const authClient = new IdentityAuthClient();
                 const token = await authClient.getAccessToken();
@@ -990,32 +975,42 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                 const uidWithThreePid = this.state.threepidResultsMixin.map(item => {
                     return item.userId
                 })
-                if(uidWithThreePid.indexOf(lookup.mxid) < 0) {
-                    const newThreepidResult = [...this.state.threepidResultsMixin.filter(item => {
-                        return item.userId !== term;
-                    }), {
+                
+                const newThreepidResult = [
+                    {
                         user: new DirectoryMember({
-                            user_id: lookup.mxid,
-                            display_name: profile.displayname,
-                            avatar_url: profile.avatar_url,
-                        }),
+                                user_id: lookup.mxid,
+                                display_name: profile.displayname,
+                                avatar_url: profile.avatar_url,
+                            }),
                         userId: lookup.mxid,
                         threePid: term,
-                    }]
-                    const needBeReplacedUid = [...uidWithThreePid, lookup.mxid];
-                    // If the threepidResultsMixin is not empyt, we should check the show result belong the threepidResultMixin but not the hs result
-                    const newSuggestions = this.state.suggestions.filter(member => {
-                        if(needBeReplacedUid.indexOf(member.userId) < 0) return member;
+                    },
+                    ...this.state.threepidResultsMixin.filter(item => {
+                        return ( item.userId !== term && item.userId !== lookup.mxid );
                     })
-                    const newRecents = this.state.recents.filter(member => {
-                        if(needBeReplacedUid.indexOf(member.userId) < 0) return member;
-                    })
+                ]
+                
+                const needBeReplacedUid = [...uidWithThreePid, lookup.mxid];
+                // If the threepidResultsMixin is not empyt, we should check the show result belong the threepidResultMixin but not the hs result
+                const newSuggestions = this.state.suggestions.filter(member => {
+                    if(needBeReplacedUid.indexOf(member.userId) < 0) return member;
+                })
+                const newRecents = this.state.recents.filter(member => {
+                    if(needBeReplacedUid.indexOf(member.userId) < 0) return member;
+                })
+                if(newThreepidResult) {
                     this.setState({
                         recents: newRecents,
                         suggestions: newSuggestions,
                         threepidResultsMixin: newThreepidResult,
                     });
-
+                }
+                else {
+                    this.setState({
+                        recents: newRecents,
+                        suggestions: newSuggestions,
+                    });
                 }
             } catch (e) {
                 logger.error("Error searching identity server:");
