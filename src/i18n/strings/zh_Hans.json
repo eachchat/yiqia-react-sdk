@@ -3524,5 +3524,9 @@
     "Start a room chat": "发起群聊",
     "Changing password will logout all other devices.": "修改密码将会登出您其他设备上的账号。",
     "Show join/leave messages (invites/removes/bans unaffected)": "显示加入／离开消息（邀请／移除／封禁不受影响）",
-    "Invalid password": "密码错误"
+    "Invalid password": "密码错误",
+    "No one was found throuth the email %(email)s": "未找到与邮箱 %(email)s 相关的用户",
+    "No one was found throuth the phone number %(phoneNumber)s": "未找到与号码 %(phoneNumber)s 相关的用户",
+    "No one was found throuth the search text %(textKey)s": "未找到与您输入的信息 %(textKey)s 相关的用户",
+    "No one was found with the matrixId %(matrixId)s": "未找到您输入的MatrixId %(matrixId)s 所对应的用户"
 }

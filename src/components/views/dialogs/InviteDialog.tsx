@@ -652,22 +652,42 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
     private convertFilter(): Member[] {
         // Check to see if there's anything to convert first
         if (!this.state.filterText) return this.state.targets || [];
-
+        
+        let error = null;
         let newMembers: Member[] = [];
-        if (this.state.filterText.startsWith('@')) {
+        if (this.state.filterText.startsWith('@') && this.state.filterText.indexOf(':') > 1) {
             // Assume mxid
-            newMembers = [new DirectoryMember({ user_id: this.state.filterText, display_name: null, avatar_url: null })];
+            const checkMember = this.state.serverResultsMixin.filter(item => {
+                if(item.userId && item.userId === this.state.filterText.trim()) return item;
+            });
+            if(checkMember.length !== 0) {
+                newMembers = [new DirectoryMember({ user_id: this.state.filterText, display_name: null, avatar_url: null })];
+            } else {
+                error = _t("No one was found with the matrixId %(matrixId)s", { matrixId: this.state.filterText });
+            }
         } else if (SettingsStore.getValue(UIFeature.IdentityServer)) {
             // Assume email
             const checkMember = this.state.threepidResultsMixin.filter(item => {
-                if(item.threePid && item.threePid === this.state.filterText) return item;
+                if(item.threePid && item.threePid === this.state.filterText.trim()) return item;
             });
             if(checkMember.length !== 0) {
                 newMembers = checkMember.map(item => item.user);
+            } else {
+                if(this.state.filterText.includes("@")) {
+                    error = _t("No one was found throuth the email %(email)s", { email: this.state.filterText });
+                } else if(PhoneNumber.looksValid(this.state.filterText)) {
+                    error = _t("No one was found throuth the phone number %(phoneNumber)s", { phoneNumber: this.state.filterText });
+                } else {
+                    error = _t("No one was found throuth the search text %(textKey)s", { textKey: this.state.filterText });
+                }
             }
         }
         const newTargets = [...(this.state.targets || []), ...newMembers];
-        this.setState({ targets: newTargets, filterText: '' });
+        if(error) {
+            this.setState({ targets: newTargets, errorText: error });
+        } else {
+            this.setState({ targets: newTargets, filterText: '', errorText: "" });
+        }
         return newTargets;
     }
 
@@ -832,6 +852,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
     private onKeyDown = (e) => {
         if (this.state.busy) return;
+        this.setState( { errorText: "" } );
         const value = e.target.value.trim();
         const hasModifiers = e.ctrlKey || e.shiftKey || e.metaKey;
         if (!value && this.state.targets.length > 0 && e.key === Key.BACKSPACE && !hasModifiers) {
@@ -842,7 +863,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             // when the user hits enter with something in their field try to convert it
             e.preventDefault();
             this.convertFilter();
-        } else if (value && e.key === Key.SPACE && !hasModifiers && value.includes("@") && !value.includes(" ")) {
+        } else if (value && e.key === Key.SPACE && !hasModifiers && !value.includes(" ")) {
             // when the user hits space and their input looks like an e-mail/MXID then try to convert it
             e.preventDefault();
             this.convertFilter();

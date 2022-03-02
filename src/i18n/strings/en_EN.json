@@ -3432,5 +3432,9 @@
     "Start direct message": "Start DM",
     "Start a room chat": "Start a room chat",
     "Changing password will logout all other devices.": "Changing password will logout all other devices.",
-    "Invalid password": "Invalid password"
+    "Invalid password": "Invalid password",
+    "No one was found throuth the email %(email)s": "No one was found throuth the email %(email)s",
+    "No one was found throuth the phone number %(phoneNumber)s": "No one was found throuth the phone number %(phoneNumber)s",
+    "No one was found throuth the search text %(textKey)s": "No one was found throuth the search text %(textKey)s",
+    "No one was found with the matrixId %(matrixId)s": "No one was found with the matrixId %(matrixId)s"
 }
