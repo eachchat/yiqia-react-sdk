@@ -3431,5 +3431,6 @@
     "No validated 3pid session found": "No validated 3pid session found",
     "Start direct message": "Start DM",
     "Start a room chat": "Start a room chat",
-    "Changing password will logout all other devices.": "Changing password will logout all other devices."
+    "Changing password will logout all other devices.": "Changing password will logout all other devices.",
+    "Invalid password": "Invalid password"
 }

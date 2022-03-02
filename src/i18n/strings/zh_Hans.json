@@ -3523,5 +3523,6 @@
     "Start direct message": "开始私聊",
     "Start a room chat": "发起群聊",
     "Changing password will logout all other devices.": "修改密码将会登出您其他设备上的账号。",
-    "Show join/leave messages (invites/removes/bans unaffected)": "显示加入／离开消息（邀请／移除／封禁不受影响）"
+    "Show join/leave messages (invites/removes/bans unaffected)": "显示加入／离开消息（邀请／移除／封禁不受影响）",
+    "Invalid password": "密码错误"
 }
