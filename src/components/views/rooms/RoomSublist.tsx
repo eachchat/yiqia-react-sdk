@@ -84,6 +84,7 @@ interface IProps {
     resizeNotifier: ResizeNotifier;
     extraTiles?: ReactComponentElement<typeof ExtraTile>[];
     onListCollapse?: (isExpanded: boolean) => void;
+    looksEmpty?: boolean;
 }
 
 // TODO: Use re-resizer's NumberSize when it is exposed as the type
@@ -101,6 +102,7 @@ interface IState {
     height: number;
     rooms: Room[];
     filteredExtraTiles?: ReactComponentElement<typeof ExtraTile>[];
+    initCollapse?: boolean;
 }
 
 @replaceableComponent("views.rooms.RoomSublist")
@@ -127,6 +129,7 @@ export default class RoomSublist extends React.Component<IProps, IState> {
             isExpanded: this.isBeingFiltered ? this.isBeingFiltered : !this.layout.isCollapsed,
             height: 0, // to be fixed in a moment, we need `rooms` to calculate this.
             rooms: arrayFastClone(RoomListStore.instance.orderedLists[this.props.tagId] || []),
+            initCollapse: false,
         };
         // Why Object.assign() and not this.state.height? Because TypeScript says no.
         this.state = Object.assign(this.state, { height: this.calculateInitialHeight() });
@@ -186,6 +189,11 @@ export default class RoomSublist extends React.Component<IProps, IState> {
         // the amount of available rooms to cap the amount of requested visible rooms by the layout
         if (RoomSublist.calcNumTiles(prevState.rooms, prevExtraTiles) !== this.numTiles) {
             this.setState({ height: this.calculateInitialHeight() });
+        }
+        
+        if (!this.state.initCollapse && this.state.isExpanded && this.props.looksEmpty) {
+            this.setState({ initCollapse: true });
+            this.onShowAllClick();
         }
     }
 

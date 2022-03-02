@@ -688,6 +688,14 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
         const showSkeleton = !this.state.isNameFiltering && !this.state.suggestedRooms?.length &&
             Object.values(RoomListStore.instance.unfilteredLists).every(list => !list?.length);
 
+        const roomListRect = this.treeRef.current?.getBoundingClientRect();
+        const leftPanelRef = this.treeRef.current?.parentElement;
+        const leftPanelRect = leftPanelRef?.getBoundingClientRect();
+        let listShorterThanLeftpanel = false;
+        if(leftPanelRect?.height && roomListRect?.height && (leftPanelRect?.height - roomListRect?.height > 100)) {
+            listShorterThanLeftpanel = true;
+        }
+
         return TAG_ORDER.reduce((tags, tagId) => {
             if (tagId === CUSTOM_TAGS_BEFORE_TAG) {
                 const customTags = Object.keys(this.state.sublists)
@@ -732,6 +740,14 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
                     forceExpanded = true;
                 }
 
+                let looksEmpty = false;
+                if (
+                    (this.state.showByChats && orderedTagId === DefaultTagID.Chats && listShorterThanLeftpanel) ||
+                    (!this.state.showByChats && (orderedTagId === DefaultTagID.DM || orderedTagId === DefaultTagID.Untagged) && listShorterThanLeftpanel)
+                ) {
+                    looksEmpty = true;
+                }
+
                 // The cost of mounting/unmounting this component offsets the cost
                 // of keeping it in the DOM and hiding it when it is not required
                 return <RoomSublist
@@ -748,6 +764,7 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
                     alwaysVisible={alwaysVisible}
                     onListCollapse={this.props.onListCollapse}
                     forceExpanded={forceExpanded}
+                    looksEmpty={looksEmpty}
                 />;
             });
     }
