@@ -874,20 +874,6 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         this.props.onFinished([]);
     };
 
-    // If there have set an default country and set force only default country, we can try to add the country code.
-    private packagePhoneNumberWithDefaultCountry = (phoneNumber) => {
-        let finalPhoneNumber = phoneNumber;
-        const defaultCountryCode = SdkConfig.get()['defaultCountryCode'];
-        const forceOnlyDefaultCountry = SdkConfig.get()["forceOnlyDefaultCountry"];
-        if(defaultCountryCode && forceOnlyDefaultCountry) {
-            const country = PhoneNumber.COUNTRIES.find(c => c.iso2 === defaultCountryCode.toUpperCase());
-            if(country && finalPhoneNumber.indexOf(country.prefix) !== 0) {
-                finalPhoneNumber = country.prefix + finalPhoneNumber;
-            }
-        }
-        return finalPhoneNumber;
-    };
-
     private updateSuggestions = async (term) => {
         MatrixClientPeg.get().searchUserDirectory({ term }).then(async r => {
             if (term !== this.state.filterText) {
@@ -962,7 +948,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                     );
                 }
                 else if(PhoneNumber.looksValid(term.trim())) {
-                    const phoneNumber = this.packagePhoneNumberWithDefaultCountry(term);
+                    const phoneNumber = PhoneNumber.packagePhoneNumberWithDefaultCountry(term);
                     lookup = await MatrixClientPeg.get().lookupThreePid(
                         'msisdn',
                         phoneNumber.trim(),

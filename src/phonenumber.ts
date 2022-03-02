@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import { _td } from './languageHandler';
+import SdkConfig from './SdkConfig';
 
 const PHONE_NUMBER_REGEXP = /^[0-9 -.]+$/;
 
@@ -1295,3 +1296,29 @@ export const COUNTRIES: PhoneNumberCountryDefinition[] = [
         "prefix": "263",
     },
 ];
+
+export const packagePhoneNumberWithDefaultCountry = (phoneNumber) => {
+    let finalPhoneNumber = phoneNumber;
+    const defaultCountryCode = SdkConfig.get()['defaultCountryCode'];
+    const forceOnlyDefaultCountry = SdkConfig.get()["forceOnlyDefaultCountry"];
+    if(defaultCountryCode && forceOnlyDefaultCountry) {
+        const country = COUNTRIES.find(c => c.iso2 === defaultCountryCode.toUpperCase());
+        if(country && finalPhoneNumber.indexOf(country.prefix) !== 0) {
+            finalPhoneNumber = country.prefix + finalPhoneNumber;
+        }
+    }
+    return finalPhoneNumber;
+}
+
+export const unpackagePhoneNumberWithDefaultCountry = (phoneNumber) => {
+    let finalPhoneNumber = phoneNumber;
+    const defaultCountryCode = SdkConfig.get()['defaultCountryCode'];
+    const forceOnlyDefaultCountry = SdkConfig.get()["forceOnlyDefaultCountry"];
+    if(defaultCountryCode && forceOnlyDefaultCountry) {
+        const country = COUNTRIES.find(c => c.iso2 === defaultCountryCode.toUpperCase());
+        if(country && finalPhoneNumber.indexOf(country.prefix) === 0) {
+            finalPhoneNumber = finalPhoneNumber.substring(country.prefix.length);
+        }
+    }
+    return finalPhoneNumber;
+}

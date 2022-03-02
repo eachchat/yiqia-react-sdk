@@ -30,6 +30,7 @@ import { replaceableComponent } from "../../../../utils/replaceableComponent";
 import ErrorDialog from "../../dialogs/ErrorDialog";
 import { PhoneNumberCountryDefinition } from "../../../../phonenumber";
 import SdkConfig from '../../../../SdkConfig';
+import * as PhoneNumber from '../../../../phonenumber';
 
 /*
 TODO: Improve the UX for everything in here.
@@ -86,11 +87,15 @@ export class ExistingPhoneNumber extends React.Component<IExistingPhoneNumberPro
     };
 
     public render(): JSX.Element {
+        const defaultCountryCode = SdkConfig.get()['defaultCountryCode'];
+        const forceOnlyDefaultCountry = SdkConfig.get()["forceOnlyDefaultCountry"];
+        const phoneAddress = (defaultCountryCode && forceOnlyDefaultCountry) ? PhoneNumber.unpackagePhoneNumberWithDefaultCountry(this.props.msisdn.address) : this.props.msisdn.address;
+
         if (this.state.verifyRemove) {
             return (
                 <div className="mx_ExistingPhoneNumber">
                     <span className="mx_ExistingPhoneNumber_promptText">
-                        { _t("Remove %(phone)s?", { phone: this.props.msisdn.address }) }
+                        { _t("Remove %(phone)s?", { phone: phoneAddress }) }
                     </span>
                     <AccessibleButton
                         onClick={this.onActuallyRemove}
@@ -110,9 +115,14 @@ export class ExistingPhoneNumber extends React.Component<IExistingPhoneNumberPro
             );
         }
 
+        let phoneAddressContent = "+" + this.props.msisdn.address;
+        if(defaultCountryCode && forceOnlyDefaultCountry) {
+            phoneAddressContent = phoneAddress;
+        }
+
         return (
             <div className="mx_ExistingPhoneNumber">
-                <span className="mx_ExistingPhoneNumber_address">+{ this.props.msisdn.address }</span>
+                <span className="mx_ExistingPhoneNumber_address">{ phoneAddressContent }</span>
                 <AccessibleButton onClick={this.onRemove} kind="danger_sm">
                     { _t("Remove") }
                 </AccessibleButton>
