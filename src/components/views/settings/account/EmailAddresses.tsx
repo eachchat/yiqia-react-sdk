@@ -45,10 +45,15 @@ that is available.
 interface IExistingEmailAddressProps {
     email: IThreepid;
     onRemoved: (emails: IThreepid) => void;
+    shareThreepidWhenBind?: boolean;
 }
 
 interface IExistingEmailAddressState {
     verifyRemove: boolean;
+    verifyingShare: boolean,
+    addTask: any,
+    continueDisabled: boolean,
+    email: IThreepid,
 }
 
 export class ExistingEmailAddress extends React.Component<IExistingEmailAddressProps, IExistingEmailAddressState> {
@@ -57,6 +62,10 @@ export class ExistingEmailAddress extends React.Component<IExistingEmailAddressP
 
         this.state = {
             verifyRemove: false,
+            verifyingShare: false,
+            addTask: null,
+            continueDisabled: false,
+            email: this.props.email,
         };
     }
 
@@ -74,12 +83,110 @@ export class ExistingEmailAddress extends React.Component<IExistingEmailAddressP
         this.setState({ verifyRemove: false });
     };
 
+    private changeBindingTangledAddBind = async(): Promise<void> => {
+        const { medium, address } = this.state.email;
+
+        const task = new AddThreepid();
+        this.setState({
+            verifyingShare: true,
+            continueDisabled: true,
+            addTask: task,
+        });
+
+        try {
+            await MatrixClientPeg.get().deleteThreePid(medium, address);
+            
+            await task.bindEmailAddress(address);
+
+            this.setState({
+                continueDisabled: false
+            });
+        } catch (err) {
+            logger.error(`Unable to share email address ${address} ${err}`);
+            this.setState({
+                verifyingShare: false,
+                continueDisabled: false,
+                addTask: null,
+            });
+            Modal.createTrackedDialog(`Unable to share email address`, '', ErrorDialog, {
+                title: _t("Unable to share email address"),
+                description: ((err && err.message) ? err.message : _t("Operation failed")),
+            });
+        }
+    }
+
+    private onShareClicked = async(e: React.MouseEvent): Promise<void> => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const { address } = this.state.email;
+
+        if (!(await MatrixClientPeg.get().doesServerSupportSeparateAddAndBind())) {
+            return this.changeBindingTangledAddBind();
+        }
+
+        try {
+            const task = new AddThreepid();
+            this.setState({
+                verifyingShare: true,
+                continueDisabled: true,
+                addTask: task,
+            });
+            await task.bindEmailAddress(address);
+            this.setState({
+                continueDisabled: false,
+            });
+        } catch (err) {
+            logger.error(`Unable to share email address ${address} ${err}`);
+            this.setState({
+                verifyingShare: false,
+                continueDisabled: false,
+                addTask: null,
+            });
+            Modal.createTrackedDialog(`Unable to share email address`, '', ErrorDialog, {
+                title: _t("Unable to share email address"),
+                description: ((err && err.message) ? err.message : _t("Operation failed")),
+            });
+        }
+    }
+
+    private onContinueClick = (e: React.MouseEvent): void => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        this.setState({ continueDisabled: true });
+        this.state.addTask.checkEmailLinkClicked(true).then(() => {
+            const updateEmail = Object.assign({}, this.state.email, { bound: true, });
+            this.setState({
+                addTask: null,
+                continueDisabled: false,
+                verifyingShare: false,
+                email: updateEmail,
+            });
+        }).catch((error) => {
+            this.setState({ continueDisabled: false });
+            if (error.errcode === 'M_THREEPID_AUTH_FAILED' || error.errcode === 'M_SESSION_NOT_VALIDATED') {
+                Modal.createTrackedDialog("Email hasn't been verified yet", "", ErrorDialog, {
+                    title: _t("Your email address hasn't been verified yet"),
+                    description: _t("Click the link in the email you received to verify " +
+                        "and then click continue again."),
+                });
+            } else {
+                logger.error("Unable to verify email address: ", error);
+                Modal.createTrackedDialog('Unable to verify email address', '', ErrorDialog, {
+                    title: _t("Unable to verify email address."),
+                    description: ((error && error.message) ? error.message : _t("Operation failed")),
+                });
+            }
+        })
+    }
+
     private onActuallyRemove = (e: React.MouseEvent): void => {
         e.stopPropagation();
         e.preventDefault();
 
-        MatrixClientPeg.get().deleteThreePid(this.props.email.medium, this.props.email.address).then(() => {
-            return this.props.onRemoved(this.props.email);
+        MatrixClientPeg.get().deleteThreePid(this.state.email.medium, this.state.email.address).then(() => {
+            return this.props.onRemoved(this.state.email);
         }).catch((err) => {
             logger.error("Unable to remove contact information: " + err);
             Modal.createTrackedDialog('Remove 3pid failed', '', ErrorDialog, {
@@ -94,7 +201,7 @@ export class ExistingEmailAddress extends React.Component<IExistingEmailAddressP
             return (
                 <div className="mx_ExistingEmailAddress">
                     <span className="mx_ExistingEmailAddress_promptText">
-                        { _t("Remove %(email)s?", { email: this.props.email.address }) }
+                        { _t("Remove %(email)s?", { email: this.state.email.address }) }
                     </span>
                     <AccessibleButton
                         onClick={this.onActuallyRemove}
@@ -114,10 +221,41 @@ export class ExistingEmailAddress extends React.Component<IExistingEmailAddressP
             );
         }
 
+        const { verifyingShare } = this.state;
+        let status;
+        if (verifyingShare) {
+            status = <span>
+                { _t("Verify the link in your inbox") }
+                <AccessibleButton
+                    className="mx_ExistingEmailAddress_confirmBtn"
+                    kind="primary_sm"
+                    onClick={this.onContinueClick}
+                    disabled={this.state.continueDisabled}
+                >
+                    { _t("Complete") }
+                </AccessibleButton>
+            </span>;
+        } else {
+            status = <AccessibleButton
+                    onClick={this.onShareClicked}
+                    kind="primary_sm"
+                    className="mx_ExistingEmailAddress_confirmBtn"
+                >
+                    { _t("Share") }
+                </AccessibleButton>
+        }
         return (
             <div className="mx_ExistingEmailAddress">
-                <span className="mx_ExistingEmailAddress_email">{ this.props.email.address }</span>
-                <AccessibleButton onClick={this.onRemove} kind="danger_sm">
+                <span className="mx_ExistingEmailAddress_email">{ this.state.email.address }</span>
+                {
+                    this.props.shareThreepidWhenBind && !this.state.email.bound &&
+                    status
+                }
+                <AccessibleButton 
+                    onClick={this.onRemove}
+                    kind="danger_sm"
+                    className="mx_ExistingEmailAddress_confirmBtn"
+                >
                     { _t("Remove") }
                 </AccessibleButton>
             </div>
@@ -135,6 +273,7 @@ interface IState {
     addTask: any; // FIXME: When AddThreepid is TSfied
     continueDisabled: boolean;
     newEmailAddress: string;
+    shareThreepidWhenBind: boolean;
 }
 
 @replaceableComponent("views.settings.account.EmailAddresses")
@@ -147,11 +286,12 @@ export default class EmailAddresses extends React.Component<IProps, IState> {
             addTask: null,
             continueDisabled: false,
             newEmailAddress: "",
+            shareThreepidWhenBind: SdkConfig.get()["shareThreepidWhenBind"],
         };
     }
 
     private onRemoved = (address): void => {
-        const emails = this.props.emails.filter((e) => e !== address);
+        const emails = this.props.emails.filter((e) => e.address !== address.address );
         this.props.onEmailsChange(emails);
     };
 
@@ -197,16 +337,15 @@ export default class EmailAddresses extends React.Component<IProps, IState> {
         e.stopPropagation();
         e.preventDefault();
 
-        this.setState({ continueDisabled: true });
         this.state.addTask.checkEmailLinkClicked().then(([finished]) => {
             let newEmailAddress = this.state.newEmailAddress;
             if (finished) {
-                const email = this.state.newEmailAddress;
-                const emails = [
-                    { address: email, medium: ThreepidMedium.Email },
-                    ...this.props.emails
-                ];
-                if(SdkConfig.get()["shareThreepidWhenBind"]) {
+                if(this.state.shareThreepidWhenBind) {
+                    const email = this.state.newEmailAddress;
+                    const emails = [
+                        { address: email, medium: ThreepidMedium.Email, bound: true },
+                        ...this.props.emails
+                    ];
                     this.state.addTask.checkEmailLinkClicked(true).then(() => {
                         this.props.onEmailsChange(emails);
                         newEmailAddress = "";
@@ -233,6 +372,11 @@ export default class EmailAddresses extends React.Component<IProps, IState> {
                         }
                     })
                 } else {
+                    const email = this.state.newEmailAddress;
+                    const emails = [
+                        { address: email, medium: ThreepidMedium.Email },
+                        ...this.props.emails
+                    ];
                     this.props.onEmailsChange(emails);
                     newEmailAddress = "";
                     this.setState({
@@ -263,7 +407,12 @@ export default class EmailAddresses extends React.Component<IProps, IState> {
 
     public render(): JSX.Element {
         const existingEmailElements = this.props.emails.map((e) => {
-            return <ExistingEmailAddress email={e} onRemoved={this.onRemoved} key={e.address} />;
+            return <ExistingEmailAddress
+                        email={e}
+                        onRemoved={this.onRemoved}
+                        key={e.address}
+                        shareThreepidWhenBind={this.state.shareThreepidWhenBind}
+                    />;
         });
 
         let addButton = (

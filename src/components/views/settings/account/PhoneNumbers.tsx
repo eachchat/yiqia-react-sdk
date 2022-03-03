@@ -42,10 +42,17 @@ This is a copy/paste of EmailAddresses, mostly.
 interface IExistingPhoneNumberProps {
     msisdn: IThreepid;
     onRemoved: (phoneNumber: IThreepid) => void;
+    shareThreepidWhenBind?: boolean;
 }
 
 interface IExistingPhoneNumberState {
     verifyRemove: boolean;
+    verifyingShare: boolean,
+    addTask: any,
+    continueDisabled: boolean,
+    msisdn: IThreepid,
+    newPhoneNumberCode: string,
+    verifyError: string,
 }
 
 export class ExistingPhoneNumber extends React.Component<IExistingPhoneNumberProps, IExistingPhoneNumberState> {
@@ -54,6 +61,12 @@ export class ExistingPhoneNumber extends React.Component<IExistingPhoneNumberPro
 
         this.state = {
             verifyRemove: false,
+            verifyingShare: false,
+            addTask: null,
+            continueDisabled: false,
+            msisdn: this.props.msisdn,
+            newPhoneNumberCode: "",
+            verifyError: "",
         };
     }
 
@@ -71,12 +84,119 @@ export class ExistingPhoneNumber extends React.Component<IExistingPhoneNumberPro
         this.setState({ verifyRemove: false });
     };
 
+    private onChangeNewPhoneNumberCode = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        this.setState({
+            newPhoneNumberCode: e.target.value,
+        });
+    };
+
+    private changeBindingTangledAddBind = async(): Promise<void> => {
+        const { medium, address } = this.state.msisdn;
+
+        const task = new AddThreepid();
+        this.setState({
+            verifyingShare: true,
+            continueDisabled: true,
+            addTask: task,
+        });
+
+        try {
+            await MatrixClientPeg.get().deleteThreePid(medium, address);
+            // XXX: Sydent will accept a number without country code if you add
+            // a leading plus sign to a number in E.164 format (which the 3PID
+            // address is), but this goes against the spec.
+            // See https://github.com/matrix-org/matrix-doc/issues/2222
+            await task.bindMsisdn(null, `+${address}`);
+            this.setState({
+                continueDisabled: false,
+            });
+        } catch (err) {
+            logger.error(`Unable to share phone number ${address} ${err}`);
+            this.setState({
+                verifyingShare: false,
+                continueDisabled: false,
+                addTask: null,
+            });
+            Modal.createTrackedDialog(`Unable to share phone number`, '', ErrorDialog, {
+                title: _t("Error"),
+                description: ((err && err.message) ? err.message : _t("Operation failed")),
+            });
+        }
+    }
+
+    private onShareClicked = async(): Promise<void> => {
+        if (!(await MatrixClientPeg.get().doesServerSupportSeparateAddAndBind())) {
+            return this.changeBindingTangledAddBind();
+        }
+
+        const { address } = this.state.msisdn;
+
+        try {
+            const task = new AddThreepid();
+            this.setState({
+                verifyingShare: true,
+                continueDisabled: true,
+                addTask: task,
+            });
+            // XXX: Sydent will accept a number without country code if you add
+            // a leading plus sign to a number in E.164 format (which the 3PID
+            // address is), but this goes against the spec.
+            // See https://github.com/matrix-org/matrix-doc/issues/2222
+            await task.bindMsisdn(null, `+${address}`);
+            this.setState({
+                continueDisabled: false,
+            });
+        } catch (err) {
+            logger.error(`Unable to share phone number ${address} ${err}`);
+            this.setState({
+                verifyingShare: false,
+                continueDisabled: false,
+                addTask: null,
+            });
+            Modal.createTrackedDialog(`Unable to share phone number`, '', ErrorDialog, {
+                title: _t("Error"),
+                description: ((err && err.message) ? err.message : _t("Operation failed")),
+            });
+        }
+    }
+
+    private onContinueClick = (e: React.MouseEvent | React.FormEvent): void => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        this.setState({ continueDisabled: true });
+        const token = this.state.newPhoneNumberCode;
+        this.state.addTask.haveMsisdnToken(token, true).then(() => {
+            const updateMsisdn = Object.assign({}, this.state.msisdn, { bound: true });
+            
+            this.setState({
+                addTask: null,
+                continueDisabled: false,
+                verifyingShare: false,
+                verifyError: null,
+                msisdn: updateMsisdn,
+                newPhoneNumberCode: "",
+            });
+        }).catch((err) => {
+            this.setState({ continueDisabled: false });
+            if (err.errcode !== 'M_THREEPID_AUTH_FAILED') {
+                logger.error("Unable to verify phone number: " + err);
+                Modal.createTrackedDialog(_t("Unable to verify phone number."), '', ErrorDialog, {
+                    title: _t("Unable to verify phone number."),
+                    description: ((err && err.message) ? _t("Unable to verify phone number.") : _t("Operation failed")),
+                });
+            } else {
+                this.setState({ verifyError: _t("Incorrect verification code") });
+            }
+        });
+    };
+
     private onActuallyRemove = (e: React.MouseEvent): void => {
         e.stopPropagation();
         e.preventDefault();
 
-        MatrixClientPeg.get().deleteThreePid(this.props.msisdn.medium, this.props.msisdn.address).then(() => {
-            return this.props.onRemoved(this.props.msisdn);
+        MatrixClientPeg.get().deleteThreePid(this.state.msisdn.medium, this.state.msisdn.address).then(() => {
+            return this.props.onRemoved(this.state.msisdn);
         }).catch((err) => {
             logger.error("Unable to remove contact information: " + err);
             Modal.createTrackedDialog('Remove 3pid failed', '', ErrorDialog, {
@@ -89,7 +209,7 @@ export class ExistingPhoneNumber extends React.Component<IExistingPhoneNumberPro
     public render(): JSX.Element {
         const defaultCountryCode = SdkConfig.get()['defaultCountryCode'];
         const forceOnlyDefaultCountry = SdkConfig.get()["forceOnlyDefaultCountry"];
-        const phoneAddress = (defaultCountryCode && forceOnlyDefaultCountry) ? PhoneNumber.unpackagePhoneNumberWithDefaultCountry(this.props.msisdn.address) : this.props.msisdn.address;
+        const phoneAddress = (defaultCountryCode && forceOnlyDefaultCountry) ? PhoneNumber.unpackagePhoneNumberWithDefaultCountry(this.state.msisdn.address) : this.state.msisdn.address;
 
         if (this.state.verifyRemove) {
             return (
@@ -115,17 +235,72 @@ export class ExistingPhoneNumber extends React.Component<IExistingPhoneNumberPro
             );
         }
 
-        let phoneAddressContent = "+" + this.props.msisdn.address;
+        let addVerifySection
+
+        let phoneAddressContent = "+" + this.state.msisdn.address;
+        let tipContent = _t("A text message has been sent to +%(msisdn)s. " +
+        "Please enter the verification code it contains.", { msisdn: phoneAddressContent })
+
         if(defaultCountryCode && forceOnlyDefaultCountry) {
             phoneAddressContent = phoneAddress;
+            tipContent = _t("A text message has been sent to %(msisdn)s. " +
+            "Please enter the verification code it contains.", { msisdn: phoneAddressContent })
         }
-
+        if (this.state.verifyingShare) {
+            addVerifySection = (
+                <div>
+                    <div>
+                        { tipContent }
+                        <br />
+                        { this.state.verifyError }
+                    </div>
+                    <form onSubmit={this.onContinueClick} autoComplete="off" noValidate={true}>
+                        <Field
+                            type="text"
+                            label={_t("Verification code")}
+                            autoComplete="off"
+                            disabled={this.state.continueDisabled}
+                            value={this.state.newPhoneNumberCode}
+                            onChange={this.onChangeNewPhoneNumberCode}
+                        />
+                        <AccessibleButton
+                            onClick={this.onContinueClick}
+                            kind="primary_sm"
+                            disabled={this.state.continueDisabled || this.state.newPhoneNumberCode.length === 0}
+                        >
+                            { _t("Continue") }
+                        </AccessibleButton>
+                    </form>
+                </div>
+            );
+        }
+        
         return (
-            <div className="mx_ExistingPhoneNumber">
-                <span className="mx_ExistingPhoneNumber_address">{ phoneAddressContent }</span>
-                <AccessibleButton onClick={this.onRemove} kind="danger_sm">
-                    { _t("Remove") }
-                </AccessibleButton>
+            <div>
+                <div className="mx_ExistingPhoneNumber">
+                    <span className="mx_ExistingPhoneNumber_address">{ phoneAddressContent }</span>
+                    {
+                        this.props.shareThreepidWhenBind && !this.state.msisdn.bound && !this.state.verifyingShare &&
+                        <AccessibleButton
+                            onClick={this.onShareClicked}
+                            kind="primary_sm"
+                            className="mx_ExistingPhoneNumber_confirmBtn"
+                        >
+                            { _t("Share") }
+                        </AccessibleButton>
+                    }
+                    <AccessibleButton
+                        onClick={this.onRemove}
+                        kind="danger_sm"
+                        className="mx_ExistingPhoneNumber_confirmBtn"
+                    >
+                        { _t("Remove") }
+                    </AccessibleButton>
+                </div>
+                { 
+                    this.props.shareThreepidWhenBind && !this.state.msisdn.bound &&
+                    addVerifySection 
+                }
             </div>
         );
     }
@@ -145,6 +320,7 @@ interface IState {
     phoneCountry: string;
     newPhoneNumber: string;
     newPhoneNumberCode: string;
+    shareThreepidWhenBind: boolean;
 }
 
 @replaceableComponent("views.settings.account.PhoneNumbers")
@@ -161,11 +337,12 @@ export default class PhoneNumbers extends React.Component<IProps, IState> {
             phoneCountry: "",
             newPhoneNumber: "",
             newPhoneNumberCode: "",
+            shareThreepidWhenBind: SdkConfig.get()["shareThreepidWhenBind"],
         };
     }
 
     private onRemoved = (address: IThreepid): void => {
-        const msisdns = this.props.msisdns.filter((e) => e !== address);
+        const msisdns = this.props.msisdns.filter((e) => e.address != address.address);
         this.props.onMsisdnsChange(msisdns);
     };
 
@@ -215,11 +392,11 @@ export default class PhoneNumbers extends React.Component<IProps, IState> {
         this.state.addTask.haveMsisdnToken(token).then(([finished]) => {
             let newPhoneNumber = this.state.newPhoneNumber;
             if (finished) {
-                if(SdkConfig.get()["shareThreepidWhenBind"]) {
+                if(this.state.shareThreepidWhenBind) {
                     this.state.addTask.haveMsisdnToken(token, true).then(() => {
                         const msisdns = [
                             ...this.props.msisdns,
-                            { address, medium: ThreepidMedium.Phone },
+                            { address, medium: ThreepidMedium.Phone, bound: true },
                         ];
                         this.props.onMsisdnsChange(msisdns);
                         newPhoneNumber = "";
@@ -282,7 +459,12 @@ export default class PhoneNumbers extends React.Component<IProps, IState> {
 
     public render(): JSX.Element {
         const existingPhoneElements = this.props.msisdns.map((p) => {
-            return <ExistingPhoneNumber msisdn={p} onRemoved={this.onRemoved} key={p.address} />;
+            return <ExistingPhoneNumber
+                        msisdn={p}
+                        onRemoved={this.onRemoved}
+                        key={p.address}
+                        shareThreepidWhenBind={this.state.shareThreepidWhenBind}
+                    />;
         });
 
         let addVerifySection = (

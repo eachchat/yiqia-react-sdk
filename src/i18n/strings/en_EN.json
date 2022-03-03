@@ -1638,6 +1638,7 @@
     "Email Address": "Email Address",
     "Remove %(phone)s?": "Remove %(phone)s?",
     "A text message has been sent to +%(msisdn)s. Please enter the verification code it contains.": "A text message has been sent to +%(msisdn)s. Please enter the verification code it contains.",
+    "A text message has been sent to %(msisdn)s. Please enter the verification code it contains.": "A text message has been sent to %(msisdn)s. Please enter the verification code it contains.",
     "Phone Number": "Phone Number",
     "This user has not verified all of their sessions.": "This user has not verified all of their sessions.",
     "You have not verified this user.": "You have not verified this user.",
