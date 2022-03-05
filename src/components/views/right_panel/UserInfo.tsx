@@ -485,7 +485,7 @@ const UserOptionsSection: React.FC<{
                 { insertPillButton }
                 { inviteUserButton }
                 {
-                    (isIgnored || SdkConfig.get()["forbiddenIgnore"]) &&
+                    (isIgnored || !SdkConfig.get()["forbiddenIgnore"]) &&
                     ignoreButton
                 }
             </div>
