@@ -484,7 +484,10 @@ const UserOptionsSection: React.FC<{
                 { shareUserButton }
                 { insertPillButton }
                 { inviteUserButton }
-                { ignoreButton }
+                {
+                    (isIgnored || SdkConfig.get()["forbiddenIgnore"]) &&
+                    ignoreButton
+                }
             </div>
         </div>
     );
