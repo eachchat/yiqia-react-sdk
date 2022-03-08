@@ -37,6 +37,7 @@ import { ActionPayload } from '../../../dispatcher/payloads';
 import ContentMessages from '../../../ContentMessages';
 import MatrixClientContext from '../../../contexts/MatrixClientContext';
 import RoomContext from '../../../contexts/RoomContext';
+import SdkConfig from '../../../SdkConfig';
 
 interface IProps {
     addEmoji: (emoji: string) => boolean;
@@ -290,7 +291,9 @@ function voiceRecordingButton(props: IProps): ReactElement {
 }
 
 function pollButton(room: Room, relation?: IEventRelation): ReactElement {
-    return <PollButton key="polls" room={room} relation={relation} />;
+    if(!SdkConfig.get()["hidePoll"]) {
+        return <PollButton key="polls" room={room} relation={relation} />;
+    }
 }
 
 interface IPollButtonProps {
@@ -358,7 +361,7 @@ function showLocationButton(
     matrixClient: MatrixClient,
 ): ReactElement {
     return (
-        props.showLocationButton
+        props.showLocationButton && !SdkConfig.get()["hideLocation"]
             ? <LocationButton
                 key="location"
                 roomId={roomId}

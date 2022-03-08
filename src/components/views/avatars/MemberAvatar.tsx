@@ -108,7 +108,7 @@ export default class MemberAvatar extends React.PureComponent<IProps, IState> {
     }
 
     render() {
-        let { member, fallbackUserId, onClick, viewUserOnClick, ...otherProps } = this.props;
+        let { member, fallbackUserId, onClick, viewUserOnClick, forceHistorical, ...otherProps } = this.props;
         const userId = member ? member.userId : fallbackUserId;
 
         if (viewUserOnClick) {
