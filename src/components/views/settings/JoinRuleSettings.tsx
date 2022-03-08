@@ -35,6 +35,7 @@ import dis from "../../../dispatcher/dispatcher";
 import { ROOM_SECURITY_TAB } from "../dialogs/RoomSettingsDialog";
 import SdkConfig from "../../../SdkConfig";
 import { Action } from "../../../dispatcher/actions";
+import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
 
 interface IProps {
     room: Room;
@@ -268,9 +269,10 @@ const JoinRuleSettings = ({ room, promptUpgrade, aliasWarning, onError, beforeCh
                         closeSettingsFn();
 
                         // switch to the new room in the background
-                        dis.dispatch({
+                        dis.dispatch<ViewRoomPayload>({
                             action: Action.ViewRoom,
                             room_id: roomId,
+                            metricsTrigger: undefined, // other
                         });
 
                         // open new settings on this tab

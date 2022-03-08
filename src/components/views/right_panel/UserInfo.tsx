@@ -34,7 +34,7 @@ import Modal from '../../../Modal';
 import { _t } from '../../../languageHandler';
 import createRoom, { findDMForUser, privateShouldBeEncrypted } from '../../../createRoom';
 import DMRoomMap from '../../../utils/DMRoomMap';
-import AccessibleButton from '../elements/AccessibleButton';
+import AccessibleButton, { ButtonEvent } from '../elements/AccessibleButton';
 import SdkConfig from '../../../SdkConfig';
 import RoomViewStore from "../../../stores/RoomViewStore";
 import MultiInviter from "../../../utils/MultiInviter";
@@ -79,6 +79,8 @@ import { IRightPanelCardState } from '../../../stores/right-panel/RightPanelStor
 import { useUserStatusMessage } from "../../../hooks/useUserStatusMessage";
 import SettingsStore from '../../../settings/SettingsStore';
 import UserIdentifierCustomisations from '../../../customisations/UserIdentifier';
+import PosthogTrackers from "../../../PosthogTrackers";
+import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
 
 export interface IDevice {
     deviceId: string;
@@ -123,13 +125,15 @@ export const getE2EStatus = (cli: MatrixClient, userId: string, devices: IDevice
     return anyDeviceUnverified ? E2EStatus.Warning : E2EStatus.Verified;
 };
 
-async function openDMForUser(matrixClient: MatrixClient, userId: string): Promise<void> {
+async function openDMForUser(matrixClient: MatrixClient, userId: string, viaKeyboard = false): Promise<void> {
     const lastActiveRoom = findDMForUser(matrixClient, userId);
 
     if (lastActiveRoom) {
-        dis.dispatch({
+        dis.dispatch<ViewRoomPayload>({
             action: Action.ViewRoom,
             room_id: lastActiveRoom.roomId,
+            metricsTrigger: "MessageUser",
+            metricsViaKeyboard: viaKeyboard,
         });
         return;
     }
@@ -330,10 +334,10 @@ const MessageButton = ({ userId }: { userId: string }) => {
 
     return (
         <AccessibleButton
-            onClick={async () => {
+            onClick={async (ev) => {
                 if (busy) return;
                 setBusy(true);
-                await openDMForUser(cli, userId);
+                await openDMForUser(cli, userId, ev.type !== "click");
                 setBusy(false);
             }}
             className="mx_UserInfo_field"
@@ -394,11 +398,12 @@ const UserOptionsSection: React.FC<{
         if (member.roomId && !isSpace) {
             const onReadReceiptButton = function() {
                 const room = cli.getRoom(member.roomId);
-                dis.dispatch({
+                dis.dispatch<ViewRoomPayload>({
                     action: Action.ViewRoom,
                     highlighted: true,
                     event_id: room.getEventReadUpTo(member.userId),
                     room_id: member.roomId,
+                    metricsTrigger: undefined, // room doesn't change
                 });
             };
 
@@ -429,7 +434,7 @@ const UserOptionsSection: React.FC<{
 
         if (canInvite && (member?.membership ?? 'leave') === 'leave' && shouldShowComponent(UIComponent.InviteUsers)) {
             const roomId = member && member.roomId ? member.roomId : RoomViewStore.getRoomId();
-            const onInviteUserButton = async () => {
+            const onInviteUserButton = async (ev: ButtonEvent) => {
                 try {
                     // We use a MultiInviter to re-use the invite logic, even though
                     // we're only inviting one user.
@@ -445,6 +450,8 @@ const UserOptionsSection: React.FC<{
                         description: ((err && err.message) ? err.message : _t("Operation failed")),
                     });
                 }
+
+                PosthogTrackers.trackInteraction("WebRightPanelRoomUserInfoInviteButton", ev);
             };
 
             inviteUserButton = (
@@ -1115,6 +1122,7 @@ function useRoomPermissions(cli: MatrixClient, room: Room, user: RoomMember): IR
             modifyLevelMax,
         });
     }, [cli, user, room]);
+
     useEventEmitter(cli, "RoomState.members", updateRoomPermissions);
     useEffect(() => {
         updateRoomPermissions();
@@ -1728,22 +1736,27 @@ const UserInfo: React.FC<IProps> = ({
 
     let scopeHeader;
     if (SpaceStore.spacesEnabled && room?.isSpaceRoom()) {
-        scopeHeader = <div className="mx_RightPanel_scopeHeader">
+        scopeHeader = <div data-test-id='space-header' className="mx_RightPanel_scopeHeader">
             <RoomAvatar room={room} height={32} width={32} />
             <RoomName room={room} />
         </div>;
     }
 
-    const header = <React.Fragment>
+    const header = <>
         { scopeHeader }
         <UserInfoHeader member={member} e2eStatus={e2eStatus} roomId={room?.roomId} />
-    </React.Fragment>;
+    </>;
     return <BaseCard
         className={classes.join(" ")}
         header={header}
         onClose={onClose}
         closeLabel={closeLabel}
         cardState={cardState}
+        onBack={(ev: ButtonEvent) => {
+            if (RightPanelStore.instance.previousCard.phase === RightPanelPhases.RoomMemberList) {
+                PosthogTrackers.trackInteraction("WebRightPanelRoomUserInfoBackButton", ev);
+            }
+        }}
     >
         { content }
     </BaseCard>;

@@ -18,15 +18,27 @@ limitations under the License.
 import React from "react";
 
 import {
-    KEYBOARD_SHORTCUTS,
+    getKeyboardShortcuts,
     ALTERNATE_KEY_NAME,
     KEY_ICON,
     ICategory,
     CATEGORIES,
     CategoryName,
+    KeyBindingConfig,
 } from "../../../../../accessibility/KeyboardShortcuts";
+import SdkConfig from "../../../../../SdkConfig";
 import { isMac, Key } from "../../../../../Keyboard";
 import { _t } from "../../../../../languageHandler";
+
+// TODO: This should return KeyCombo but it has ctrlOrCmd instead of ctrlOrCmdKey
+const getKeyboardShortcutValue = (name: string): KeyBindingConfig => {
+    return getKeyboardShortcuts()[name]?.default;
+};
+
+const getKeyboardShortcutDisplayName = (name: string): string => {
+    const keyboardShortcutDisplayName = getKeyboardShortcuts()[name]?.displayName as string;
+    return keyboardShortcutDisplayName && _t(keyboardShortcutDisplayName);
+};
 
 interface IKeyboardKeyProps {
     name: string;
@@ -48,7 +60,7 @@ interface IKeyboardShortcutProps {
 }
 
 export const KeyboardShortcut: React.FC<IKeyboardShortcutProps> = ({ name }) => {
-    const value = KEYBOARD_SHORTCUTS[name]?.default;
+    const value = getKeyboardShortcutValue(name);
     if (!value) return null;
 
     const modifiersElement = [];
@@ -76,13 +88,16 @@ interface IKeyboardShortcutRowProps {
     name: string;
 }
 
+// Filter out the labs section if labs aren't enabled.
+const visibleCategories = Object.entries(CATEGORIES).filter(([categoryName]) =>
+    categoryName !== CategoryName.LABS || SdkConfig.get()['showLabsSettings']);
+
 const KeyboardShortcutRow: React.FC<IKeyboardShortcutRowProps> = ({ name }) => {
-    let shortcutLabelOrg = KEYBOARD_SHORTCUTS[name].displayName;
-    if(typeof shortcutLabelOrg === "string") {
-        shortcutLabelOrg = _t(shortcutLabelOrg);
-    }
+    const displayName = getKeyboardShortcutDisplayName(name);
+    if (!displayName) return null;
+
     return <div className="mx_KeyboardShortcut_shortcutRow">
-        { shortcutLabelOrg }
+        { displayName }
         <KeyboardShortcut name={name} />
     </div>;
 };
@@ -103,8 +118,8 @@ const KeyboardShortcutSection: React.FC<IKeyboardShortcutSectionProps> = ({ cate
 
 const KeyboardUserSettingsTab: React.FC = () => {
     return <div className="mx_SettingsTab mx_KeyboardUserSettingsTab">
-        <div className="mx_SettingsTab_heading">{ _t("Keyboard shortcuts") }</div>
-        { Object.entries(CATEGORIES).map(([categoryName, category]: [CategoryName, ICategory]) => {
+        <div className="mx_SettingsTab_heading">{ _t("Keyboard") }</div>
+        { visibleCategories.map(([categoryName, category]: [CategoryName, ICategory]) => {
             return <KeyboardShortcutSection key={categoryName} categoryName={categoryName} category={category} />;
         }) }
     </div>;

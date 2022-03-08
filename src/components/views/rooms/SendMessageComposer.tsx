@@ -21,6 +21,7 @@ import { DebouncedFunc, throttle } from 'lodash';
 import { EventType, RelationType } from "matrix-js-sdk/src/@types/event";
 import { logger } from "matrix-js-sdk/src/logger";
 import { Room } from 'matrix-js-sdk/src/models/room';
+import { Composer as ComposerEvent } from "matrix-analytics-events/types/typescript/Composer";
 
 import dis from '../../../dispatcher/dispatcher';
 import EditorModel from '../../../editor/model';
@@ -44,9 +45,8 @@ import { withMatrixClientHOC, MatrixClientProps } from "../../../contexts/Matrix
 import { Action } from "../../../dispatcher/actions";
 import { containsEmoji } from "../../../effects/utils";
 import { CHAT_EFFECTS } from '../../../effects';
-import CountlyAnalytics from "../../../CountlyAnalytics";
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
-import { getKeyBindingsManager, MessageComposerAction } from '../../../KeyBindingsManager';
+import { getKeyBindingsManager } from '../../../KeyBindingsManager';
 import { replaceableComponent } from "../../../utils/replaceableComponent";
 import SettingsStore from '../../../settings/SettingsStore';
 import { RoomPermalinkCreator } from "../../../utils/permalinks/Permalinks";
@@ -56,6 +56,8 @@ import RoomContext, { TimelineRenderingType } from '../../../contexts/RoomContex
 import DocumentPosition from "../../../editor/position";
 import { ComposerType } from "../../../dispatcher/payloads/ComposerInsertPayload";
 import { getSlashCommand, isSlashCommand, runSlashCommand, shouldSendAnyway } from "../../../editor/commands";
+import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
+import { PosthogAnalytics } from "../../../PosthogAnalytics";
 
 interface IAddReplyOpts {
     permalinkCreator?: RoomPermalinkCreator;
@@ -221,21 +223,21 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
         const replyingToThread = this.props.relation?.key === RelationType.Thread;
         const action = getKeyBindingsManager().getMessageComposerAction(event);
         switch (action) {
-            case MessageComposerAction.Send:
+            case KeyBindingAction.SendMessage:
                 this.sendMessage();
                 event.preventDefault();
                 break;
-            case MessageComposerAction.SelectPrevSendHistory:
-            case MessageComposerAction.SelectNextSendHistory: {
+            case KeyBindingAction.SelectPrevSendHistory:
+            case KeyBindingAction.SelectNextSendHistory: {
                 // Try select composer history
-                const selected = this.selectSendHistory(action === MessageComposerAction.SelectPrevSendHistory);
+                const selected = this.selectSendHistory(action === KeyBindingAction.SelectPrevSendHistory);
                 if (selected) {
                     // We're selecting history, so prevent the key event from doing anything else
                     event.preventDefault();
                 }
                 break;
             }
-            case MessageComposerAction.EditPrevMessage:
+            case KeyBindingAction.EditPrevMessage:
                 // selection must be collapsed and caret at start
                 if (this.editorRef.current?.isSelectionCollapsed() && this.editorRef.current?.isCaretAtStart()) {
                     const events =
@@ -256,7 +258,7 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
                     }
                 }
                 break;
-            case MessageComposerAction.CancelEditing:
+            case KeyBindingAction.CancelReplyOrEdit:
                 dis.dispatch({
                     action: 'reply_to_event',
                     event: null,
@@ -343,6 +345,13 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
             return;
         }
 
+        PosthogAnalytics.instance.trackEvent<ComposerEvent>({
+            eventName: "Composer",
+            isEditing: false,
+            inThread: this.props.relation?.rel_type === RelationType.Thread,
+            isReply: !!this.props.replyToEvent,
+        });
+
         // Replace emoticon at the end of the message
         if (SettingsStore.getValue('MessageComposerInput.autoReplaceEmoji')) {
             const indexOfLastPart = model.parts.length - 1;
@@ -394,7 +403,6 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
         }
 
         if (shouldSend) {
-            const startTime = CountlyAnalytics.getTimestamp();
             const { roomId } = this.props.room;
             if (!content) {
                 content = createMessageContent(
@@ -442,7 +450,6 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
                     sendRoundTripMetric(this.props.mxClient, roomId, resp.event_id);
                 });
             }
-            CountlyAnalytics.instance.trackSendMessage(startTime, prom, roomId, false, !!replyToEvent, content);
         }
 
         this.sendHistoryManager.save(model, replyToEvent);
@@ -451,7 +458,7 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
         this.editorRef.current?.clearUndoHistory();
         this.editorRef.current?.focus();
         this.clearStoredEditorState();
-        if (SettingsStore.getValue("scrollToBottomOnMessageSent")) {
+        if (shouldSend && SettingsStore.getValue("scrollToBottomOnMessageSent")) {
             dis.dispatch({
                 action: "scroll_to_bottom",
                 timelineRenderingType: this.context.timelineRenderingType,

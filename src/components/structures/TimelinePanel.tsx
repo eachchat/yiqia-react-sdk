@@ -39,7 +39,7 @@ import { Action } from '../../dispatcher/actions';
 import { Key } from '../../Keyboard';
 import Timer from '../../utils/Timer';
 import shouldHideEvent from '../../shouldHideEvent';
-import { haveTileForEvent, TileShape } from "../views/rooms/EventTile";
+import { haveTileForEvent } from "../views/rooms/EventTile";
 import { UIFeature } from "../../settings/UIFeature";
 import { replaceableComponent } from "../../utils/replaceableComponent";
 import { arrayFastClone } from "../../utils/arrays";
@@ -51,6 +51,8 @@ import { RoomPermalinkCreator } from "../../utils/permalinks/Permalinks";
 import Spinner from "../views/elements/Spinner";
 import EditorStateTransfer from '../../utils/EditorStateTransfer';
 import ErrorDialog from '../views/dialogs/ErrorDialog';
+import CallEventGrouper, { buildCallEventGroupers } from "./CallEventGrouper";
+import { ViewRoomPayload } from "../../dispatcher/payloads/ViewRoomPayload";
 
 const PAGINATE_SIZE = 20;
 const INITIAL_SIZE = 20;
@@ -100,9 +102,6 @@ interface IProps {
 
     // classname to use for the messagepanel
     className?: string;
-
-    // shape property to be passed to EventTiles
-    tileShape?: TileShape;
 
     // placeholder to use if the timeline is empty
     empty?: ReactNode;
@@ -236,6 +235,9 @@ class TimelinePanel extends React.Component<IProps, IState> {
     private unmounted = false;
     private readReceiptActivityTimer: Timer;
     private readMarkerActivityTimer: Timer;
+
+    // A map of <callId, CallEventGrouper>
+    private callEventGroupers = new Map<string, CallEventGrouper>();
 
     constructor(props, context) {
         super(props, context);
@@ -388,6 +390,7 @@ class TimelinePanel extends React.Component<IProps, IState> {
             this.timelineWindow.unpaginate(count, backwards);
 
             const { events, liveEvents, firstVisibleEventIndex } = this.getEvents();
+            this.buildCallEventGroupers(events);
             const newState: Partial<IState> = {
                 events,
                 liveEvents,
@@ -449,6 +452,7 @@ class TimelinePanel extends React.Component<IProps, IState> {
             debuglog("paginate complete backwards:"+backwards+"; success:"+r);
 
             const { events, liveEvents, firstVisibleEventIndex } = this.getEvents();
+            this.buildCallEventGroupers(events);
             const newState: Partial<IState> = {
                 [paginatingKey]: false,
                 [canPaginateKey]: r,
@@ -561,6 +565,7 @@ class TimelinePanel extends React.Component<IProps, IState> {
             if (this.unmounted) { return; }
 
             const { events, liveEvents, firstVisibleEventIndex } = this.getEvents();
+            this.buildCallEventGroupers(events);
             const lastLiveEvent = liveEvents[liveEvents.length - 1];
 
             const updatedState: Partial<IState> = {
@@ -724,6 +729,7 @@ class TimelinePanel extends React.Component<IProps, IState> {
         // but possibly the event tile itself should just update when this
         // happens to save us re-rendering the whole timeline.
         if (ev.getRoomId() === this.props.timelineSet.room.roomId) {
+            this.buildCallEventGroupers(this.state.events);
             this.forceUpdate();
         }
     };
@@ -1183,9 +1189,10 @@ class TimelinePanel extends React.Component<IProps, IState> {
             if (eventId) {
                 onFinished = () => {
                     // go via the dispatcher so that the URL is updated
-                    dis.dispatch({
+                    dis.dispatch<ViewRoomPayload>({
                         action: Action.ViewRoom,
                         room_id: this.props.timelineSet.room.roomId,
+                        metricsTrigger: undefined, // room doesn't change
                     });
                 };
             }
@@ -1224,6 +1231,7 @@ class TimelinePanel extends React.Component<IProps, IState> {
             onLoaded();
         } else {
             const prom = this.timelineWindow.load(eventId, INITIAL_SIZE);
+            this.buildCallEventGroupers();
             this.setState({
                 events: [],
                 liveEvents: [],
@@ -1243,7 +1251,9 @@ class TimelinePanel extends React.Component<IProps, IState> {
         // the results if so.
         if (this.unmounted) return;
 
-        this.setState(this.getEvents());
+        const state = this.getEvents();
+        this.buildCallEventGroupers(state.events);
+        this.setState(state);
     }
 
     // Force refresh the timeline before threads support pending events
@@ -1272,11 +1282,30 @@ class TimelinePanel extends React.Component<IProps, IState> {
         // should use this list, so that they don't advance into pending events.
         const liveEvents = [...events];
 
-        const thread = events[0]?.getThread();
-
         // if we're at the end of the live timeline, append the pending events
         if (!this.timelineWindow.canPaginate(EventTimeline.FORWARDS)) {
-            events.push(...this.props.timelineSet.getPendingEvents(thread));
+            const pendingEvents = this.props.timelineSet.getPendingEvents();
+            if (this.context.timelineRenderingType === TimelineRenderingType.Thread) {
+                events.push(...pendingEvents.filter(e => e.threadRootId === this.context.threadId));
+            } else {
+                events.push(...pendingEvents.filter(e => {
+                    const hasNoRelation = !e.getRelation();
+                    if (hasNoRelation) {
+                        return true;
+                    }
+
+                    if (e.isThreadRelation) {
+                        return false;
+                    }
+
+                    const parentEvent = this.props.timelineSet.findEventById(e.getAssociatedId());
+                    if (!parentEvent) {
+                        return false;
+                    } else {
+                        return !parentEvent.isThreadRelation;
+                    }
+                }));
+            }
         }
 
         return {
@@ -1299,8 +1328,12 @@ class TimelinePanel extends React.Component<IProps, IState> {
     private checkForPreJoinUISI(events: MatrixEvent[]): number {
         const room = this.props.timelineSet.room;
 
-        if (events.length === 0 || !room ||
-            !MatrixClientPeg.get().isRoomEncrypted(room.roomId)) {
+        const isThreadTimeline = [TimelineRenderingType.Thread, TimelineRenderingType.ThreadsList]
+            .includes(this.context.timelineRenderingType);
+        if (events.length === 0
+            || !room
+            || !MatrixClientPeg.get().isRoomEncrypted(room.roomId)
+            || isThreadTimeline) {
             return 0;
         }
 
@@ -1512,6 +1545,10 @@ class TimelinePanel extends React.Component<IProps, IState> {
         eventType: EventType | string,
     ) => this.props.timelineSet.getRelationsForEvent(eventId, relationType, eventType);
 
+    private buildCallEventGroupers(events?: MatrixEvent[]): void {
+        this.callEventGroupers = buildCallEventGroupers(this.callEventGroupers, events);
+    }
+
     render() {
         // just show a spinner while the timeline loads.
         //
@@ -1587,7 +1624,6 @@ class TimelinePanel extends React.Component<IProps, IState> {
                     this.state.alwaysShowTimestamps
                 }
                 className={this.props.className}
-                tileShape={this.props.tileShape}
                 resizeNotifier={this.props.resizeNotifier}
                 getRelationsForEvent={this.getRelationsForEvent}
                 editState={this.props.editState}
@@ -1596,6 +1632,7 @@ class TimelinePanel extends React.Component<IProps, IState> {
                 enableFlair={SettingsStore.getValue(UIFeature.Flair)}
                 hideThreadedMessages={this.props.hideThreadedMessages}
                 disableGrouping={this.props.disableGrouping}
+                callEventGroupers={this.callEventGroupers}
             />
         );
     }

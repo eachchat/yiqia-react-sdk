@@ -94,12 +94,14 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
             _td("General"),
             "mx_UserSettingsDialog_settingsIcon",
             <GeneralUserSettingsTab closeSettingsFn={this.props.onFinished} />,
+            "UserSettingsGeneral",
         ));
         tabs.push(new Tab(
             UserTab.Appearance,
             _td("Appearance"),
             "mx_UserSettingsDialog_appearanceIcon",
             <AppearanceUserSettingsTab />,
+            "UserSettingsAppearance",
         ));
         if (SettingsStore.getValue(UIFeature.Flair)) {
             tabs.push(new Tab(
@@ -107,6 +109,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
                 _td("Flair"),
                 "mx_UserSettingsDialog_flairIcon",
                 <FlairUserSettingsTab />,
+                "UserSettingFlair",
             ));
         }
         tabs.push(new Tab(
@@ -114,12 +117,14 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
             _td("Notifications"),
             "mx_UserSettingsDialog_bellIcon",
             <NotificationUserSettingsTab />,
+            "UserSettingsNotifications",
         ));
         tabs.push(new Tab(
             UserTab.Preferences,
             _td("Preferences"),
             "mx_UserSettingsDialog_preferencesIcon",
             <PreferencesUserSettingsTab closeSettingsFn={this.props.onFinished} />,
+            "UserSettingsPreferences",
         ));
         
         tabs.push(new Tab(
@@ -127,6 +132,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
             _td("Keyboard shortcuts"),
             "mx_UserSettingsDialog_keyboardIcon",
             <KeyboardUserSettingsTab />,
+            "UserSettingsKeyboard",
         ));
         
         if(SettingsStore.getValue('TagPanel.enableTagPanel')) {
@@ -135,6 +141,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
                 _td("Sidebar"),
                 "mx_UserSettingsDialog_sidebarIcon",
                 <SidebarUserSettingsTab />,
+                "UserSettingsSidebar",
             ));
         }
 
@@ -144,6 +151,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
                 _td("Voice & Video"),
                 "mx_UserSettingsDialog_voiceIcon",
                 <VoiceUserSettingsTab />,
+                "UserSettingsVoiceVideo",
             ));
         }
 
@@ -152,6 +160,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
             _td("Security & Privacy"),
             "mx_UserSettingsDialog_securityIcon",
             <SecurityUserSettingsTab closeSettingsFn={this.props.onFinished} />,
+            "UserSettingsSecurityPrivacy",
         ));
         // Show the Labs tab if enabled or if there are any active betas
         if (SdkConfig.get()['showLabsSettings']
@@ -162,6 +171,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
                 _td("Labs"),
                 "mx_UserSettingsDialog_labsIcon",
                 <LabsUserSettingsTab />,
+                "UserSettingsLabs",
             ));
         }
         if (this.state.mjolnirEnabled) {
@@ -170,6 +180,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
                 _td("Ignored users"),
                 "mx_UserSettingsDialog_mjolnirIcon",
                 <MjolnirUserSettingsTab />,
+                "UserSettingMjolnir",
             ));
         }
         tabs.push(new Tab(
@@ -177,6 +188,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
             _td("Help & About"),
             "mx_UserSettingsDialog_helpIcon",
             <HelpUserSettingsTab closeSettingsFn={() => this.props.onFinished(true)} />,
+            "UserSettingsHelpAbout",
         ));
 
         return tabs;
@@ -191,7 +203,11 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
                 title={_t("Settings")}
             >
                 <div className='mx_SettingsDialog_content'>
-                    <TabbedView tabs={this.getTabs()} initialTabId={this.props.initialTabId} />
+                    <TabbedView
+                        tabs={this.getTabs()}
+                        initialTabId={this.props.initialTabId}
+                        screenName="UserSettings"
+                    />
                 </div>
             </BaseDialog>
         );

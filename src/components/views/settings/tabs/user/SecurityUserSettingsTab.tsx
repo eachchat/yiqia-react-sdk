@@ -31,7 +31,6 @@ import SecureBackupPanel from "../../SecureBackupPanel";
 import SettingsStore from "../../../../../settings/SettingsStore";
 import { UIFeature } from "../../../../../settings/UIFeature";
 import E2eAdvancedPanel, { isE2eAdvancedPanelPossible } from "../../E2eAdvancedPanel";
-import CountlyAnalytics from "../../../../../CountlyAnalytics";
 import { replaceableComponent } from "../../../../../utils/replaceableComponent";
 import { ActionPayload } from "../../../../../dispatcher/payloads";
 import CryptographyPanel from "../../CryptographyPanel";
@@ -118,7 +117,6 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
 
     private updateAnalytics = (checked: boolean): void => {
         checked ? Analytics.enable() : Analytics.disable();
-        CountlyAnalytics.instance.enable(/* anonymous = */ !checked);
     };
 
     private onMyMembership = (room: Room, membership: string): void => {
@@ -319,7 +317,7 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         }
 
         let privacySection;
-        if (Analytics.canEnable() || CountlyAnalytics.instance.canEnable() || PosthogAnalytics.instance.isEnabled()) {
+        if (Analytics.canEnable() || PosthogAnalytics.instance.isEnabled()) {
             const onClickAnalyticsLearnMore = () => {
                 if (PosthogAnalytics.instance.isEnabled()) {
                     showAnalyticsLearnMoreDialog({
