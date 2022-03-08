@@ -94,6 +94,11 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
     mainButtons = mainButtons.filter((x: ReactElement) => x);
     moreButtons = moreButtons.filter((x: ReactElement) => x);
 
+    if(moreButtons.length === 1) {
+        mainButtons.push(moreButtons[0]);
+        moreButtons = null;
+    }
+
     const moreOptionsClasses = classNames({
         mx_MessageComposer_button: true,
         mx_MessageComposer_buttonMenu: true,
@@ -102,11 +107,14 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
 
     return <>
         { mainButtons }
-        <AccessibleTooltipButton
-            className={moreOptionsClasses}
-            onClick={props.toggleButtonMenu}
-            title={_t("More options")}
-        />
+        {
+            moreButtons &&
+            <AccessibleTooltipButton
+                className={moreOptionsClasses}
+                onClick={props.toggleButtonMenu}
+                title={_t("More options")}
+            />
+        }
         { props.isMenuOpen && (
             <ContextMenu
                 onFinished={props.toggleButtonMenu}
