@@ -181,6 +181,7 @@ export default class NotificationsSettingsTab extends React.Component<IProps, IS
                 </div>
             );
         }
+        let currentSound = this.state.currentSound === "default" ? _t("Default") : this.state.currentSound;
 
         return (
             <div className="mx_SettingsTab">
@@ -246,7 +247,7 @@ export default class NotificationsSettingsTab extends React.Component<IProps, IS
                     <span className='mx_SettingsTab_subheading'>{ _t("Sounds") }</span>
                     <div>
                         <div className="mx_SettingsTab_subsectionText">
-                            <span>{ _t("Notification sound") }: <code>{ this.state.currentSound }</code></span>
+                            <span>{ _t("Notification sound") }: <code>{ currentSound }</code></span>
                         </div>
                         <AccessibleButton className="mx_NotificationSound_resetSound" disabled={this.state.currentSound == "default"} onClick={this.clearSound} kind="primary">
                             { _t("Reset") }
