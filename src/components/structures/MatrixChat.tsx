@@ -1463,6 +1463,11 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                         return;
                     }
 
+                    // yiqia-web Here should opened in version 2.5.3
+                    if (SdkConfig.get()["showLabsSettings"] === false) {
+                        return;
+                    }
+
                     const key = "BETA_SPOTLIGHT_TOAST";
                     ToastStore.sharedInstance().addOrReplaceToast({
                         key,
@@ -1488,7 +1493,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                         component: GenericToast,
                         priority: 9,
                     });
-                }, 5 * 60 * 1000); // show after 5 minutes to not overload user with toasts on launch
+                }, 0.1 * 60 * 1000); // show after 5 minutes to not overload user with toasts on launch
             }
 
             dis.fire(Action.FocusSendMessageComposer);
