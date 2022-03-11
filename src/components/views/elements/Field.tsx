@@ -124,6 +124,7 @@ interface IState {
     feedback: React.ReactNode;
     feedbackVisible: boolean;
     focused: boolean;
+    isPasswordVisible: boolean;
 }
 
 export default class Field extends React.PureComponent<PropShapes, IState> {
@@ -160,6 +161,7 @@ export default class Field extends React.PureComponent<PropShapes, IState> {
             feedback: undefined,
             feedbackVisible: false,
             focused: false,
+            isPasswordVisible: false,
         };
 
         this.id = this.props.id || getId();
@@ -246,6 +248,18 @@ export default class Field extends React.PureComponent<PropShapes, IState> {
         return valid;
     }
 
+    private onPasswordVisibleClicked() {
+        this.setState({isPasswordVisible: !this.state.isPasswordVisible});
+    }
+
+    private passwordVisibleIcon(): string {
+        if(this.state.isPasswordVisible) {
+            return require("../../../../res/img/element-icons/inputfield/password_visible.svg");
+        } else {
+            return require("../../../../res/img/element-icons/inputfield/password_invisible.svg");
+        }
+    }
+
     public render() {
         /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
         const { element, componentClass, inputRef, prefixComponent, postfixComponent, className, onValidate, children,
@@ -253,10 +267,20 @@ export default class Field extends React.PureComponent<PropShapes, IState> {
             usePlaceholderAsHint, forceTooltipVisible,
             ...inputProps } = this.props;
 
+        const componentIsPassword = this.props.type === "password";
+
         this.inputRef = inputRef || React.createRef();
 
         inputProps.placeholder = inputProps.placeholder || inputProps.label;
         inputProps.id = this.id; // this overwrites the id from props
+
+        if(componentIsPassword) {
+            if(this.state.isPasswordVisible) {
+                inputProps.type = "text";
+            } else {
+                inputProps.type = "password";
+            }
+        }
 
         inputProps.onFocus = this.onFocus;
         inputProps.onChange = this.onChange;
@@ -274,6 +298,34 @@ export default class Field extends React.PureComponent<PropShapes, IState> {
         let postfixContainer = null;
         if (postfixComponent) {
             postfixContainer = <span className="mx_Field_postfix">{ postfixComponent }</span>;
+        }
+
+        if(componentIsPassword) {
+            const passwordVisible = 
+                <img 
+                    src={this.passwordVisibleIcon()}
+                    onClick={this.onPasswordVisibleClicked.bind(this)}
+                    style={
+                        {
+                            width: "24px",
+                        }
+                    }
+                ></img>
+
+            postfixContainer = 
+                <span className="mx_Field_postfix"
+                    style={
+                        {
+                            position: "absolute",
+                            right: "0px",
+                            height: "100%",
+                            display: "flex",
+                            cursor: "pointer",
+                            borderLeft: "none",
+                            marginRight: "6px",
+                        }
+                    }
+                >{ passwordVisible }</span>;
         }
 
         const hasValidationFlag = forceValidity !== null && forceValidity !== undefined;
