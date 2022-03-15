@@ -46,6 +46,8 @@ import { BlurhashEncoder } from "./BlurhashEncoder";
 import SettingsStore from "./settings/SettingsStore";
 import { decorateStartSendingTime, sendRoundTripMetric } from "./sendTimePerformanceMetrics";
 import { TimelineRenderingType } from "./contexts/RoomContext";
+import { getAttachmentState, getAttachmentLimits } from "./YiqiaUtils";
+import InfoDialog from "./components/views/dialogs/InfoDialog";
 
 const MAX_WIDTH = 800;
 const MAX_HEIGHT = 600;
@@ -444,6 +446,50 @@ export default class ContentMessages {
         }
     }
 
+    /**
+     * To check whether current organization's state is out of the limit
+     * Content the loading modal
+     * @param matrixClient 
+     * @returns {Promise} A promise that resolves with an boolean.
+     * if current state is out of limit should return false
+     * if current state is inside of limit should return true
+     */
+    public async isOutofLimits(matrixClient) {
+        // yiqia-web For we must to check book limit so we move matrix media limit interface here from contentMessage sendContentListToRoom
+        const mediaLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
+
+        const attachmentInfo = await getAttachmentLimits();
+        
+        // We should have close the attacnment button if the user not support but here is still onpaste and ondrop
+        if(!attachmentInfo.support) {
+            mediaLimitModal.close();
+            Modal.createDialog(InfoDialog, {
+                title: _t('Attachment is outof limit'),
+                description: _t('Your organization do not support upload attachment.'),
+            });
+            return false;
+        }
+
+        if (!this.mediaConfig) { // hot-path optimization to not flash a spinner if we don't need to
+            await this.ensureMediaConfigFetched(matrixClient);
+        }
+
+        const currentAttachmentInfo = await getAttachmentState();
+        mediaLimitModal.close();
+
+        if(currentAttachmentInfo?.countMedia && attachmentInfo.limit) {
+            if(parseFloat(currentAttachmentInfo?.countMedia) >= parseFloat(attachmentInfo.limit)) {
+                Modal.createDialog(InfoDialog, {
+                    title: _t('Attachment is outof limit'),
+                    description: _t('Your organization attachment space is full, please to update your set meal.'),
+                });
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public async sendContentListToRoom(
         files: File[],
         roomId: string,
@@ -455,7 +501,7 @@ export default class ContentMessages {
             dis.dispatch({ action: 'require_registration' });
             return;
         }
-
+        
         const isQuoting = Boolean(RoomViewStore.getQuotingEvent());
         if (isQuoting) {
             // FIXME: Using an import will result in Element crashing
@@ -474,12 +520,12 @@ export default class ContentMessages {
             const [shouldUpload] = await finished;
             if (!shouldUpload) return;
         }
-
-        if (!this.mediaConfig) { // hot-path optimization to not flash a spinner if we don't need to
-            const modal = Modal.createDialog(Spinner, null, 'mx_Dialog_spinner');
-            await this.ensureMediaConfigFetched(matrixClient);
-            modal.close();
-        }
+        // yiqia-web For we must to check book limit so we move matrix media limit interface here to out
+        // if (!this.mediaConfig) { // hot-path optimization to not flash a spinner if we don't need to
+        //     const modal = Modal.createDialog(Spinner, null, 'mx_Dialog_spinner');
+        //     await this.ensureMediaConfigFetched(matrixClient);
+        //     modal.close();
+        // }
 
         const tooBigFiles = [];
         const okFiles = [];

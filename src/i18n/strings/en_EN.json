@@ -3470,5 +3470,8 @@
     "Search (must be enabled)": "Search (must be enabled)",
     "Close dialog or context menu": "Close dialog or context menu",
     "Activate selected button": "Activate selected button",
-    "Redo edit": "Redo edit"
+    "Redo edit": "Redo edit",
+    "Attachment is outof limit": "Attachment is outof limit",
+    "Your organization attachment space is full, please to update your set meal.": "Your organization attachment space is full, please to update your set meal.",
+    "Your organization do not support upload attachment.": "Your organization do not support upload attachment."
 }

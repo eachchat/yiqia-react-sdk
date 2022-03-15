@@ -218,11 +218,16 @@ class UploadButton extends React.Component<IUploadButtonProps> {
         }
     };
 
-    private onUploadClick = () => {
+    private onUploadClick = async() => {
         if (MatrixClientPeg.get().isGuest()) {
             dis.dispatch({ action: 'require_registration' });
             return;
         }
+        
+        // yiqia-web For we must to check book limit so we move matrix media limit interface here from contentMessage sendContentListToRoom
+        const isOutOfLimits = await ContentMessages.sharedInstance().isOutofLimits(MatrixClientPeg.get());
+        if(isOutOfLimits) return;
+
         this.uploadInput.current?.click();
     };
 

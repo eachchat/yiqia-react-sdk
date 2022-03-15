@@ -59,7 +59,7 @@ import RoomContext, { TimelineRenderingType } from "../../contexts/RoomContext";
 import MatrixClientContext, { MatrixClientProps, withMatrixClientHOC } from "../../contexts/MatrixClientContext";
 import { E2EStatus, shieldStatusForRoom } from '../../utils/ShieldUtils';
 import { Action } from "../../dispatcher/actions";
-import { IMatrixClientCreds } from "../../MatrixClientPeg";
+import { IMatrixClientCreds, MatrixClientPeg } from "../../MatrixClientPeg";
 import ScrollPanel from "./ScrollPanel";
 import TimelinePanel from "./TimelinePanel";
 import ErrorBoundary from "../views/elements/ErrorBoundary";
@@ -847,8 +847,7 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
                     payload.data.threadId);
                 break;
             case 'picture_snapshot':
-                ContentMessages.sharedInstance().sendContentListToRoom(
-                    [payload.file], this.state.room.roomId, null, this.context);
+                this.toSendContentListToRoom([payload.file]);
                 break;
             case 'notifier_enabled':
             case Action.UploadStarted:
@@ -1356,12 +1355,22 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
         }
     };
 
-    private onDrop = ev => {
+    private toSendContentListToRoom = async(files) => {
+        // yiqia-web For we must to check book limit so we move matrix media limit interface here from contentMessage sendContentListToRoom
+        const isOutOfLimits = await ContentMessages.sharedInstance().isOutofLimits(MatrixClientPeg.get());
+        if(isOutOfLimits) return;
+
+        ContentMessages.sharedInstance().sendContentListToRoom(
+            files, this.state.room.roomId, null, this.context,
+        );
+    }
+
+    private onDrop = async ev => {
         ev.stopPropagation();
         ev.preventDefault();
-        ContentMessages.sharedInstance().sendContentListToRoom(
-            ev.dataTransfer.files, this.state.room.roomId, null, this.context,
-        );
+
+        this.toSendContentListToRoom(ev.dataTransfer.files);
+
         dis.fire(Action.FocusSendMessageComposer);
 
         this.setState({
