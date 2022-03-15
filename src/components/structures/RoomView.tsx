@@ -104,6 +104,8 @@ import { KeyBindingAction } from "../../accessibility/KeyboardShortcuts";
 import { ViewRoomPayload } from "../../dispatcher/payloads/ViewRoomPayload";
 import { JoinRoomPayload } from "../../dispatcher/payloads/JoinRoomPayload";
 import { DoAfterSyncPreparedPayload } from '../../dispatcher/payloads/DoAfterSyncPreparedPayload';
+import { getAudioLimits, getAudioState, getVideoLimits, getVideoState, isAudioOutOfLimits, isVideoOutOfLimits } from '../../YiqiaUtils';
+import InfoDialog from '../views/dialogs/InfoDialog';
 
 const DEBUG = false;
 let debuglog = function(msg: string) {};
@@ -1556,7 +1558,52 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
         return ret;
     }
 
-    private onCallPlaced = (type: CallType): void => {
+    private isVideoOutofLimits = async() => {
+        const videoLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
+        const videoOutOfLimits = await isVideoOutOfLimits();
+
+        if(videoOutOfLimits) {
+            videoLimitModal.close();
+            Modal.createDialog(InfoDialog, {
+                title: _t('VoIP supported time is out of limit'),
+                description: _t('Your organization supported video VoIP time is spent, please to update your set meal.'),
+            });
+            return true;
+        }
+
+        videoLimitModal.close();
+
+        return false;
+    }
+
+    private isAudioOutofLimits = async() => {
+        const audioLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
+        const audioOutOfLimits = await isAudioOutOfLimits();
+
+        if(audioOutOfLimits) {
+            audioLimitModal.close();
+            Modal.createDialog(InfoDialog, {
+                title: _t('VoIP supported time is out of limit'),
+                description: _t('Your organization supported audio VoIP time is spent, please to update your set meal.'),
+            });
+            return true;
+        }
+        
+        audioLimitModal.close();
+
+        return false;
+    }
+
+    private onCallPlaced = async(type: CallType) => {
+        let isOutOfLimits;
+        
+        if(type === CallType.Voice) {
+            isOutOfLimits = await this.isAudioOutofLimits();
+        } else {
+            isOutOfLimits = await this.isVideoOutofLimits();
+        }
+        if(isOutOfLimits) return;
+
         CallHandler.instance.placeCall(this.state.room?.roomId, type);
     };
 

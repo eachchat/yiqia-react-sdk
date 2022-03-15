@@ -46,7 +46,7 @@ import { BlurhashEncoder } from "./BlurhashEncoder";
 import SettingsStore from "./settings/SettingsStore";
 import { decorateStartSendingTime, sendRoundTripMetric } from "./sendTimePerformanceMetrics";
 import { TimelineRenderingType } from "./contexts/RoomContext";
-import { getAttachmentState, getAttachmentLimits } from "./YiqiaUtils";
+import { isAttachmentSupported, isAttachmentOutOfLimits, isTheUploadingOutOfLimits } from "./YiqiaUtils";
 import InfoDialog from "./components/views/dialogs/InfoDialog";
 
 const MAX_WIDTH = 800;
@@ -458,34 +458,34 @@ export default class ContentMessages {
         // yiqia-web For we must to check book limit so we move matrix media limit interface here from contentMessage sendContentListToRoom
         const mediaLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
 
-        const attachmentInfo = await getAttachmentLimits();
+        const attachmentSupported = await isAttachmentSupported();
         
         // We should have close the attacnment button if the user not support but here is still onpaste and ondrop
-        if(!attachmentInfo.support) {
+        if(!attachmentSupported) {
             mediaLimitModal.close();
             Modal.createDialog(InfoDialog, {
                 title: _t('Attachment is outof limit'),
                 description: _t('Your organization do not support upload attachment.'),
             });
-            return false;
+            return true;
         }
 
         if (!this.mediaConfig) { // hot-path optimization to not flash a spinner if we don't need to
             await this.ensureMediaConfigFetched(matrixClient);
         }
 
-        const currentAttachmentInfo = await getAttachmentState();
-        mediaLimitModal.close();
+        const attachmentOutOfLimits = await isAttachmentOutOfLimits();
 
-        if(currentAttachmentInfo?.countMedia && attachmentInfo.limit) {
-            if(parseFloat(currentAttachmentInfo?.countMedia) >= parseFloat(attachmentInfo.limit)) {
-                Modal.createDialog(InfoDialog, {
-                    title: _t('Attachment is outof limit'),
-                    description: _t('Your organization attachment space is full, please to update your set meal.'),
-                });
-                return true;
-            }
+        if(attachmentOutOfLimits) {
+            mediaLimitModal.close();
+            Modal.createDialog(InfoDialog, {
+                title: _t('Attachment is outof limit'),
+                description: _t('Your organization attachment space is full, please to update your set meal.'),
+            });
+            return true;
         }
+
+        mediaLimitModal.close();
 
         return false;
     }
@@ -548,6 +548,14 @@ export default class ContentMessages {
             });
             const [shouldContinue] = await finished;
             if (!shouldContinue) return;
+        }
+
+        const uploadingAttachmentOutOfLimits = await isTheUploadingOutOfLimits(files);
+        if(uploadingAttachmentOutOfLimits) {
+            Modal.createDialog(InfoDialog, {
+                title: _t('Attachment is outof limit'),
+                description: _t('Your organization attachment space is not enough for the current uploading, please to update your set meal.'),
+            });
         }
 
         let uploadAll = false;

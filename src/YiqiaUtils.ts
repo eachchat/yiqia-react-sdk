@@ -121,6 +121,15 @@ export async function getAttachmentState() {
     return attachmentResp;
 }
 
+async function getAttachmentStateCount() {
+    const currentAttachmentInfo = await getAttachmentState();
+    if(currentAttachmentInfo) {
+        return currentAttachmentInfo.countMedia;
+    } else {
+        return null;
+    }
+}
+
 /**
  * To get attachment limits of organization
  * @returns A promise that resolves with an object and it can not be null.
@@ -138,4 +147,205 @@ export async function getAttachmentLimits() {
     }
 
     return attachmentState;
+}
+
+export async function isAttachmentSupported() {
+    const attachmentInfo = await getAttachmentLimits();
+    return attachmentInfo.support;
+}
+
+export async function getAttatchmentLimitCount() {
+    const attachmentInfo = await getAttachmentLimits();
+    if(attachmentInfo.limit) {
+        return parseFloat(attachmentInfo.limit) * 1024 * 1024 * 1024
+    }
+    return null;
+}
+
+export async function isAttachmentOutOfLimits() {
+    const limitAttachmentByte = await getAttatchmentLimitCount();
+    const currentAttachmentByte = await getAttachmentStateCount();
+    if(currentAttachmentByte && limitAttachmentByte) {
+        if(currentAttachmentByte >= limitAttachmentByte) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+export async function isTheUploadingOutOfLimits(files) {
+    const limitAttachmentByte = await getAttatchmentLimitCount();
+    const currentAttachmentByte = await getAttachmentStateCount();
+    let totalSize;
+    for (let i = 0; i < files.length; ++i) {
+        totalSize = totalSize + files[i].size;
+    }
+    
+    if(currentAttachmentByte && limitAttachmentByte && (totalSize >= limitAttachmentByte - currentAttachmentByte)) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * To get current video state of organization
+ * @returns A promise that resolves with an object and it can be null.
+ */
+export async function getVideoState() {
+    const matrixClient = MatrixClientPeg.get();
+    const homeserver_base_url = matrixClient.getHomeserverUrl();
+    const hAccessToken = await matrixClient.getAccessToken();
+    let videoResp;
+    try{
+        const currentVideoResp = await (await fetch(homeserver_base_url + "/api/apps/org/v1/count/video", {
+            method: "GET",
+            mode: "cors",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + hAccessToken,
+            }
+        })).json();
+        videoResp = currentVideoResp.obj;
+    } catch(error) {
+
+    }
+
+    return videoResp;
+}
+
+/**
+ * To get video limits of organization
+ * @returns A promise that resolves with an object and it can not be null.
+ */
+export async function getVideoLimits() {
+    let videoState = {
+        support: true,
+        limit: null,
+    };
+
+    let bookLimit = await toGetBookInfos();
+
+    if(bookLimit?.video) {
+        videoState = bookLimit.video;
+    }
+
+    return videoState;
+}
+
+export async function isVideoSupported() {
+    const videoInfo = await getVideoLimits();
+    return videoInfo.support;
+}
+
+export async function getVideoLimitCount() {
+    const videoInfo = await getVideoLimits();
+    if(videoInfo.limit) {
+        return parseFloat(videoInfo.limit) * 60;
+    }
+    return null;
+}
+
+async function getVideoStateCount() {
+    const currentVideoInfo = await getVideoState();
+    if(currentVideoInfo) {
+        return currentVideoInfo.countVideo;
+    } else {
+        return null;
+    }
+}
+
+export async function isVideoOutOfLimits() {
+    const limitVideoSeconds = await getVideoLimitCount();
+    const currentVideoSeconds = await getVideoStateCount();
+    if(limitVideoSeconds && currentVideoSeconds) {
+        if(currentVideoSeconds >= limitVideoSeconds) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * To get current audio state of organization
+ * @returns A promise that resolves with an object and it can be null.
+ */
+
+export async function getAudioState() {
+    const matrixClient = MatrixClientPeg.get();
+    const homeserver_base_url = matrixClient.getHomeserverUrl();
+    const hAccessToken = await matrixClient.getAccessToken();
+    let audioResp;
+    try{
+        const currentAudioResp = await (await fetch(homeserver_base_url + "/api/apps/org/v1/count/audio", {
+            method: "GET",
+            mode: "cors",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + hAccessToken,
+            }
+        })).json();
+        audioResp = currentAudioResp.obj;
+    } catch(error) {
+
+    }
+
+    return audioResp;
+}
+
+/**
+ * To get audio limits of organization
+ * @returns A promise that resolves with an object and it can not be null.
+ */
+export async function getAudioLimits() {
+    let audioState = {
+        support: true,
+        limit: null,
+    };
+
+    let bookLimit = await toGetBookInfos();
+
+    if(bookLimit?.audio) {
+        audioState = bookLimit.audio;
+    }
+
+    return audioState;
+}
+
+export async function isAudioSupported() {
+    const audioInfo = await getAudioLimits();
+    return audioInfo.support;
+}
+
+export async function getAudioLimitCount() {
+    const audioInfo = await getAudioLimits();
+    if(audioInfo.limit) {
+        return parseFloat(audioInfo.limit) * 60;
+    }
+    return null;
+}
+
+async function getAudioStateCount() {
+    const currentAudioInfo = await getAudioState();
+    if(currentAudioInfo) {
+        return currentAudioInfo.countAudio;
+    } else {
+        return null;
+    }
+}
+
+export async function isAudioOutOfLimits() {
+    const limitAudioSeconds = await getAudioLimitCount();
+    const currentAudioSeconds = await getAudioStateCount();
+    if(limitAudioSeconds && currentAudioSeconds) {
+        if(currentAudioSeconds >= limitAudioSeconds) {
+            return true;
+        }
+    }
+
+    return false;
 }
