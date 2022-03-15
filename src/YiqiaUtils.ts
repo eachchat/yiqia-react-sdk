@@ -49,6 +49,7 @@ export async function toFetchBookInfos() {
                         support: true,
                         limit: data.obj.im?.uploadLimit,
                     },
+                    lastUpdateTime: String(new Date().getTime()),
                 }
 
                 localStorage.setItem("yiqia-book-info", JSON.stringify(bookInfo));
@@ -88,7 +89,13 @@ async function toGetBookInfos() {
     if(!bookLimit) {
         bookLimit = await toFetchBookInfos();
     } else {
-        toFetchBookInfos();
+        const lastUpdateTime = parseInt(bookLimit.lastUpdateTime);
+        const currentTime = new Date().getTime();
+        const theInterval = parseInt(SdkConfig.get()["gmsUpdateInterval"]);
+
+        if(currentTime - lastUpdateTime > theInterval) {
+            toFetchBookInfos();
+        }
     }
 
     return bookLimit;

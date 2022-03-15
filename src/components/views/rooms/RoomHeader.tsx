@@ -42,6 +42,7 @@ import { RightPanelPhases } from '../../../stores/right-panel/RightPanelStorePha
 import { NotificationStateEvents } from '../../../stores/notifications/NotificationState';
 import DMRoomMap from '../../../utils/DMRoomMap';
 import { UIFeature } from '../../../settings/UIFeature';
+import { isAudioSupported, isVideoSupported } from '../../../YiqiaUtils';
 
 export interface ISearchInfo {
     searchTerm: string;
@@ -65,6 +66,8 @@ interface IProps {
 
 interface IState {
     contextMenuPosition?: DOMRect;
+    isVideoSupported?: boolean;
+    isAudioSupported?: boolean;
 }
 
 @replaceableComponent("views.rooms.RoomHeader")
@@ -82,18 +85,26 @@ export default class RoomHeader extends React.Component<IProps, IState> {
         this.state = {};
     }
 
-    public componentDidMount() {
+    public componentDidMount = () => {
         const cli = MatrixClientPeg.get();
         cli.on("RoomState.events", this.onRoomStateEvents);
     }
 
-    public componentWillUnmount() {
+    public async componentWillUnmount() {
         const cli = MatrixClientPeg.get();
         if (cli) {
             cli.removeListener("RoomState.events", this.onRoomStateEvents);
         }
         const notiStore = RoomNotificationStateStore.instance.getRoomState(this.props.room);
         notiStore.removeListener(NotificationStateEvents.Update, this.onNotificationUpdate);
+
+        const videoSupported = await isVideoSupported();
+        const audioSupported = await isAudioSupported();
+
+        this.setState({
+            isVideoSupported: videoSupported,
+            isAudioSupported: audioSupported,
+        })
     }
 
     private onRoomStateEvents = (event: MatrixEvent, state: RoomState) => {
