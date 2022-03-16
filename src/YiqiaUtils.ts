@@ -11,43 +11,37 @@ export async function toFetchBookInfos() {
     const matrixClient = MatrixClientPeg.get();
     const domain = matrixClient.getDomain();
     try {
-        fetch(GMS_URL + "/gms/v1/configuration/" + window.btoa(domain), {
-            method: "GET",
-            mode: "cors",
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-        })
-        .then((resp) => {
-            return new Promise((resolve) => {
-                resolve(resp.json());
-            });
-        })
-        .then((data) => {
-            // {"videoLimit":"2000","uploadLimit":"500","audioSwitch":"true","audioLimit":"60000","videoSwitch":"true"}
-            if(data && data.code === 200 && data.obj) {
+        const bookInfoResp = await (await fetch(GMS_URL + "/gms/v1/configuration/" + window.btoa(domain), {
+                method: "GET",
+                mode: "cors",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+            })).json();
+            if(bookInfoResp && bookInfoResp.code === 200 && bookInfoResp.obj) {
+                const bookInfoObj = bookInfoResp.obj;
                 const bookInfo = {
                     contact: {
-                        support: data.obj.book?.contactSwitch,
+                        support: bookInfoObj.book?.contactSwitch,
                     },
                     group: {
-                        support: data.obj.book?.groupSwitch,
+                        support: bookInfoObj.book?.groupSwitch,
                     },
                     org: {
-                        support: data.obj.book?.orgSwitch,
+                        support: bookInfoObj.book?.orgSwitch,
                     },
                     audio: {
-                        support: data.obj.im?.audioSwitch,
-                        limit: data.obj.im?.videoLimit,
+                        support: bookInfoObj.im?.audioSwitch,
+                        limit: bookInfoObj.im?.videoLimit,
                     },
                     video: {
-                        support: data.obj.im?.videoSwitch,
-                        limit: data.obj.im?.audioLimit,
+                        support: bookInfoObj.im?.videoSwitch,
+                        limit: bookInfoObj.im?.audioLimit,
                     },
                     attachment: {
                         support: true,
-                        limit: data.obj.im?.uploadLimit,
+                        limit: bookInfoObj.im?.uploadLimit,
                     },
                     lastUpdateTime: String(new Date().getTime()),
                 }
@@ -57,11 +51,6 @@ export async function toFetchBookInfos() {
             } else {
                 return null;
             }
-        })
-        .catch((err) => {
-            console.log("err ", err);
-            return null;
-        })
     }
     catch(error) {
         return null;
@@ -184,8 +173,8 @@ export async function isAttachmentOutOfLimits() {
 export async function isTheUploadingOutOfLimits(files) {
     const limitAttachmentByte = await getAttatchmentLimitCount();
     const currentAttachmentByte = await getAttachmentStateCount();
-    let totalSize;
-    for (let i = 0; i < files.length; ++i) {
+    let totalSize = 0;
+    for (let i = 0; i < files.length; i++) {
         totalSize = totalSize + files[i].size;
     }
     

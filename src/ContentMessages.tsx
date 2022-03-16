@@ -552,10 +552,16 @@ export default class ContentMessages {
 
         const uploadingAttachmentOutOfLimits = await isTheUploadingOutOfLimits(files);
         if(uploadingAttachmentOutOfLimits) {
-            Modal.createDialog(InfoDialog, {
+            const { finished } = Modal.createTrackedDialog<[boolean]>('Upload Reply Warning', '', InfoDialog, {
                 title: _t('Attachment is outof limit'),
-                description: _t('Your organization attachment space is not enough for the current uploading, please to update your set meal.'),
+                description: (
+                    <div>{ _t(
+                        'Your organization attachment space is not enough for the current uploading, please to update your set meal.'
+                    ) }</div>
+                ),
             });
+            const [yesIKnow] = await finished;
+            return;
         }
 
         let uploadAll = false;
