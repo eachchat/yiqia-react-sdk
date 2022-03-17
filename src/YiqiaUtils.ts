@@ -45,7 +45,6 @@ export async function toFetchBookInfos() {
                     },
                     lastUpdateTime: String(new Date().getTime()),
                 }
-
                 localStorage.setItem("yiqia-book-info", JSON.stringify(bookInfo));
                 return bookInfo;
             } else {
@@ -344,4 +343,48 @@ export async function isAudioOutOfLimits() {
     }
 
     return false;
+}
+
+export async function yiqiaGmsSearch(term) {
+    const filter = {
+        filters: [
+            {
+                field: "userName",
+                operator: "co",
+                logic: 0,
+                value: term,
+            }
+        ],
+        perPage: 10,
+        sortOrder: 0,
+        sequenceId: 0,
+    }
+    const matrixClient = MatrixClientPeg.get();
+    const homeserver_base_url = matrixClient.getHomeserverUrl();
+    const hAccessToken = await matrixClient.getAccessToken();
+    return fetch(homeserver_base_url + "/api/apps/org/v1/users", {
+        method: "POST",
+        mode: "cors",
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + hAccessToken,
+        },
+        body: JSON.stringify(filter),
+    })
+    .then((resp) => {
+        return resp.json();
+    })
+    .then((searchResult) => {
+        console.log("search result is ", searchResult);
+        if(searchResult && searchResult.code === 200 && searchResult.results) {
+            return searchResult.results;
+        } else {
+            return [];
+        }
+    })
+    .catch((err) => {
+        console.log("err ", err);
+        return [];
+    })
 }
