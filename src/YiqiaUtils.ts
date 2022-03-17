@@ -79,7 +79,9 @@ async function toGetBookInfos() {
     } else {
         const lastUpdateTime = parseInt(bookLimit.lastUpdateTime);
         const currentTime = new Date().getTime();
-        const theInterval = parseInt(SdkConfig.get()["gmsUpdateInterval"]);
+        const configureInterval = SdkConfig.get()["gmsUpdateInterval"] ? SdkConfig.get()["gmsUpdateInterval"] : 10 * 60 * 1000;
+        
+        const theInterval = parseInt(configureInterval);
 
         if(currentTime - lastUpdateTime > theInterval) {
             toFetchBookInfos();
