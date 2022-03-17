@@ -849,7 +849,9 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
                     payload.data.threadId);
                 break;
             case 'picture_snapshot':
-                this.toSendContentListToRoom([payload.file]);
+                ContentMessages.sharedInstance().sendContentListToRoom(
+                    [payload.file], this.state.room.roomId, null, this.context,
+                );
                 break;
             case 'notifier_enabled':
             case Action.UploadStarted:
@@ -1357,21 +1359,13 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
         }
     };
 
-    private toSendContentListToRoom = async(files) => {
-        // yiqia-web For we must to check book limit so we move matrix media limit interface here from contentMessage sendContentListToRoom
-        const isOutOfLimits = await ContentMessages.sharedInstance().isOutofLimits(MatrixClientPeg.get());
-        if(isOutOfLimits) return;
-
-        ContentMessages.sharedInstance().sendContentListToRoom(
-            files, this.state.room.roomId, null, this.context,
-        );
-    }
-
     private onDrop = async ev => {
         ev.stopPropagation();
         ev.preventDefault();
 
-        this.toSendContentListToRoom(ev.dataTransfer.files);
+        ContentMessages.sharedInstance().sendContentListToRoom(
+            ev.dataTransfer.files, this.state.room.roomId, null, this.context,
+        );
 
         dis.fire(Action.FocusSendMessageComposer);
 

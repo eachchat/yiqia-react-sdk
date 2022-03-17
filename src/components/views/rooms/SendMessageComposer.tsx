@@ -559,20 +559,6 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
         }
     };
 
-    private toSendContentListToRoom = async(files) => {
-        // yiqia-web For we must to check book limit so we move matrix media limit interface here from contentMessage sendContentListToRoom
-        const isOutOfLimits = await ContentMessages.sharedInstance().isOutofLimits(MatrixClientPeg.get());
-        if(isOutOfLimits) return;
-
-        ContentMessages.sharedInstance().sendContentListToRoom(
-            Array.from(files),
-            this.props.room.roomId,
-            this.props.relation,
-            this.props.mxClient,
-            this.context.timelineRenderingType,
-        );
-    }
-
     private onPaste = (event: ClipboardEvent<HTMLDivElement>): boolean => {
         const { clipboardData } = event;
         // Prioritize text on the clipboard over files if RTF is present as Office on macOS puts a bitmap
@@ -580,7 +566,13 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
         // We check text/rtf instead of text/plain as when copy+pasting a file from Finder or Gnome Image Viewer
         // it puts the filename in as text/plain which we want to ignore.
         if (clipboardData.files.length && !clipboardData.types.includes("text/rtf")) {
-            this.toSendContentListToRoom(clipboardData.files);
+            ContentMessages.sharedInstance().sendContentListToRoom(
+                Array.from(clipboardData.files),
+                this.props.room.roomId,
+                this.props.relation,
+                this.props.mxClient,
+                this.context.timelineRenderingType,
+            );
             return true; // to skip internal onPaste handler
         }
     };
