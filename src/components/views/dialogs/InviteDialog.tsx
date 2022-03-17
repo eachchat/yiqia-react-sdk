@@ -72,6 +72,7 @@ import UserIdentifierCustomisations from '../../../customisations/UserIdentifier
 import CopyableText from "../elements/CopyableText";
 import { ScreenName } from '../../../PosthogTrackers';
 import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
+import { yiqiaGmsSearch } from '../../../YiqiaUtils';
 
 // we have a number of types defined from the Matrix spec which can't reasonably be altered here.
 /* eslint-disable camelcase */
@@ -379,6 +380,7 @@ interface IInviteDialogState {
     numSuggestionsShown: number;
     serverResultsMixin: { user: Member, userId: string }[];
     threepidResultsMixin: { user: Member, userId: string, threePid?: string}[];
+    yiqiaOrgResults: { user: Member, userId: string }[];
     canUseIdentityServer: boolean;
     tryingIdentityServer: boolean;
     consultFirst: boolean;
@@ -431,6 +433,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             numSuggestionsShown: INITIAL_ROOMS_SHOWN,
             serverResultsMixin: [],
             threepidResultsMixin: [],
+            yiqiaOrgResults: [],
             canUseIdentityServer: !!MatrixClientPeg.get().getIdentityServerUrl(),
             tryingIdentityServer: false,
             consultFirst: false,
@@ -852,6 +855,33 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
     };
 
     private updateSuggestions = async (term) => {
+        const matrixClient = MatrixClientPeg.get();
+        yiqiaGmsSearch(term).then(async(gmsResult) => {
+            if(term !== this.state.filterText) {
+                return;
+            }
+
+            console.log("gmsResult is ", gmsResult);
+            if(gmsResult.length !== 0) {
+                let dealedResult = [];
+                for(let i = 0; i < gmsResult.length; i++) {
+                    const u = gmsResult[i];
+                    const profile = await matrixClient.getProfileInfo(u.matrixId);
+                    dealedResult.push({
+                        userId: u.matrixId,
+                        user: new DirectoryMember({
+                            user_id: u.matrixId,
+                            display_name: u.displayName,
+                            avatar_url: profile['avatar_url'],
+                        })
+                    })
+                }
+
+                console.log("dealedResult ", dealedResult);
+                this.setState({yiqiaOrgResults: dealedResult});
+            }
+        });
+
         MatrixClientPeg.get().searchUserDirectory({ term }).then(async r => {
             if (term !== this.state.filterText) {
                 // Discard the results - we were probably too slow on the server-side to make
@@ -1187,22 +1217,30 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         // Mix in the server results if we have any, but only if we're searching. We track the additional
         // members separately because we want to filter sourceMembers but trust the mixin arrays to have
         // the right members in them.
+        let yiqiaAdditionalMembers = []; // For yiqia-web is used for organization so the org result should higher and higher quality
         let priorityAdditionalMembers = []; // Shows up before our own suggestions, higher quality
         let otherAdditionalMembers = []; // Shows up after our own suggestions, lower quality
-        const hasMixins = this.state.serverResultsMixin || this.state.threepidResultsMixin;
+        const hasMixins = this.state.serverResultsMixin || this.state.threepidResultsMixin || this.state.yiqiaOrgResults;
         if (this.state.filterText && hasMixins && kind === 'suggestions') {
             // We don't want to duplicate members though, so just exclude anyone we've already seen.
             // The type of u is a pain to define but members of both mixins have the 'userId' property
             const notAlreadyExists = (u: any): boolean => {
                 return !sourceMembers.some(m => m.userId === u.userId)
                     && !priorityAdditionalMembers.some(m => m.userId === u.userId)
-                    && !otherAdditionalMembers.some(m => m.userId === u.userId);
+                    && !otherAdditionalMembers.some(m => m.userId === u.userId)
+                    && !yiqiaAdditionalMembers.some(m => m.userId === u.userId);
             };
 
-            otherAdditionalMembers = this.state.serverResultsMixin.filter(notAlreadyExists);
-            priorityAdditionalMembers = this.state.threepidResultsMixin.filter(notAlreadyExists);
+            const notExistInRecents = (u: any): boolean => {
+                return !this.state.recents.some(m => m.userId === u.userId);
+            }
+
+            sourceMembers = sourceMembers.filter(notExistInRecents);
+            yiqiaAdditionalMembers = this.state.yiqiaOrgResults.filter(notAlreadyExists).filter(notExistInRecents);
+            otherAdditionalMembers = this.state.serverResultsMixin.filter(notAlreadyExists).filter(notExistInRecents);
+            priorityAdditionalMembers = this.state.threepidResultsMixin.filter(notAlreadyExists).filter(notExistInRecents);
         }
-        const hasAdditionalMembers = priorityAdditionalMembers.length > 0 || otherAdditionalMembers.length > 0;
+        const hasAdditionalMembers = priorityAdditionalMembers.length > 0 || otherAdditionalMembers.length > 0 || yiqiaAdditionalMembers.length > 0;
 
         // Hide the section if there's nothing to filter by
         if (sourceMembers.length === 0 && !hasAdditionalMembers) return null;
@@ -1225,7 +1263,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
         // Now we mix in the additional members. Again, we presume these have already been filtered. We
         // also assume they are more relevant than our suggestions and prepend them to the list.
-        sourceMembers = [...priorityAdditionalMembers, ...sourceMembers, ...otherAdditionalMembers];
+        sourceMembers = [...yiqiaAdditionalMembers, ...priorityAdditionalMembers, ...sourceMembers, ...otherAdditionalMembers];
 
         // If we're going to hide one member behind 'show more', just use up the space of the button
         // with the member's tile instead.
