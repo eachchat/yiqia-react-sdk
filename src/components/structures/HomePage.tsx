@@ -123,7 +123,10 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
             { introSection }
             <div className="mx_HomePage_default_buttons">
                 <AccessibleButton onClick={onClickSendDm} className="mx_HomePage_button_sendDm">
-                    { _tDom("Send a Direct Message") }
+                    { _tDom("Start direct message") }
+                </AccessibleButton>
+                <AccessibleButton onClick={onClickNewRoom} className="mx_HomePage_button_createGroup">
+                    { _tDom("Start a room chat") }
                 </AccessibleButton>
                 {
                     SettingsStore.getValue(UIFeature.ExplorePublicEnabled) &&
@@ -131,9 +134,6 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
                         { _tDom("Explore Public Rooms") }
                     </AccessibleButton>
                 }
-                <AccessibleButton onClick={onClickNewRoom} className="mx_HomePage_button_createGroup">
-                    { _tDom("Create a Group Chat") }
-                </AccessibleButton>
             </div>
         </div>
     </AutoHideScrollbar>;
