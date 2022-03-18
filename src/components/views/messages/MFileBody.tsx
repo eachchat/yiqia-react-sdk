@@ -189,8 +189,10 @@ export default class MFileBody extends React.Component<IProps, IState> {
         } else {
             // As a button we're missing the `download` attribute for styling reasons, so
             // download with the file downloader.
-            this.fileDownloader.download({
-                blob: await mediaHelper.sourceBlob.value,
+            
+            const src = await mediaHelper.sourceUrl.value;
+            await this.fileDownloader.download({
+                blob: src,
                 name: this.fileName,
             });
         }
@@ -307,16 +309,24 @@ export default class MFileBody extends React.Component<IProps, IState> {
             // it is too big. There is the risk of the reported file size and the actual file size
             // being different, however the user shouldn't normally run into this problem.
             const fileTooBig = typeof(fileSize) === 'number' ? fileSize > 524288000 : true;
-
+            console.log("[MFileBody] onclick filttype ", fileType);
             if (["application/pdf"].includes(fileType) && !fileTooBig) {
                 // We want to force a download on this type, so use an onClick handler.
-                downloadProps["onClick"] = (e) => {
+                downloadProps["onClick"] = async(e) => {
                     logger.log(`Downloading ${fileType} as blob (unencrypted)`);
 
                     // Avoid letting the <a> do its thing
                     e.preventDefault();
                     e.stopPropagation();
 
+                    // We have to create an anchor to download the file
+                    const src = await this.props.mediaEventHelper.sourceUrl.value;
+                    const tempAnchor = document.createElement('a');
+                    tempAnchor.download = this.fileName;
+                    tempAnchor.href = src;
+                    document.body.appendChild(tempAnchor); // for firefox: https://stackoverflow.com/a/32226068
+                    tempAnchor.click();
+                    tempAnchor.remove();
                     // Start a fetch for the download
                     // Based upon https://stackoverflow.com/a/49500465
                     this.props.mediaEventHelper.sourceBlob.value.then((blob) => {
