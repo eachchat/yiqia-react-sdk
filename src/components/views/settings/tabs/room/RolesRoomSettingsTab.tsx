@@ -31,6 +31,7 @@ import ErrorDialog from '../../../dialogs/ErrorDialog';
 import PowerSelector from "../../../elements/PowerSelector";
 import SettingsFieldset from '../../SettingsFieldset';
 import SettingsStore from "../../../../../settings/SettingsStore";
+import SdkConfig from '../../../../../SdkConfig';
 
 interface IEventShowOpts {
     isState?: boolean;
@@ -246,7 +247,7 @@ export default class RolesRoomSettingsTab extends React.Component<IProps> {
             plEventsToLabels[EventType.RoomPinnedEvents] = _td("Manage pinned events");
         }
 
-        const powerLevelDescriptors: Record<string, IPowerLevelDescriptor> = {
+        let powerLevelDescriptors: Record<string, IPowerLevelDescriptor> = {
             "users_default": {
                 desc: _t('Default role'),
                 defaultValue: 0,
@@ -268,10 +269,6 @@ export default class RolesRoomSettingsTab extends React.Component<IProps> {
                 desc: _t('Remove users'),
                 defaultValue: 50,
             },
-            "ban": {
-                desc: _t('Ban users'),
-                defaultValue: 50,
-            },
             "redact": {
                 desc: _t('Remove messages sent by others'),
                 defaultValue: 50,
@@ -283,6 +280,15 @@ export default class RolesRoomSettingsTab extends React.Component<IProps> {
                 hideForSpace: true,
             },
         };
+
+        const canBanFromConfig = SdkConfig.get()["forbiddenBan"];
+        if(canBanFromConfig) {
+            powerLevelDescriptors = Object.assign({}, powerLevelDescriptors, {
+                "ban": {
+                    desc: _t('Ban users'),
+                    defaultValue: 50,
+                },});
+        }
 
         const eventsLevels = plContent.events || {};
         const userLevels = plContent.users || {};

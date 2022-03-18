@@ -917,6 +917,7 @@ const RoomAdminToolsContainer: React.FC<IBaseRoomProps> = ({
 
     const isMe = me.userId === member.userId;
     const canAffectUser = member.powerLevel < me.powerLevel || isMe;
+    const canBanFromConfig = !SdkConfig.get()["forbiddenBan"];
 
     if (!isMe && canAffectUser && me.powerLevel >= kickPowerLevel) {
         kickButton = <RoomKickButton
@@ -931,7 +932,7 @@ const RoomAdminToolsContainer: React.FC<IBaseRoomProps> = ({
             <RedactMessagesButton member={member} startUpdating={startUpdating} stopUpdating={stopUpdating} />
         );
     }
-    if (!isMe && canAffectUser && me.powerLevel >= banPowerLevel) {
+    if (!isMe && canAffectUser && me.powerLevel >= banPowerLevel && canBanFromConfig) {
         banButton = <BanToggleButton
             room={room}
             member={member}
