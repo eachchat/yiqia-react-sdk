@@ -85,18 +85,9 @@ export default class RoomHeader extends React.Component<IProps, IState> {
         this.state = {};
     }
 
-    public componentDidMount = () => {
+    public componentDidMount = async() => {
         const cli = MatrixClientPeg.get();
         cli.on("RoomState.events", this.onRoomStateEvents);
-    }
-
-    public async componentWillUnmount() {
-        const cli = MatrixClientPeg.get();
-        if (cli) {
-            cli.removeListener("RoomState.events", this.onRoomStateEvents);
-        }
-        const notiStore = RoomNotificationStateStore.instance.getRoomState(this.props.room);
-        notiStore.removeListener(NotificationStateEvents.Update, this.onNotificationUpdate);
 
         const videoSupported = await isVideoSupported();
         const audioSupported = await isAudioSupported();
@@ -105,6 +96,15 @@ export default class RoomHeader extends React.Component<IProps, IState> {
             isVideoSupported: videoSupported,
             isAudioSupported: audioSupported,
         })
+    }
+
+    public componentWillUnmount() {
+        const cli = MatrixClientPeg.get();
+        if (cli) {
+            cli.removeListener("RoomState.events", this.onRoomStateEvents);
+        }
+        const notiStore = RoomNotificationStateStore.instance.getRoomState(this.props.room);
+        notiStore.removeListener(NotificationStateEvents.Update, this.onNotificationUpdate);
     }
 
     private onRoomStateEvents = (event: MatrixEvent, state: RoomState) => {
@@ -229,7 +229,12 @@ export default class RoomHeader extends React.Component<IProps, IState> {
                 title={_t("Video call")}
                 key="video"
             />;
-            buttons.push(voiceCallButton, videoCallButton);
+            if(this.state.isAudioSupported) {
+                buttons.push(voiceCallButton);
+            }
+            if(this.state.isVideoSupported) {
+                buttons.push(videoCallButton);
+            }
         }
 
         if (this.props.onForgetClick) {

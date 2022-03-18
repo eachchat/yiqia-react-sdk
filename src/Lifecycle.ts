@@ -208,10 +208,10 @@ export function attemptTokenLogin(
     ).then(function(creds) {
         logger.log("Logged in with token");
         return clearStorage().then(async () => {
-            toFetchBookInfos();
             await persistCredentials(creds);
             // remember that we just logged in
             sessionStorage.setItem("mx_fresh_login", String(true));
+            toFetchBookInfos();
             return true;
         });
     }).catch((err) => {
@@ -578,7 +578,6 @@ async function doSetLoggedIn(
         await clearStorage();
     }
 
-    toFetchBookInfos();
     const results = await StorageManager.checkConsistency();
     // If there's an inconsistency between account data in local storage and the
     // crypto store, we'll be generally confused when handling encrypted data.
@@ -625,6 +624,7 @@ async function doSetLoggedIn(
     dis.dispatch({ action: 'on_logged_in' });
 
     await startMatrixClient(/*startSyncing=*/!softLogout);
+    toFetchBookInfos();
     return client;
 }
 

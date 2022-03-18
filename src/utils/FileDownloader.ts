@@ -24,7 +24,7 @@ export const DEFAULT_STYLES = {
 };
 
 type DownloadOptions = {
-    blob: Blob;
+    blob: any;
     name: string;
     autoDownload?: boolean;
     opts?: typeof DEFAULT_STYLES;
