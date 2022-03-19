@@ -854,6 +854,29 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         this.props.onFinished(false);
     };
 
+    private updateYiqiaOrgMoreResult = async() => {
+        const matrixClient = MatrixClientPeg.get();
+        const newDealedResult = this.state.yiqiaOrgResults;
+        if(newDealedResult.length !== 0) {
+            let dealedResult = [];
+            for(let i = 0; i < newDealedResult.length; i++) {
+                const u = newDealedResult[i];
+                const profile = await matrixClient.getProfileInfo(u.userId);
+                dealedResult.push({
+                    userId: u.userId,
+                    user: new DirectoryMember({
+                        user_id: u.userId,
+                        display_name: u.user.name,
+                        avatar_url: profile['avatar_url'],
+                    })
+                })
+            }
+
+            console.log("dealedResult ", dealedResult);
+            this.setState({yiqiaOrgResults: dealedResult});
+        }
+    }
+
     private updateSuggestions = async (term) => {
         const matrixClient = MatrixClientPeg.get();
         yiqiaGmsSearch(term).then(async(gmsResult) => {
@@ -866,13 +889,16 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                 let dealedResult = [];
                 for(let i = 0; i < gmsResult.length; i++) {
                     const u = gmsResult[i];
-                    const profile = await matrixClient.getProfileInfo(u.matrixId);
+                    let profile;
+                    if(i < 3) {
+                        profile = await matrixClient.getProfileInfo(u.matrixId);
+                    }
                     dealedResult.push({
                         userId: u.matrixId,
                         user: new DirectoryMember({
                             user_id: u.matrixId,
                             display_name: u.displayName,
-                            avatar_url: profile['avatar_url'],
+                            avatar_url: profile ? profile['avatar_url'] : null,
                         })
                     })
                 }
@@ -1055,6 +1081,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
     private showMoreSuggestions = () => {
         this.setState({ numSuggestionsShown: this.state.numSuggestionsShown + INCREMENT_ROOMS_SHOWN });
+        this.updateYiqiaOrgMoreResult();
     };
 
     private toggleMember = (member: Member) => {
@@ -1267,6 +1294,8 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
         // If we're going to hide one member behind 'show more', just use up the space of the button
         // with the member's tile instead.
+        console.log("[renderSection] showNum ", showNum);
+        console.log("[renderSection] sourceMembers.length ", sourceMembers.length);
         if (showNum === sourceMembers.length - 1) showNum++;
 
         // .slice() will return an incomplete array but won't error on us if we go too far

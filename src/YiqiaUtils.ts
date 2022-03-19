@@ -364,7 +364,8 @@ export async function yiqiaGmsSearch(term) {
     const matrixClient = MatrixClientPeg.get();
     const homeserver_base_url = matrixClient.getHomeserverUrl();
     const hAccessToken = await matrixClient.getAccessToken();
-    return fetch(homeserver_base_url + "/api/apps/org/v1/users", {
+    // return fetch(homeserver_base_url + "/api/apps/org/v1/users", {
+    return fetch(homeserver_base_url + "/api/apps/org/v1/search", {
         method: "POST",
         mode: "cors",
         headers: {
@@ -372,7 +373,10 @@ export async function yiqiaGmsSearch(term) {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + hAccessToken,
         },
-        body: JSON.stringify(filter),
+        // body: JSON.stringify(filter),
+        body: JSON.stringify({
+            keyword: term.trim()
+        }),
     })
     .then((resp) => {
         return resp.json();
