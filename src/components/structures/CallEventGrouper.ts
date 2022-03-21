@@ -21,6 +21,11 @@ import { EventEmitter } from 'events';
 
 import CallHandler, { CallHandlerEvent } from '../../CallHandler';
 import { MatrixClientPeg } from "../../MatrixClientPeg";
+import { isAudioOutOfLimits, isVideoOutOfLimits } from "../../YiqiaUtils";
+import Modal from "../../Modal";
+import Spinner from "../views/elements/Spinner";
+import InfoDialog from "../views/dialogs/InfoDialog";
+import { _t } from '../../languageHandler';
 
 export enum CallEventGrouperEvent {
     StateChanged = "state_changed",
@@ -137,6 +142,42 @@ export default class CallEventGrouper extends EventEmitter {
         return [...this.events][0]?.getRoomId();
     }
 
+    private isVideoOutofLimits = async() => {
+        const videoLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
+        const videoOutOfLimits = await isVideoOutOfLimits();
+
+        if(videoOutOfLimits) {
+            videoLimitModal.close();
+            Modal.createDialog(InfoDialog, {
+                title: _t('VoIP supported time is out of limit'),
+                description: _t('Your organization supported video VoIP time is spent, please to update your set meal.'),
+            });
+            return true;
+        }
+
+        videoLimitModal.close();
+
+        return false;
+    }
+
+    private isAudioOutofLimits = async() => {
+        const audioLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
+        const audioOutOfLimits = await isAudioOutOfLimits();
+
+        if(audioOutOfLimits) {
+            audioLimitModal.close();
+            Modal.createDialog(InfoDialog, {
+                title: _t('VoIP supported time is out of limit'),
+                description: _t('Your organization supported audio VoIP time is spent, please to update your set meal.'),
+            });
+            return true;
+        }
+        
+        audioLimitModal.close();
+
+        return false;
+    }
+
     private onSilencedCallsChanged = () => {
         const newState = CallHandler.instance.isCallSilenced(this.callId);
         this.emit(CallEventGrouperEvent.SilencedChanged, newState);
@@ -146,16 +187,34 @@ export default class CallEventGrouper extends EventEmitter {
         this.emit(CallEventGrouperEvent.LengthChanged, length);
     };
 
-    public answerCall = (): void => {
-        CallHandler.instance.answerCall(this.roomId);
+    public answerCall = async() => {
+        let isOutOfLimits;
+        
+        if(this.isVoice) {
+            isOutOfLimits = await this.isAudioOutofLimits();
+        } else {
+            isOutOfLimits = await this.isVideoOutofLimits();
+        }
+        if(!isOutOfLimits) {
+            CallHandler.instance.answerCall(this.roomId);
+        }
     };
 
     public rejectCall = (): void => {
         CallHandler.instance.hangupOrReject(this.roomId, true);
     };
 
-    public callBack = (): void => {
-        CallHandler.instance.placeCall(this.roomId, this.isVoice ? CallType.Voice : CallType.Video);
+    public callBack = async() => {
+        let isOutOfLimits;
+        
+        if(this.isVoice) {
+            isOutOfLimits = await this.isAudioOutofLimits();
+        } else {
+            isOutOfLimits = await this.isVideoOutofLimits();
+        }
+        if(!isOutOfLimits) {
+            CallHandler.instance.placeCall(this.roomId, this.isVoice ? CallType.Voice : CallType.Video);
+        };
     };
 
     public toggleSilenced = () => {
