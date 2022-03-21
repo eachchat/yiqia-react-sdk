@@ -520,12 +520,12 @@ export default class ContentMessages {
             const [shouldUpload] = await finished;
             if (!shouldUpload) return;
         }
-        // yiqia-web For we must to check book limit so we move matrix media limit interface here to out
-        // if (!this.mediaConfig) { // hot-path optimization to not flash a spinner if we don't need to
-        //     const modal = Modal.createDialog(Spinner, null, 'mx_Dialog_spinner');
-        //     await this.ensureMediaConfigFetched(matrixClient);
-        //     modal.close();
-        // }
+        
+        if (!this.mediaConfig) { // hot-path optimization to not flash a spinner if we don't need to
+            const modal = Modal.createDialog(Spinner, null, 'mx_Dialog_spinner');
+            await this.ensureMediaConfigFetched(matrixClient);
+            modal.close();
+        }
 
         const tooBigFiles = [];
         const okFiles = [];
