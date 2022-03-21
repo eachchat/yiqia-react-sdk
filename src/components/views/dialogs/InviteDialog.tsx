@@ -390,6 +390,7 @@ interface IInviteDialogState {
     // These two flags are used for the 'Go' button to communicate what is going on.
     busy: boolean;
     errorText: string;
+    breakProfileUpdateFlag: boolean;
 }
 
 @replaceableComponent("views.dialogs.InviteDialog")
@@ -443,6 +444,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
             // These two flags are used for the 'Go' button to communicate what is going on.
             busy: false,
             errorText: null,
+            breakProfileUpdateFlag: false,
         };
     }
 
@@ -860,6 +862,10 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
         if(newDealedResult.length !== 0) {
             let dealedResult = [];
             for(let i = 0; i < newDealedResult.length; i++) {
+                if(this.state.breakProfileUpdateFlag) {
+                    this.setState({breakProfileUpdateFlag: false});
+                    break;
+                };
                 const u = newDealedResult[i];
                 const profile = await matrixClient.getProfileInfo(u.userId);
                 dealedResult.push({
@@ -880,7 +886,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
     private updateSuggestions = async (term) => {
         const matrixClient = MatrixClientPeg.get();
         yiqiaGmsSearch(term).then(async(gmsResult) => {
-            if(term !== this.state.filterText) {
+            if(term !== this.state.filterText || term.trim().length === 0) {
                 return;
             }
 
@@ -1062,7 +1068,10 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
     private updateFilter = (e) => {
         const term = e.target.value;
-        this.setState({ filterText: term });
+        this.setState({ 
+            filterText: term,
+            breakProfileUpdateFlag: false,
+        });
 
         // Debounce server lookups to reduce spam. We don't clear the existing server
         // results because they might still be vaguely accurate, likewise for races which
