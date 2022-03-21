@@ -33,11 +33,11 @@ export async function toFetchBookInfos() {
                     },
                     audio: {
                         support: bookInfoObj.im?.audioSwitch,
-                        limit: bookInfoObj.im?.videoLimit,
+                        limit: bookInfoObj.im?.audioLimit,
                     },
                     video: {
                         support: bookInfoObj.im?.videoSwitch,
-                        limit: bookInfoObj.im?.audioLimit,
+                        limit: bookInfoObj.im?.videoLimit,
                     },
                     attachment: {
                         support: true,
