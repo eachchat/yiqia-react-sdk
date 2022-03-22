@@ -48,7 +48,32 @@ export async function toFetchBookInfos() {
                 localStorage.setItem("yiqia-book-info", JSON.stringify(bookInfo));
                 return bookInfo;
             } else {
-                return null;
+                const bookInfo = {
+                    contact: {
+                        support: true,
+                    },
+                    group: {
+                        support: true
+                    },
+                    org: {
+                        support: false,
+                    },
+                    audio: {
+                        support: false,
+                        limit: 0,
+                    },
+                    video: {
+                        support: false,
+                        limit: 0,
+                    },
+                    attachment: {
+                        support: true,
+                        limit: 100,
+                    },
+                    lastUpdateTime: String(new Date().getTime()),
+                }
+                localStorage.setItem("yiqia-book-info", JSON.stringify(bookInfo));
+                return bookInfo;
             }
     }
     catch(error) {
