@@ -10,8 +10,11 @@ const GMS_URL = SdkConfig.get()["gms_url"];
 export async function toFetchBookInfos() {
     const matrixClient = MatrixClientPeg.get();
     const domain = matrixClient.getDomain();
+    const baseUrl = matrixClient.getHomeserverUrl();
+    const hServerUrl = new URL(baseUrl);
+    const host = hServerUrl.host;
     try {
-        const bookInfoResp = await (await fetch(GMS_URL + "/gms/v1/configuration/" + window.btoa(domain), {
+        const bookInfoResp = await (await fetch(GMS_URL + "/gms/v1/configuration/" + window.btoa(host), {
                 method: "GET",
                 mode: "cors",
                 headers: {
