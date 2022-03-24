@@ -27,6 +27,7 @@ import InfoTooltip, { InfoTooltipKind } from '../elements/InfoTooltip';
 import AccessibleTooltipButton from '../elements/AccessibleTooltipButton';
 import { formatCallTime } from "../../../DateUtils";
 import Clock from "../audio_messages/Clock";
+import { isAudioSupported, isVideoSupported } from '../../../YiqiaUtils';
 
 const MAX_NON_NARROW_WIDTH = 450 / 70 * 100;
 
@@ -41,6 +42,8 @@ interface IState {
     silenced: boolean;
     narrow: boolean;
     length: number;
+    supportVoiceVoip: boolean;
+    supportVideoVoip: boolean;
 }
 
 export default class CallEvent extends React.PureComponent<IProps, IState> {
@@ -55,16 +58,22 @@ export default class CallEvent extends React.PureComponent<IProps, IState> {
             silenced: false,
             narrow: false,
             length: 0,
+            supportVideoVoip: true,
+            supportVoiceVoip: true,
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         this.props.callEventGrouper.addListener(CallEventGrouperEvent.StateChanged, this.onStateChanged);
         this.props.callEventGrouper.addListener(CallEventGrouperEvent.SilencedChanged, this.onSilencedChanged);
         this.props.callEventGrouper.addListener(CallEventGrouperEvent.LengthChanged, this.onLengthChanged);
 
         this.resizeObserver = new ResizeObserver(this.resizeObserverCallback);
         this.wrapperElement.current && this.resizeObserver.observe(this.wrapperElement.current);
+        
+        const showVideo = await isVideoSupported();
+        const showVoice = await isAudioSupported();
+        this.setState({supportVideoVoip: showVideo, supportVoiceVoip: showVoice});
     }
 
     componentWillUnmount() {
@@ -95,15 +104,19 @@ export default class CallEvent extends React.PureComponent<IProps, IState> {
     };
 
     private renderCallBackButton(text: string): JSX.Element {
-        return (
-            <AccessibleButton
-                className="mx_CallEvent_content_button mx_CallEvent_content_button_callBack"
-                onClick={this.props.callEventGrouper.callBack}
-                kind="primary"
-            >
-                <span> { text } </span>
-            </AccessibleButton>
-        );
+        if(this.state.supportVideoVoip || this.state.supportVoiceVoip) {
+            return (
+                <AccessibleButton
+                    className="mx_CallEvent_content_button mx_CallEvent_content_button_callBack"
+                    onClick={this.props.callEventGrouper.callBack}
+                    kind="primary"
+                >
+                    <span> { text } </span>
+                </AccessibleButton>
+            );
+        } else {
+            return null;
+        }
     }
 
     private renderSilenceIcon(): JSX.Element {
