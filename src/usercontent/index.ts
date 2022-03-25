@@ -18,8 +18,7 @@ function remoteRender(event: MessageEvent): void {
     // @ts-ignore
     a.style = data.style;
     a.style.fontFamily = "Arial, Helvetica, Sans-Serif";
-    if(typeof data.blob !== "string") a.href = window.URL.createObjectURL(data.blob);
-    if(typeof data.blob === "string") a.href = data.blob;
+    a.href = window.URL.createObjectURL(data.blob);
     a.appendChild(img);
     a.appendChild(document.createTextNode(data.textContent));
 
@@ -46,18 +45,12 @@ function remoteRender(event: MessageEvent): void {
     body.appendChild(a);
 
     if (event.data.auto) {
-        console.log("[remoteRender] data is click");
         a.click(); // try to trigger download automatically
     }
 }
 
 window.onmessage = function(e: MessageEvent): void {
-    console.log("[index.tx] onmessage ", e);
     if (e.origin === window.location.origin) {
-        console.log("[index.tx] onmessage e.data.blob ", e.data.blob, " e.data.src ", e.data.src)
-        if (e.data.blob || e.data.src) {
-            console.log("[index.tx] onmessage ", e);
-            remoteRender(e);
-        }
+        if (e.data.blob) remoteRender(e);
     }
 };
