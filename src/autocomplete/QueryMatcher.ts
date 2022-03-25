@@ -101,9 +101,10 @@ export default class QueryMatcher<T extends Object> {
         if (this._options.shouldMatchWordsOnly) {
             query = query.replace(/[^\w]/g, '');
         }
-        if (query.length === 0) {
-            return [];
-        }
+        // yiqia-web should search when users input a single "@"
+        // if (query.length === 0) {
+        //     return [];
+        // }
         const matches = [];
         // Iterate through the map & check each key.
         // ES6 Map iteration order is defined to be insertion order, so results
@@ -113,11 +114,17 @@ export default class QueryMatcher<T extends Object> {
             if (this._options.shouldMatchWordsOnly) {
                 resultKey = resultKey.replace(/[^\w]/g, '');
             }
-            const index = resultKey.indexOf(query);
-            if (index !== -1) {
+            if(query.length === 0) {
                 matches.push(
-                    ...candidates.map((candidate) => ({ index, ...candidate })),
+                    ...candidates.map((candidate) => ({ index: 0, ...candidate })),
                 );
+            } else {
+                const index = resultKey.indexOf(query);
+                if (index !== -1) {
+                    matches.push(
+                        ...candidates.map((candidate) => ({ index, ...candidate })),
+                    );
+                }
             }
         }
 
@@ -139,9 +146,9 @@ export default class QueryMatcher<T extends Object> {
 
         // Now map the keys to the result objects. Also remove any duplicates.
         const dedupped = uniq(matches.map((match) => match.object));
+        // yiqia-web we need most candidates but not just 20
         const maxLength = limit === -1 ? dedupped.length : limit;
-
-        return dedupped.slice(0, maxLength);
+        return dedupped.slice(0, 300);
     }
 
     private processQuery(query: string): string {

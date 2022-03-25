@@ -35,6 +35,10 @@ import { ICompletion, ISelectionRange } from "./Autocompleter";
 import MemberAvatar from '../components/views/avatars/MemberAvatar';
 import { TimelineRenderingType } from '../contexts/RoomContext';
 import UserIdentifierCustomisations from '../customisations/UserIdentifier';
+import DMRoomMap from '../utils/DMRoomMap';
+import RoomListStore from '../stores/room-list/RoomListStore';
+import { DefaultTagID } from '../stores/room-list/models';
+import { arrayFastClone } from '../utils/arrays';
 
 const USER_REGEX = /\B@\S*/g;
 
@@ -55,8 +59,8 @@ export default class UserProvider extends AutocompleteProvider {
         });
         this.room = room;
         this.matcher = new QueryMatcher([], {
-            keys: ['name'],
-            funcs: [obj => obj.userId.slice(1)], // index by user id minus the leading '@'
+            keys: ["displayname", 'name'],
+            funcs: [obj => obj.userId.slice(1), obj => obj.displayname], // index by user id minus the leading '@'
             shouldMatchWordsOnly: false,
         });
 
@@ -118,10 +122,14 @@ export default class UserProvider extends AutocompleteProvider {
         if (!command) return completions;
 
         const fullMatch = command[0];
-        // Don't search if the query is a single "@"
-        if (fullMatch && fullMatch !== '@') {
+        // Don't search if the query is a single "@" but yiqia-web should search when users input a single "@"
+        // if (fullMatch && fullMatch !== '@') {
+        if (fullMatch) {
             // Don't include the '@' in our search query - it's only used as a way to trigger completion
-            const query = fullMatch.startsWith('@') ? fullMatch.substring(1) : fullMatch;
+            let query = "";
+            if(fullMatch !== "@") {
+                query = fullMatch.startsWith('@') ? fullMatch.substring(1) : fullMatch;
+            }
             completions = this.matcher.match(query, limit).map((user) => {
                 const description = UserIdentifierCustomisations.getDisplayUserIdentifier(
                     user.userId, { roomId: this.room.roomId, withDisplayName: true },
@@ -151,20 +159,38 @@ export default class UserProvider extends AutocompleteProvider {
         return _t('Users');
     }
 
+    private getUserFromDirectMessage(room: Room, currentUserId: string) {
+        // yiqia-web Here we need to show all members we has chat.
+        // const users = room.getJoinedMembers().filter(({ userId }) => userId !== currentUserId);
+        const users = room.getMembers().filter(({ userId }) => userId !== currentUserId);
+        return users;
+    }
+
     private makeUsers() {
-        const events = this.room.getLiveTimeline().getEvents();
-        const lastSpoken = {};
-
-        for (const event of events) {
-            lastSpoken[event.getSender()] = event.getTs();
-        }
-
+        // yiqia-web add mention all direct message users in direct message room.
+        const isDm = DMRoomMap.shared().getUserIdForRoomId(this.room.roomId);
         const currentUserId = MatrixClientPeg.get().credentials.userId;
-        this.users = this.room.getJoinedMembers().filter(({ userId }) => userId !== currentUserId);
-        this.users = this.users.concat(this.room.getMembersWithMembership("invite"));
-
-        this.users = sortBy(this.users, (member) => 1E20 - lastSpoken[member.userId] || 1E20);
-
+        if(isDm) {
+            const originalAllDm = RoomListStore.instance.orderedLists[DefaultTagID.AllDM];
+            console.log("[UserProvider] makeUsers originalAllDm is ", originalAllDm);
+            const DMRoomsList = arrayFastClone(originalAllDm || []);
+            this.users = [];
+            DMRoomsList.map(room => {
+                this.users = [...this.users, ...this.getUserFromDirectMessage(room, currentUserId)];
+            })
+        } else {
+            const events = this.room.getLiveTimeline().getEvents();
+            const lastSpoken = {};
+    
+            for (const event of events) {
+                lastSpoken[event.getSender()] = event.getTs();
+            }
+    
+            this.users = this.room.getJoinedMembers().filter(({ userId }) => userId !== currentUserId);
+            this.users = this.users.concat(this.room.getMembersWithMembership("invite"));
+    
+            this.users = sortBy(this.users, (member) => 1E20 - lastSpoken[member.userId] || 1E20);
+        }
         this.matcher.setObjects(this.users);
     }
 

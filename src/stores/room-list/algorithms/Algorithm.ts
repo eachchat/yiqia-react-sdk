@@ -551,6 +551,7 @@ export class Algorithm extends EventEmitter {
                     } else {
                         newTags[DefaultTagID.DM].push(room);
                     }
+                    newTags[DefaultTagID.AllDM].push(room);
                 } else {
                     // yiqia: Chats list mixed direct message and rooms
                     if (this.showByChats) {
@@ -618,6 +619,7 @@ export class Algorithm extends EventEmitter {
                 } else {
                     tags = [DefaultTagID.DM];
                 }
+                tags.push(DefaultTagID.AllDM);
             }
         }
 

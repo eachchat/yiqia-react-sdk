@@ -26,6 +26,7 @@ export enum DefaultTagID {
     ServerNotice = "m.server_notice",
     Suggested = "im.vector.fake.suggested",
     Chats = "im.yiqia.fake.chats",
+    AllDM = "im.yiqia.fake.all.direct", // yiqia-web: this is not used to show in room list but just save for auto complete
 }
 
 export const OrderedDefaultTagIDs = [
@@ -38,6 +39,7 @@ export const OrderedDefaultTagIDs = [
     DefaultTagID.Suggested,
     DefaultTagID.Archived,
     DefaultTagID.Chats,
+    DefaultTagID.AllDM,
 ];
 
 export type TagID = string | DefaultTagID;
