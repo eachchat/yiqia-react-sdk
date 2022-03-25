@@ -21,6 +21,7 @@ import { removeHiddenChars } from "matrix-js-sdk/src/utils";
 
 import { TimelineRenderingType } from '../contexts/RoomContext';
 import { Leaves } from "../@types/common";
+import { RoomMember } from 'matrix-js-sdk';
 
 interface IOptions<T extends {}> {
     keys: Array<Leaves<T>>;
@@ -63,12 +64,18 @@ export default class QueryMatcher<T extends Object> {
 
     setObjects(objects: T[]) {
         this._items = new Map();
-
+        const checkUids = []; // yiqia-web Used to filter repeat users
         for (const object of objects) {
             // Need to use unsafe coerce here because the objects can have any
             // type for their values. We assume that those values who's keys have
             // been specified will be string. Also, we cannot infer all the
             // types of the keys of the objects at compile.
+            if(object instanceof RoomMember) {
+                if(checkUids.indexOf(object.userId) >= 0) {
+                    continue;
+                }
+                checkUids.push(object.userId);
+            }
             const keyValues = at<string>(<any>object, this._options.keys);
 
             if (this._options.funcs) {

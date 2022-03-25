@@ -59,8 +59,8 @@ export default class UserProvider extends AutocompleteProvider {
         });
         this.room = room;
         this.matcher = new QueryMatcher([], {
-            keys: ["displayname", 'name'],
-            funcs: [obj => obj.userId.slice(1), obj => obj.displayname], // index by user id minus the leading '@'
+            keys: ['name'],
+            funcs: [obj => obj.userId.slice(1)], // index by user id minus the leading '@'
             shouldMatchWordsOnly: false,
         });
 
@@ -172,7 +172,6 @@ export default class UserProvider extends AutocompleteProvider {
         const currentUserId = MatrixClientPeg.get().credentials.userId;
         if(isDm) {
             const originalAllDm = RoomListStore.instance.orderedLists[DefaultTagID.AllDM];
-            console.log("[UserProvider] makeUsers originalAllDm is ", originalAllDm);
             const DMRoomsList = arrayFastClone(originalAllDm || []);
             this.users = [];
             DMRoomsList.map(room => {
