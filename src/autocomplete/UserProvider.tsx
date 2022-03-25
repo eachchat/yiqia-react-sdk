@@ -172,7 +172,8 @@ export default class UserProvider extends AutocompleteProvider {
         const currentUserId = MatrixClientPeg.get().credentials.userId;
         if(isDm) {
             const originalAllDm = RoomListStore.instance.orderedLists[DefaultTagID.AllDM];
-            const DMRoomsList = arrayFastClone(originalAllDm || []);
+            const originalFavourite = RoomListStore.instance.orderedLists[DefaultTagID.Favourite].filter(room => DMRoomMap.shared().getUserIdForRoomId(room.roomId));
+            const DMRoomsList = arrayFastClone([...originalFavourite, ...originalAllDm] || []);
             this.users = [];
             DMRoomsList.map(room => {
                 this.users = [...this.users, ...this.getUserFromDirectMessage(room, currentUserId)];
