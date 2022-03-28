@@ -66,7 +66,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
 
     private getVersionInfo(): { appVersion: string, olmVersion: string } {
         const brand = SdkConfig.get().brand;
-        const appVersion = "2.5.2";//this.state.appVersion || 'unknown';
+        const appVersion = "2.5.3";//this.state.appVersion || 'unknown';
         const olmVersionTuple = MatrixClientPeg.get().olmVersion;
         const olmVersion = olmVersionTuple
             ? `${olmVersionTuple[0]}.${olmVersionTuple[1]}.${olmVersionTuple[2]}`
