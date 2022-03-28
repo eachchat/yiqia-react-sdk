@@ -29,6 +29,7 @@ import AutocompleteProvider, { ICommand } from "./AutocompleteProvider";
 import SpaceProvider from "./SpaceProvider";
 import SpaceStore from "../stores/spaces/SpaceStore";
 import { TimelineRenderingType } from '../contexts/RoomContext';
+import SdkConfig from '../SdkConfig';
 
 export interface ISelectionRange {
     beginning?: boolean; // whether the selection is in the first block of the editor or not
@@ -54,13 +55,16 @@ const PROVIDERS = [
     RoomProvider,
     EmojiProvider,
     NotifProvider,
-    CommandProvider,
 ];
 
 if (SpaceStore.spacesEnabled) {
     PROVIDERS.push(SpaceProvider);
 } else {
     PROVIDERS.push(CommunityProvider);
+}
+
+if (!SdkConfig.get()["yiqiaDisableSlash"]) {
+    PROVIDERS.push(CommandProvider);
 }
 
 // Providers will get rejected if they take longer than this.
