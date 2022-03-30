@@ -187,7 +187,8 @@ export default class UserProvider extends AutocompleteProvider {
             }
     
             this.users = this.room.getJoinedMembers().filter(({ userId }) => userId !== currentUserId);
-            this.users = this.users.concat(this.room.getMembersWithMembership("invite"));
+            // yiqia-web we do not show the member who not joined the room
+            // this.users = this.users.concat(this.room.getMembersWithMembership("invite"));
     
             this.users = sortBy(this.users, (member) => 1E20 - lastSpoken[member.userId] || 1E20);
         }
