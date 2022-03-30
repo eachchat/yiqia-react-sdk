@@ -556,7 +556,7 @@ export default class ContentMessages {
                 title: _t('Attachment is outof limit'),
                 description: (
                     <div>{ _t(
-                        'Your organization attachment space is not enough for the current uploading, please to update your set meal.'
+                        'Your organization attachment space is full, please to update your set meal.'
                     ) }</div>
                 ),
             });
