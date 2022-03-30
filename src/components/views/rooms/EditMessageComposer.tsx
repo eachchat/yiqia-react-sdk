@@ -47,6 +47,7 @@ import { ComposerType } from "../../../dispatcher/payloads/ComposerInsertPayload
 import { getSlashCommand, isSlashCommand, runSlashCommand, shouldSendAnyway } from "../../../editor/commands";
 import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 import { PosthogAnalytics } from "../../../PosthogAnalytics";
+import SdkConfig from '../../../SdkConfig';
 
 function getHtmlReplyFallback(mxEvent: MatrixEvent): string {
     const html = mxEvent.getContent().formatted_body;
@@ -327,7 +328,7 @@ class EditMessageComposer extends React.Component<IEditMessageComposerProps, ISt
         // If content is modified then send an updated event into the room
         if (this.isContentModified(newContent)) {
             const roomId = editedEvent.getRoomId();
-            if (!containsEmote(this.model) && isSlashCommand(this.model)) {
+            if (!containsEmote(this.model) && SdkConfig.get()["yiqiaDisableSlash"] && isSlashCommand(this.model)) {
                 const [cmd, args, commandText] = getSlashCommand(this.model);
                 if (cmd) {
                     const threadId = editedEvent?.getThread()?.id || null;

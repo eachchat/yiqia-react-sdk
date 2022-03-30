@@ -58,6 +58,7 @@ import { ComposerType } from "../../../dispatcher/payloads/ComposerInsertPayload
 import { getSlashCommand, isSlashCommand, runSlashCommand, shouldSendAnyway } from "../../../editor/commands";
 import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 import { PosthogAnalytics } from "../../../PosthogAnalytics";
+import SdkConfig from '../../../SdkConfig';
 
 interface IAddReplyOpts {
     permalinkCreator?: RoomPermalinkCreator;
@@ -366,7 +367,7 @@ export class SendMessageComposer extends React.Component<ISendMessageComposerPro
         let shouldSend = true;
         let content: IContent;
 
-        if (!containsEmote(model) && isSlashCommand(this.model)) {
+        if (!containsEmote(model) && !SdkConfig.get()["yiqiaDisableSlash"] && isSlashCommand(this.model)) {
             const [cmd, args, commandText] = getSlashCommand(this.model);
             if (cmd) {
                 const threadId = this.props.relation?.rel_type === RelationType.Thread
