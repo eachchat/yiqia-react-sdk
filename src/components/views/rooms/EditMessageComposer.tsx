@@ -328,7 +328,7 @@ class EditMessageComposer extends React.Component<IEditMessageComposerProps, ISt
         // If content is modified then send an updated event into the room
         if (this.isContentModified(newContent)) {
             const roomId = editedEvent.getRoomId();
-            if (!containsEmote(this.model) && SdkConfig.get()["yiqiaDisableSlash"] && isSlashCommand(this.model)) {
+            if (!containsEmote(this.model) && !SdkConfig.get()["yiqiaDisableSlash"] && isSlashCommand(this.model)) {
                 const [cmd, args, commandText] = getSlashCommand(this.model);
                 if (cmd) {
                     const threadId = editedEvent?.getThread()?.id || null;
