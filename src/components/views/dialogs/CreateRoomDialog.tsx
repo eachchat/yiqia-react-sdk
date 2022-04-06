@@ -23,7 +23,6 @@ import SdkConfig from '../../../SdkConfig';
 import withValidation, { IFieldState } from '../elements/Validation';
 import { _t } from '../../../languageHandler';
 import { MatrixClientPeg } from '../../../MatrixClientPeg';
-import { Key } from "../../../Keyboard";
 import { IOpts, privateShouldBeEncrypted } from "../../../createRoom";
 import { CommunityPrototypeStore } from "../../../stores/CommunityPrototypeStore";
 import { replaceableComponent } from "../../../utils/replaceableComponent";
@@ -36,6 +35,8 @@ import SpaceStore from "../../../stores/spaces/SpaceStore";
 import JoinRuleDropdown from "../elements/JoinRuleDropdown";
 import SettingsStore from "../../../settings/SettingsStore";
 import { UIFeature } from "../../../settings/UIFeature";
+import { getKeyBindingsManager } from "../../../KeyBindingsManager";
+import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 
 interface IProps {
     defaultPublic?: boolean;
@@ -76,7 +77,6 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
             joinRule = JoinRule.Restricted;
         }
 
-        const config = SdkConfig.get();
         this.state = {
             isPublic: this.props.defaultPublic || false,
             isEncrypted: this.props.defaultEncrypted ?? privateShouldBeEncrypted(),
@@ -85,7 +85,7 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
             topic: "",
             alias: "",
             detailsOpen: false,
-            noFederate: config.default_federate === false,
+            noFederate: SdkConfig.get().default_federate === false,
             nameIsValid: false,
             canChangeEncryption: true,
         };
@@ -138,10 +138,13 @@ export default class CreateRoomDialog extends React.Component<IProps, IState> {
     }
 
     private onKeyDown = (event: KeyboardEvent) => {
-        if (event.key === Key.ENTER) {
-            this.onOk();
-            event.preventDefault();
-            event.stopPropagation();
+        const action = getKeyBindingsManager().getAccessibilityAction(event);
+        switch (action) {
+            case KeyBindingAction.Enter:
+                this.onOk();
+                event.preventDefault();
+                event.stopPropagation();
+                break;
         }
     };
 

@@ -17,10 +17,10 @@ limitations under the License.
 import classNames from 'classnames';
 import { IEventRelation } from "matrix-js-sdk/src/models/event";
 import { M_POLL_START } from "matrix-events-sdk";
-import React, { createContext, ReactElement, useContext } from 'react';
+import React, { createContext, ReactElement, useContext, useRef } from 'react';
 import { Room } from 'matrix-js-sdk/src/models/room';
 import { MatrixClient } from 'matrix-js-sdk/src/client';
-import { RelationType } from 'matrix-js-sdk/src/@types/event';
+import { THREAD_RELATION_TYPE } from 'matrix-js-sdk/src/models/thread';
 
 import { _t } from '../../../languageHandler';
 import AccessibleTooltipButton from "../elements/AccessibleTooltipButton";
@@ -33,11 +33,11 @@ import LocationButton from '../location/LocationButton';
 import Modal from "../../../Modal";
 import PollCreateDialog from "../elements/PollCreateDialog";
 import { MatrixClientPeg } from '../../../MatrixClientPeg';
-import { ActionPayload } from '../../../dispatcher/payloads';
 import ContentMessages from '../../../ContentMessages';
 import MatrixClientContext from '../../../contexts/MatrixClientContext';
 import RoomContext from '../../../contexts/RoomContext';
 import SdkConfig from '../../../SdkConfig';
+import { useDispatcher } from "../../../hooks/useDispatcher";
 
 interface IProps {
     addEmoji: (emoji: string) => boolean;
@@ -45,11 +45,11 @@ interface IProps {
     isMenuOpen: boolean;
     isStickerPickerOpen: boolean;
     menuPosition: AboveLeftOf;
-    narrowMode?: boolean;
     onRecordStartEndClick: () => void;
     relation?: IEventRelation;
     setStickerPickerOpen: (isStickerPickerOpen: boolean) => void;
     showLocationButton: boolean;
+    showPollsButton: boolean;
     showStickersButton: boolean;
     toggleButtonMenu: () => void;
 }
@@ -59,7 +59,7 @@ export const OverflowMenuContext = createContext<OverflowMenuCloser | null>(null
 
 const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
     const matrixClient: MatrixClient = useContext(MatrixClientContext);
-    const { room, roomId } = useContext(RoomContext);
+    const { room, roomId, narrow } = useContext(RoomContext);
 
     if (props.haveRecording) {
         return null;
@@ -67,26 +67,26 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
 
     let mainButtons: ReactElement[];
     let moreButtons: ReactElement[];
-    if (props.narrowMode) {
+    if (narrow) {
         mainButtons = [
             emojiButton(props),
         ];
         moreButtons = [
-            uploadButton(props, roomId),
+            uploadButton(), // props passed via UploadButtonContext
             showStickersButton(props),
-            voiceRecordingButton(props),
-            pollButton(room, props.relation),
+            voiceRecordingButton(props, narrow),
+            props.showPollsButton && pollButton(room, props.relation),
             showLocationButton(props, room, roomId, matrixClient),
         ];
     } else {
         mainButtons = [
             emojiButton(props),
-            uploadButton(props, roomId),
+            uploadButton(), // props passed via UploadButtonContext
         ];
         moreButtons = [
             showStickersButton(props),
-            voiceRecordingButton(props),
-            pollButton(room, props.relation),
+            voiceRecordingButton(props, narrow),
+            props.showPollsButton && pollButton(room, props.relation),
             showLocationButton(props, room, roomId, matrixClient),
         ];
     }
@@ -105,7 +105,7 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
         mx_MessageComposer_closeButtonMenu: props.isMenuOpen,
     });
 
-    return <>
+    return <UploadButtonContextProvider roomId={roomId} relation={props.relation}>
         { mainButtons }
         {
             moreButtons &&
@@ -126,7 +126,7 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
                 </OverflowMenuContext.Provider>
             </ContextMenu>
         ) }
-    </>;
+    </UploadButtonContextProvider>;
 };
 
 function emojiButton(props: IProps): ReactElement {
@@ -185,68 +185,53 @@ const EmojiButton: React.FC<IEmojiButtonProps> = ({ addEmoji, menuPosition }) =>
     </React.Fragment>;
 };
 
-function uploadButton(props: IProps, roomId: string): ReactElement {
-    return <UploadButton
-        key="controls_upload"
-        roomId={roomId}
-        relation={props.relation}
-    />;
+function uploadButton(): ReactElement {
+    return <UploadButton key="controls_upload" />;
 }
+
+type UploadButtonFn = () => void;
+export const UploadButtonContext = createContext<UploadButtonFn | null>(null);
 
 interface IUploadButtonProps {
     roomId: string;
     relation?: IEventRelation | null;
 }
 
-class UploadButton extends React.Component<IUploadButtonProps> {
-    private uploadInput = React.createRef<HTMLInputElement>();
-    private dispatcherRef: string;
+// We put the file input outside the UploadButton component so that it doesn't get killed when the context menu closes.
+const UploadButtonContextProvider: React.FC<IUploadButtonProps> = ({ roomId, relation, children }) => {
+    const cli = useContext(MatrixClientContext);
+    const roomContext = useContext(RoomContext);
+    const uploadInput = useRef<HTMLInputElement>();
 
-    constructor(props: IUploadButtonProps) {
-        super(props);
-
-        this.dispatcherRef = dis.register(this.onAction);
-    }
-
-    componentWillUnmount() {
-        dis.unregister(this.dispatcherRef);
-    }
-
-    private onAction = (payload: ActionPayload) => {
-        if (payload.action === "upload_file") {
-            this.onUploadClick();
-        }
-    };
-
-    private onUploadClick = async() => {
-        if (MatrixClientPeg.get().isGuest()) {
+    const onUploadClick = async() => {
+        if (cli.isGuest()) {
             dis.dispatch({ action: 'require_registration' });
             return;
         }
         
         // yiqia-web For we must to check book limit so we move matrix media limit interface here from contentMessage sendContentListToRoom
-        const isOutOfLimits = await ContentMessages.sharedInstance().isOutofLimits(MatrixClientPeg.get());
+        const isOutOfLimits = await ContentMessages.sharedInstance().isOutofLimits(cli);
         if(isOutOfLimits) return;
 
-        this.uploadInput.current?.click();
+        uploadInput.current?.click();
     };
 
-    private onUploadFileInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    useDispatcher(dis, payload => {
+        if (roomContext.timelineRenderingType === payload.context && payload.action === "upload_file") {
+            onUploadClick();
+        }
+    });
+
+    const onUploadFileInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
         if (ev.target.files.length === 0) return;
 
-        // take a copy so we can safely reset the value of the form control
-        // (Note it is a FileList: we can't use slice or sensible iteration).
-        const tfiles = [];
-        for (let i = 0; i < ev.target.files.length; ++i) {
-            tfiles.push(ev.target.files[i]);
-        }
-
+        // Take a copy, so we can safely reset the value of the form control
         ContentMessages.sharedInstance().sendContentListToRoom(
-            tfiles,
-            this.props.roomId,
-            this.props.relation,
-            MatrixClientPeg.get(),
-            this.context.timelineRenderingType,
+            Array.from(ev.target.files),
+            roomId,
+            relation,
+            cli,
+            roomContext.timelineRenderingType,
         );
 
         // This is the onChange handler for a file form control, but we're
@@ -256,24 +241,36 @@ class UploadButton extends React.Component<IUploadButtonProps> {
         ev.target.value = '';
     };
 
-    render() {
-        const uploadInputStyle = { display: 'none' };
-        return <>
-            <CollapsibleButton
-                className="mx_MessageComposer_button mx_MessageComposer_upload"
-                onClick={this.onUploadClick}
-                title={_t('Attachment')}
-            />
-            <input
-                ref={this.uploadInput}
-                type="file"
-                style={uploadInputStyle}
-                multiple
-                onChange={this.onUploadFileInputChange}
-            />
-        </>;
-    }
-}
+    const uploadInputStyle = { display: 'none' };
+    return <UploadButtonContext.Provider value={onUploadClick}>
+        { children }
+
+        <input
+            ref={uploadInput}
+            type="file"
+            style={uploadInputStyle}
+            multiple
+            onChange={onUploadFileInputChange}
+        />
+    </UploadButtonContext.Provider>;
+};
+
+// Must be rendered within an UploadButtonContextProvider
+const UploadButton = () => {
+    const overflowMenuCloser = useContext(OverflowMenuContext);
+    const uploadButtonFn = useContext(UploadButtonContext);
+
+    const onClick = () => {
+        uploadButtonFn?.();
+        overflowMenuCloser?.(); // close overflow menu
+    };
+
+    return <CollapsibleButton
+        className="mx_MessageComposer_button mx_MessageComposer_upload"
+        onClick={onClick}
+        title={_t('Attachment')}
+    />;
+};
 
 function showStickersButton(props: IProps): ReactElement {
     return (
@@ -289,10 +286,10 @@ function showStickersButton(props: IProps): ReactElement {
     );
 }
 
-function voiceRecordingButton(props: IProps): ReactElement {
+function voiceRecordingButton(props: IProps, narrow: boolean): ReactElement {
     // XXX: recording UI does not work well in narrow mode, so hide for now
     return (
-        props.narrowMode
+        narrow
             ? null
             : <CollapsibleButton
                 key="voice_message_send"
@@ -315,7 +312,7 @@ interface IPollButtonProps {
 }
 
 class PollButton extends React.PureComponent<IPollButtonProps> {
-    static contextType = OverflowMenuContext;
+    public static contextType = OverflowMenuContext;
     public context!: React.ContextType<typeof OverflowMenuContext>;
 
     private onCreateClick = () => {
@@ -337,7 +334,7 @@ class PollButton extends React.PureComponent<IPollButtonProps> {
                 },
             );
         } else {
-            const threadId = this.props.relation?.rel_type === RelationType.Thread
+            const threadId = this.props.relation?.rel_type === THREAD_RELATION_TYPE.name
                 ? this.props.relation.event_id
                 : null;
 
@@ -356,7 +353,10 @@ class PollButton extends React.PureComponent<IPollButtonProps> {
         }
     };
 
-    render() {
+    public render() {
+        // do not allow sending polls within threads at this time
+        if (this.props.relation?.rel_type === THREAD_RELATION_TYPE.name) return null;
+
         return (
             <CollapsibleButton
                 className="mx_MessageComposer_button mx_MessageComposer_poll"
@@ -378,6 +378,7 @@ function showLocationButton(
             ? <LocationButton
                 key="location"
                 roomId={roomId}
+                relation={props.relation}
                 sender={room.getMember(matrixClient.getUserId())}
                 menuPosition={props.menuPosition}
             />

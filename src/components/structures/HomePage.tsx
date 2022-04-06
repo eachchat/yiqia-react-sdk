@@ -105,11 +105,8 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
     if (justRegistered) {
         introSection = <UserWelcomeTop />;
     } else {
-        const brandingConfig = config.branding;
-        let logoUrl = "themes/element/img/logos/element-logo.svg";
-        if (brandingConfig && brandingConfig.authHeaderLogoUrl) {
-            logoUrl = brandingConfig.authHeaderLogoUrl;
-        }
+        const brandingConfig = SdkConfig.getObject("branding");
+        const logoUrl = brandingConfig?.get("auth_header_logo_url") ?? "themes/element/img/logos/element-logo.svg";
 
         introSection = <React.Fragment>
             <img style={{'width': '56px', 'height': '56px'}} src={logoUrl} alt={config.brand} />

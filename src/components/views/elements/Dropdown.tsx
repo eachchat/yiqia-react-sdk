@@ -20,8 +20,9 @@ import classnames from 'classnames';
 
 import AccessibleButton, { ButtonEvent } from './AccessibleButton';
 import { _t } from '../../../languageHandler';
-import { Key } from "../../../Keyboard";
 import { replaceableComponent } from "../../../utils/replaceableComponent";
+import { getKeyBindingsManager } from "../../../KeyBindingsManager";
+import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 
 interface IMenuOptionProps {
     children: ReactElement;
@@ -183,10 +184,12 @@ export default class Dropdown extends React.Component<IProps, IState> {
     private onAccessibleButtonClick = (ev: ButtonEvent) => {
         if (this.props.disabled) return;
 
+        const action = getKeyBindingsManager().getAccessibilityAction(ev as React.KeyboardEvent);
+
         if (!this.state.expanded) {
             this.setState({ expanded: true });
             ev.preventDefault();
-        } else if ((ev as React.KeyboardEvent).key === Key.ENTER) {
+        } else if (action === KeyBindingAction.Enter) {
             // the accessible button consumes enter onKeyDown for firing onClick, so handle it here
             this.props.onOptionChange(this.state.highlightedOption);
             this.close();
@@ -217,14 +220,15 @@ export default class Dropdown extends React.Component<IProps, IState> {
         if(this.props.onFocus) this.props.onFocus();
 
         // These keys don't generate keypress events and so needs to be on keyup
-        switch (e.key) {
-            case Key.ENTER:
+        const action = getKeyBindingsManager().getAccessibilityAction(e);
+        switch (action) {
+            case KeyBindingAction.Enter:
                 this.props.onOptionChange(this.state.highlightedOption);
                 // fallthrough
-            case Key.ESCAPE:
+            case KeyBindingAction.Escape:
                 this.close();
                 break;
-            case Key.ARROW_DOWN:
+            case KeyBindingAction.ArrowDown:
                 if (this.state.expanded) {
                     this.setState({
                         highlightedOption: this.nextOption(this.state.highlightedOption),
@@ -233,7 +237,7 @@ export default class Dropdown extends React.Component<IProps, IState> {
                     this.setState({ expanded: true });
                 }
                 break;
-            case Key.ARROW_UP:
+            case KeyBindingAction.ArrowUp:
                 if (this.state.expanded) {
                     this.setState({
                         highlightedOption: this.prevOption(this.state.highlightedOption),

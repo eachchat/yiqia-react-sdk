@@ -16,22 +16,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from "react";
 import { MatrixClient } from "matrix-js-sdk/src/client";
 import { IUploadOpts } from "matrix-js-sdk/src/@types/requests";
-import { MsgType, RelationType } from "matrix-js-sdk/src/@types/event";
+import { MsgType } from "matrix-js-sdk/src/@types/event";
 import encrypt from "browser-encrypt-attachment";
 import extractPngChunks from "png-chunks-extract";
 import { IAbortablePromise, IImageInfo } from "matrix-js-sdk/src/@types/partials";
 import { logger } from "matrix-js-sdk/src/logger";
-import { IEventRelation, ISendEventResponse } from "matrix-js-sdk/src";
+import { IEventRelation, ISendEventResponse, MatrixEvent } from "matrix-js-sdk/src/matrix";
+import { THREAD_RELATION_TYPE } from "matrix-js-sdk/src/models/thread";
 
 import { IEncryptedFile, IMediaEventInfo } from "./customisations/models/IMediaEventContent";
 import dis from './dispatcher/dispatcher';
 import * as sdk from './index';
 import { _t } from './languageHandler';
 import Modal from './Modal';
-import RoomViewStore from './stores/RoomViewStore';
 import Spinner from "./components/views/elements/Spinner";
 import { Action } from "./dispatcher/actions";
 import {
@@ -48,6 +47,8 @@ import { decorateStartSendingTime, sendRoundTripMetric } from "./sendTimePerform
 import { TimelineRenderingType } from "./contexts/RoomContext";
 import { isAttachmentSupported, isAttachmentOutOfLimits, isTheUploadingOutOfLimits } from "./YiqiaUtils";
 import InfoDialog from "./components/views/dialogs/InfoDialog";
+import RoomViewStore from "./stores/RoomViewStore";
+import { addReplyToMessageContent } from "./utils/Reply";
 
 const MAX_WIDTH = 800;
 const MAX_HEIGHT = 600;
@@ -293,7 +294,14 @@ function loadVideoElement(videoFile): Promise<HTMLVideoElement> {
                 reject(e);
             };
 
-            video.src = ev.target.result as string;
+            let dataUrl = ev.target.result as string;
+            // Chrome chokes on quicktime but likes mp4, and `file.type` is
+            // read only, so do this horrible hack to unbreak quicktime
+            if (dataUrl.startsWith("data:video/quicktime;")) {
+                dataUrl = dataUrl.replace("data:video/quicktime;", "data:video/mp4;");
+            }
+
+            video.src = dataUrl;
             video.load();
             video.play();
         };
@@ -493,7 +501,7 @@ export default class ContentMessages {
     public async sendContentListToRoom(
         files: File[],
         roomId: string,
-        relation: IEventRelation | null,
+        relation: IEventRelation | undefined,
         matrixClient: MatrixClient,
         context = TimelineRenderingType.Room,
     ): Promise<void> {
@@ -501,26 +509,8 @@ export default class ContentMessages {
             dis.dispatch({ action: 'require_registration' });
             return;
         }
-        
-        const isQuoting = Boolean(RoomViewStore.getQuotingEvent());
-        if (isQuoting) {
-            // FIXME: Using an import will result in Element crashing
-            const QuestionDialog = sdk.getComponent("dialogs.QuestionDialog");
-            const { finished } = Modal.createTrackedDialog<[boolean]>('Upload Reply Warning', '', QuestionDialog, {
-                title: _t('Replying With Files'),
-                description: (
-                    <div>{ _t(
-                        'At this time it is not possible to reply with a file. ' +
-                        'Would you like to upload this file without replying?',
-                    ) }</div>
-                ),
-                hasCancelButton: true,
-                button: _t("Continue"),
-            });
-            const [shouldUpload] = await finished;
-            if (!shouldUpload) return;
-        }
-        
+
+        const replyToEvent = RoomViewStore.getQuotingEvent();
         if (!this.mediaConfig) { // hot-path optimization to not flash a spinner if we don't need to
             const modal = Modal.createDialog(Spinner, null, 'mx_Dialog_spinner');
             await this.ensureMediaConfigFetched(matrixClient);
@@ -554,10 +544,8 @@ export default class ContentMessages {
         if(uploadingAttachmentOutOfLimits) {
             const { finished } = Modal.createTrackedDialog<[boolean]>('Upload Reply Warning', '', InfoDialog, {
                 title: _t('Attachment is outof limit'),
-                description: (
-                    <div>{ _t(
+                description: _t(
                         'Your organization attachment space is full, please to update your set meal.'
-                    ) }</div>
                 ),
             });
             const [yesIKnow] = await finished;
@@ -587,7 +575,16 @@ export default class ContentMessages {
                 }
             }
 
-            promBefore = this.sendContentToRoom(file, roomId, relation, matrixClient, promBefore);
+            promBefore = this.sendContentToRoom(file, roomId, relation, matrixClient, replyToEvent, promBefore);
+        }
+
+        if (replyToEvent) {
+            // Clear event being replied to
+            dis.dispatch({
+                action: "reply_to_event",
+                event: null,
+                context,
+            });
         }
 
         // Focus the correct composer
@@ -626,8 +623,9 @@ export default class ContentMessages {
     private sendContentToRoom(
         file: File,
         roomId: string,
-        relation: IEventRelation,
+        relation: IEventRelation | undefined,
         matrixClient: MatrixClient,
+        replyToEvent: MatrixEvent | undefined,
         promBefore: Promise<any>,
     ) {
         const content: IContent = {
@@ -640,6 +638,12 @@ export default class ContentMessages {
 
         if (relation) {
             content["m.relates_to"] = relation;
+        }
+
+        if (replyToEvent) {
+            addReplyToMessageContent(content, replyToEvent, {
+                includeLegacyFallback: false,
+            });
         }
 
         if (SettingsStore.getValue("Performance.addSendMessageTimingMetadata")) {
@@ -718,7 +722,7 @@ export default class ContentMessages {
             return promBefore;
         }).then(function() {
             if (upload.canceled) throw new UploadCanceledError();
-            const threadId = relation?.rel_type === RelationType.Thread
+            const threadId = relation?.rel_type === THREAD_RELATION_TYPE.name
                 ? relation.event_id
                 : null;
             const prom = matrixClient.sendMessage(roomId, threadId, content);

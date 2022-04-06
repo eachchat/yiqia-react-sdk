@@ -334,10 +334,6 @@ export class TermsAuthEntry extends React.Component<ITermsAuthEntryProps, ITerms
         this.props.onPhaseChange(DEFAULT_PHASE);
     }
 
-    public tryContinue = () => {
-        this.trySubmit();
-    };
-
     private togglePolicy(policyId: string) {
         const newToggles = {};
         for (const policy of this.state.policies) {
@@ -840,7 +836,6 @@ export interface IStageComponentProps extends IAuthEntryProps {
 }
 
 export interface IStageComponent extends React.ComponentClass<React.PropsWithRef<IStageComponentProps>> {
-    tryContinue?(): void;
     attemptFailed?(): void;
     focus?(): void;
 }

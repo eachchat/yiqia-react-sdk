@@ -24,6 +24,7 @@ import { ViewRoom as ViewRoomEvent } from "matrix-analytics-events/types/typescr
 import { JoinedRoom as JoinedRoomEvent } from "matrix-analytics-events/types/typescript/JoinedRoom";
 import { JoinRule } from "matrix-js-sdk/src/@types/partials";
 import { Room } from "matrix-js-sdk/src/models/room";
+import { ClientEvent } from "matrix-js-sdk/src/client";
 
 import dis from '../dispatcher/dispatcher';
 import { MatrixClientPeg } from '../MatrixClientPeg';
@@ -180,13 +181,13 @@ class RoomViewStore extends Store<ActionPayload> {
                         isSpace: room.isSpaceRoom(),
                     });
 
-                    cli.off("Room", updateMetrics);
+                    cli.off(ClientEvent.Room, updateMetrics);
                 };
 
                 if (cli.getRoom(payload.roomId)) {
                     updateMetrics();
                 } else {
-                    cli.on("Room", updateMetrics);
+                    cli.on(ClientEvent.Room, updateMetrics);
                 }
 
                 break;
@@ -197,10 +198,10 @@ class RoomViewStore extends Store<ActionPayload> {
                 break;
             case 'reply_to_event':
                 // If currently viewed room does not match the room in which we wish to reply then change rooms
-                // this can happen when performing a search across all rooms
-                if (payload.context === TimelineRenderingType.Room) {
-                    if (payload.event
-                        && payload.event.getRoomId() !== this.state.roomId) {
+                // this can happen when performing a search across all rooms. Persist the data from this event for
+                // both room and search timeline rendering types, search will get auto-closed by RoomView at this time.
+                if ([TimelineRenderingType.Room, TimelineRenderingType.Search].includes(payload.context)) {
+                    if (payload.event && payload.event.getRoomId() !== this.state.roomId) {
                         dis.dispatch<ViewRoomPayload>({
                             action: Action.ViewRoom,
                             room_id: payload.event.getRoomId(),

@@ -18,7 +18,7 @@ limitations under the License.
 import React from 'react';
 import classNames from 'classnames';
 import { throttle } from 'lodash';
-import { MatrixEvent, Room, RoomState } from 'matrix-js-sdk/src';
+import { MatrixEvent, Room, RoomStateEvent } from 'matrix-js-sdk/src/matrix';
 import { CallType } from "matrix-js-sdk/src/webrtc/call";
 
 import { _t } from '../../../languageHandler';
@@ -43,6 +43,8 @@ import { NotificationStateEvents } from '../../../stores/notifications/Notificat
 import DMRoomMap from '../../../utils/DMRoomMap';
 import { UIFeature } from '../../../settings/UIFeature';
 import { isAudioSupported, isVideoSupported } from '../../../YiqiaUtils';
+import RoomContext from "../../../contexts/RoomContext";
+import RoomLiveShareWarning from '../beacon/RoomLiveShareWarning';
 
 export interface ISearchInfo {
     searchTerm: string;
@@ -78,6 +80,9 @@ export default class RoomHeader extends React.Component<IProps, IState> {
         excludedRightPanelPhaseButtons: [],
     };
 
+    static contextType = RoomContext;
+    public context!: React.ContextType<typeof RoomContext>;
+
     constructor(props, context) {
         super(props, context);
         const notiStore = RoomNotificationStateStore.instance.getRoomState(props.room);
@@ -87,7 +92,7 @@ export default class RoomHeader extends React.Component<IProps, IState> {
 
     public componentDidMount = async() => {
         const cli = MatrixClientPeg.get();
-        cli.on("RoomState.events", this.onRoomStateEvents);
+        cli.on(RoomStateEvent.Events, this.onRoomStateEvents);
 
         const videoSupported = await isVideoSupported();
         const audioSupported = await isAudioSupported();
@@ -101,13 +106,13 @@ export default class RoomHeader extends React.Component<IProps, IState> {
     public componentWillUnmount() {
         const cli = MatrixClientPeg.get();
         if (cli) {
-            cli.removeListener("RoomState.events", this.onRoomStateEvents);
+            cli.removeListener(RoomStateEvent.Events, this.onRoomStateEvents);
         }
         const notiStore = RoomNotificationStateStore.instance.getRoomState(this.props.room);
         notiStore.removeListener(NotificationStateEvents.Update, this.onNotificationUpdate);
     }
 
-    private onRoomStateEvents = (event: MatrixEvent, state: RoomState) => {
+    private onRoomStateEvents = (event: MatrixEvent) => {
         if (!this.props.room || event.getRoomId() !== this.props.room.roomId) {
             return;
         }
@@ -216,7 +221,7 @@ export default class RoomHeader extends React.Component<IProps, IState> {
 
         const buttons: JSX.Element[] = [];
 
-        if (this.props.inRoom && SettingsStore.getValue("showCallButtonsInComposer") && (isDm || SettingsStore.getValue(UIFeature.ConferenceEnabled))) {
+        if (this.props.inRoom && !this.context.tombstone && SettingsStore.getValue("showCallButtonsInComposer") && (isDm || SettingsStore.getValue(UIFeature.ConferenceEnabled))) {
             const voiceCallButton = <AccessibleTooltipButton
                 className="mx_RoomHeader_button mx_RoomHeader_voiceCallButton"
                 onClick={() => this.props.onCallPlaced(CallType.Voice)}
@@ -287,6 +292,7 @@ export default class RoomHeader extends React.Component<IProps, IState> {
                     { rightRow }
                     <RoomHeaderButtons room={this.props.room} excludedRightPanelPhaseButtons={this.props.excludedRightPanelPhaseButtons} />
                 </div>
+                <RoomLiveShareWarning roomId={this.props.room.roomId} />
             </div>
         );
     }

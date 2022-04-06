@@ -19,7 +19,6 @@ import { mount, ReactWrapper } from "enzyme";
 import { Room } from "matrix-js-sdk/src/models/room";
 import { RoomMember } from "matrix-js-sdk/src/models/room-member";
 
-import * as TestUtils from "../../../test-utils";
 import sdk from "../../../skinned-sdk";
 import MatrixClientContext from "../../../../src/contexts/MatrixClientContext";
 import { Layout } from "../../../../src/settings/enums/Layout";
@@ -28,21 +27,19 @@ import { createTestClient } from "../../../test-utils";
 import { IRoomState } from "../../../../src/components/structures/RoomView";
 import { MatrixClientPeg } from "../../../../src/MatrixClientPeg";
 
-const _MessageComposerButtons = sdk.getComponent("views.rooms.MessageComposerButtons");
-const MessageComposerButtons = TestUtils.wrapInMatrixClientContext(
-    _MessageComposerButtons,
-);
+const MessageComposerButtons = sdk.getComponent("views.rooms.MessageComposerButtons");
 
 describe("MessageComposerButtons", () => {
     it("Renders emoji and upload buttons in wide mode", () => {
         const buttons = wrapAndRender(
             <MessageComposerButtons
                 isMenuOpen={false}
-                narrowMode={false}
                 showLocationButton={true}
+                showPollsButton={true}
                 showStickersButton={true}
                 toggleButtonMenu={() => {}}
             />,
+            false,
         );
 
         expect(buttonLabels(buttons)).toEqual([
@@ -56,11 +53,12 @@ describe("MessageComposerButtons", () => {
         const buttons = wrapAndRender(
             <MessageComposerButtons
                 isMenuOpen={true}
-                narrowMode={false}
                 showLocationButton={true}
+                showPollsButton={true}
                 showStickersButton={true}
                 toggleButtonMenu={() => {}}
             />,
+            false,
         );
 
         expect(buttonLabels(buttons)).toEqual([
@@ -80,11 +78,12 @@ describe("MessageComposerButtons", () => {
         const buttons = wrapAndRender(
             <MessageComposerButtons
                 isMenuOpen={false}
-                narrowMode={true}
                 showLocationButton={true}
+                showPollsButton={true}
                 showStickersButton={true}
                 toggleButtonMenu={() => {}}
             />,
+            true,
         );
 
         expect(buttonLabels(buttons)).toEqual([
@@ -97,11 +96,12 @@ describe("MessageComposerButtons", () => {
         const buttons = wrapAndRender(
             <MessageComposerButtons
                 isMenuOpen={true}
-                narrowMode={true}
                 showLocationButton={true}
+                showPollsButton={true}
                 showStickersButton={true}
                 toggleButtonMenu={() => {}}
             />,
+            true,
         );
 
         expect(buttonLabels(buttons)).toEqual([
@@ -115,10 +115,61 @@ describe("MessageComposerButtons", () => {
             ],
         ]);
     });
+
+    describe('polls button', () => {
+        it('should render when asked to', () => {
+            const buttons = wrapAndRender(
+                <MessageComposerButtons
+                    isMenuOpen={true}
+                    showLocationButton={true}
+                    showPollsButton={true}
+                    showStickersButton={true}
+                    toggleButtonMenu={() => {}}
+                />,
+                true,
+            );
+
+            expect(buttonLabels(buttons)).toEqual([
+                "Emoji",
+                "More options",
+                [
+                    "Attachment",
+                    "Sticker",
+                    "Poll",
+                    "Location",
+                ],
+            ]);
+        });
+
+        it('should not render when asked not to', () => {
+            const buttons = wrapAndRender(
+                <MessageComposerButtons
+                    isMenuOpen={true}
+                    showLocationButton={true}
+                    showPollsButton={false} // !! the change from the alternate test
+                    showStickersButton={true}
+                    toggleButtonMenu={() => {}}
+                />,
+                true,
+            );
+
+            expect(buttonLabels(buttons)).toEqual([
+                "Emoji",
+                "More options",
+                [
+                    "Attachment",
+                    "Sticker",
+                    // "Poll", // should be hidden
+                    "Location",
+                ],
+            ]);
+        });
+    });
 });
 
-function wrapAndRender(component: React.ReactElement): ReactWrapper {
-    const mockClient = MatrixClientPeg.matrixClient = createTestClient();
+function wrapAndRender(component: React.ReactElement, narrow: boolean): ReactWrapper {
+    const mockClient = createTestClient();
+    jest.spyOn(MatrixClientPeg, 'get').mockReturnValue(mockClient);
     const roomId = "myroomid";
     const mockRoom: any = {
         currentState: undefined,
@@ -128,7 +179,7 @@ function wrapAndRender(component: React.ReactElement): ReactWrapper {
             return new RoomMember(roomId, userId);
         },
     };
-    const roomState = createRoomState(mockRoom);
+    const roomState = createRoomState(mockRoom, narrow);
 
     return mount(
         <MatrixClientContext.Provider value={mockClient}>
@@ -139,7 +190,7 @@ function wrapAndRender(component: React.ReactElement): ReactWrapper {
     );
 }
 
-function createRoomState(room: Room): IRoomState {
+function createRoomState(room: Room, narrow: boolean): IRoomState {
     return {
         room: room,
         roomId: room.roomId,
@@ -148,8 +199,6 @@ function createRoomState(room: Room): IRoomState {
         shouldPeek: true,
         membersLoaded: false,
         numUnreadMessages: 0,
-        draggingFile: false,
-        searching: false,
         guestsCanJoin: false,
         canPeek: false,
         showApps: false,
@@ -161,7 +210,7 @@ function createRoomState(room: Room): IRoomState {
         showTopUnreadMessagesBar: false,
         statusBarVisible: false,
         canReact: false,
-        canReply: false,
+        canSendMessages: false,
         layout: Layout.Group,
         lowBandwidth: false,
         alwaysShowTimestamps: false,
@@ -175,9 +224,9 @@ function createRoomState(room: Room): IRoomState {
         showAvatarChanges: true,
         showDisplaynameChanges: true,
         matrixClientIsReady: false,
-        dragCounter: 0,
         timelineRenderingType: TimelineRenderingType.Room,
         liveTimeline: undefined,
+        narrow,
     };
 }
 

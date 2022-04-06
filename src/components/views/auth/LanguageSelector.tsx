@@ -36,7 +36,7 @@ interface IProps {
 }
 
 export default function LanguageSelector({ disabled }: IProps): JSX.Element {
-    if (!SettingsStore.getValue(UIFeature.CanChangeLanguage) && SdkConfig.get()['disable_login_language_selector']) return <div />;
+    if (!SettingsStore.getValue(UIFeature.CanChangeLanguage) && SdkConfig.get("disable_login_language_selector")) return <div />;
     return <LanguageDropdown
         className="mx_AuthBody_language"
         onOptionChange={onChange}

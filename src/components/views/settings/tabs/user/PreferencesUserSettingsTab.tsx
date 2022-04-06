@@ -32,7 +32,6 @@ import dis from "../../../../../dispatcher/dispatcher";
 import GroupActions from "../../../../../actions/GroupActions";
 import MatrixClientContext from "../../../../../contexts/MatrixClientContext";
 import { useDispatcher } from "../../../../../hooks/useDispatcher";
-import { CreateEventField, IGroupSummary } from "../../../dialogs/CreateSpaceFromCommunityDialog";
 import { createSpaceFromCommunity } from "../../../../../utils/space";
 import Spinner from "../../../elements/Spinner";
 import { UIFeature } from '../../../../../settings/UIFeature';
@@ -41,6 +40,7 @@ import { UserTab } from "../../../dialogs/UserSettingsDialog";
 import { OpenToTabPayload } from "../../../../../dispatcher/payloads/OpenToTabPayload";
 import { Action } from "../../../../../dispatcher/actions";
 import { ViewRoomPayload } from "../../../../../dispatcher/payloads/ViewRoomPayload";
+import { CreateEventField, IGroupSummary } from '../../../../../@types/groups';
 
 interface IProps {
     closeSettingsFn(success: boolean): void;
@@ -164,6 +164,7 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
         'MessageComposerInput.ctrlEnterToSend',
         'MessageComposerInput.surroundWith',
         'MessageComposerInput.showStickersButton',
+        'MessageComposerInput.insertTrailingColon',
     ];
 
     static TIME_SETTINGS = [
