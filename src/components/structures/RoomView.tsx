@@ -105,11 +105,11 @@ import { KeyBindingAction } from "../../accessibility/KeyboardShortcuts";
 import { ViewRoomPayload } from "../../dispatcher/payloads/ViewRoomPayload";
 import { JoinRoomPayload } from "../../dispatcher/payloads/JoinRoomPayload";
 import { DoAfterSyncPreparedPayload } from '../../dispatcher/payloads/DoAfterSyncPreparedPayload';
-import { isAudioOutOfLimits, isVideoOutOfLimits } from '../../YiqiaUtils';
 import InfoDialog from '../views/dialogs/InfoDialog';
 import FileDropTarget from './FileDropTarget';
 import Measured from '../views/elements/Measured';
 import { FocusComposerPayload } from '../../dispatcher/payloads/FocusComposerPayload';
+import { YiqiaVoIPLimit } from '../../utils/yiqiaUtils/YiqiaVoIPLimi';
 
 const DEBUG = false;
 let debuglog = function(msg: string) {};
@@ -1471,9 +1471,9 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
         return ret;
     }
 
-    private isVideoOutofLimits = async() => {
+    private checkVideoOutofLimits = async() => {
         const videoLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
-        const videoOutOfLimits = await isVideoOutOfLimits();
+        const videoOutOfLimits = await YiqiaVoIPLimit.Instance.isVideoOutOfLimits();
 
         if(videoOutOfLimits) {
             videoLimitModal.close();
@@ -1489,9 +1489,9 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
         return false;
     }
 
-    private isAudioOutofLimits = async() => {
+    private checkAudioOutofLimits = async() => {
         const audioLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
-        const audioOutOfLimits = await isAudioOutOfLimits();
+        const audioOutOfLimits = await YiqiaVoIPLimit.Instance.isAudioOutOfLimits();
 
         if(audioOutOfLimits) {
             audioLimitModal.close();
@@ -1511,9 +1511,9 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
         let isOutOfLimits;
         
         if(type === CallType.Voice) {
-            isOutOfLimits = await this.isAudioOutofLimits();
+            isOutOfLimits = await this.checkAudioOutofLimits();
         } else {
-            isOutOfLimits = await this.isVideoOutofLimits();
+            isOutOfLimits = await this.checkVideoOutofLimits();
         }
         if(isOutOfLimits) return;
 

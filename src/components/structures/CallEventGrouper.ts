@@ -21,11 +21,11 @@ import { EventEmitter } from 'events';
 
 import CallHandler, { CallHandlerEvent } from '../../CallHandler';
 import { MatrixClientPeg } from "../../MatrixClientPeg";
-import { isAudioOutOfLimits, isVideoOutOfLimits } from "../../YiqiaUtils";
 import Modal from "../../Modal";
 import Spinner from "../views/elements/Spinner";
 import InfoDialog from "../views/dialogs/InfoDialog";
 import { _t } from '../../languageHandler';
+import { YiqiaVoIPLimit } from "../../utils/yiqiaUtils/YiqiaVoIPLimi";
 
 export enum CallEventGrouperEvent {
     StateChanged = "state_changed",
@@ -142,9 +142,9 @@ export default class CallEventGrouper extends EventEmitter {
         return [...this.events][0]?.getRoomId();
     }
 
-    private isVideoOutofLimits = async() => {
+    private checkVideoOutofLimits = async() => {
         const videoLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
-        const videoOutOfLimits = await isVideoOutOfLimits();
+        const videoOutOfLimits = await YiqiaVoIPLimit.Instance.isVideoOutOfLimits();
 
         if(videoOutOfLimits) {
             videoLimitModal.close();
@@ -160,9 +160,9 @@ export default class CallEventGrouper extends EventEmitter {
         return false;
     }
 
-    private isAudioOutofLimits = async() => {
+    private checkAudioOutofLimits = async() => {
         const audioLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
-        const audioOutOfLimits = await isAudioOutOfLimits();
+        const audioOutOfLimits = await YiqiaVoIPLimit.Instance.isAudioOutOfLimits();
 
         if(audioOutOfLimits) {
             audioLimitModal.close();
@@ -191,9 +191,9 @@ export default class CallEventGrouper extends EventEmitter {
         let isOutOfLimits;
         
         if(this.isVoice) {
-            isOutOfLimits = await this.isAudioOutofLimits();
+            isOutOfLimits = await this.checkAudioOutofLimits();
         } else {
-            isOutOfLimits = await this.isVideoOutofLimits();
+            isOutOfLimits = await this.checkVideoOutofLimits();
         }
         if(!isOutOfLimits) {
             CallHandler.instance.answerCall(this.roomId);
@@ -208,9 +208,9 @@ export default class CallEventGrouper extends EventEmitter {
         let isOutOfLimits;
         
         if(this.isVoice) {
-            isOutOfLimits = await this.isAudioOutofLimits();
+            isOutOfLimits = await this.checkAudioOutofLimits();
         } else {
-            isOutOfLimits = await this.isVideoOutofLimits();
+            isOutOfLimits = await this.checkVideoOutofLimits();
         }
         if(!isOutOfLimits) {
             CallHandler.instance.placeCall(this.roomId, this.isVoice ? CallType.Voice : CallType.Video);

@@ -45,7 +45,7 @@ import { BlurhashEncoder } from "./BlurhashEncoder";
 import SettingsStore from "./settings/SettingsStore";
 import { decorateStartSendingTime, sendRoundTripMetric } from "./sendTimePerformanceMetrics";
 import { TimelineRenderingType } from "./contexts/RoomContext";
-import { isAttachmentSupported, isAttachmentOutOfLimits, isTheUploadingOutOfLimits } from "./YiqiaUtils";
+import { YiqiaAttachmentLimit } from "./utils/yiqiaUtils/YiqiaAttachmentLimit";
 import InfoDialog from "./components/views/dialogs/InfoDialog";
 import RoomViewStore from "./stores/RoomViewStore";
 import { addReplyToMessageContent } from "./utils/Reply";
@@ -466,7 +466,7 @@ export default class ContentMessages {
         // yiqia-web For we must to check book limit so we move matrix media limit interface here from contentMessage sendContentListToRoom
         const mediaLimitModal = Modal.createDialog(Spinner, null, 'mx_Dialog.spinner');
 
-        const attachmentSupported = await isAttachmentSupported();
+        const attachmentSupported = await YiqiaAttachmentLimit.Instance.isAttachmentSupported();
         
         // We should have close the attacnment button if the user not support but here is still onpaste and ondrop
         if(!attachmentSupported) {
@@ -482,7 +482,7 @@ export default class ContentMessages {
             await this.ensureMediaConfigFetched(matrixClient);
         }
 
-        const attachmentOutOfLimits = await isAttachmentOutOfLimits();
+        const attachmentOutOfLimits = await YiqiaAttachmentLimit.Instance.isAttachmentOutOfLimits();
 
         if(attachmentOutOfLimits) {
             mediaLimitModal.close();
@@ -540,7 +540,7 @@ export default class ContentMessages {
             if (!shouldContinue) return;
         }
 
-        const uploadingAttachmentOutOfLimits = await isTheUploadingOutOfLimits(files);
+        const uploadingAttachmentOutOfLimits = await YiqiaAttachmentLimit.Instance.isTheUploadingOutOfLimits(files);
         if(uploadingAttachmentOutOfLimits) {
             const { finished } = Modal.createTrackedDialog<[boolean]>('Upload Reply Warning', '', InfoDialog, {
                 title: _t('Attachment is outof limit'),

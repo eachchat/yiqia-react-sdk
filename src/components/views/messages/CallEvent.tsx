@@ -27,7 +27,7 @@ import InfoTooltip, { InfoTooltipKind } from '../elements/InfoTooltip';
 import AccessibleTooltipButton from '../elements/AccessibleTooltipButton';
 import { formatCallTime } from "../../../DateUtils";
 import Clock from "../audio_messages/Clock";
-import { isAudioSupported, isVideoSupported } from '../../../YiqiaUtils';
+import { YiqiaVoIPLimit } from '../../../utils/yiqiaUtils/YiqiaVoIPLimi';
 
 const MAX_NON_NARROW_WIDTH = 450 / 70 * 100;
 
@@ -71,8 +71,8 @@ export default class CallEvent extends React.PureComponent<IProps, IState> {
         this.resizeObserver = new ResizeObserver(this.resizeObserverCallback);
         this.wrapperElement.current && this.resizeObserver.observe(this.wrapperElement.current);
         
-        const showVideo = await isVideoSupported();
-        const showVoice = await isAudioSupported();
+        const showVideo = await YiqiaVoIPLimit.Instance.isVideoSupported();
+        const showVoice = await YiqiaVoIPLimit.Instance.isAudioSupported();
         this.setState({supportVideoVoip: showVideo, supportVoiceVoip: showVoice});
     }
 

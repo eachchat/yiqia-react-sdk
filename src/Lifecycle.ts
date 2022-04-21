@@ -58,8 +58,8 @@ import LazyLoadingDisabledDialog from "./components/views/dialogs/LazyLoadingDis
 import SessionRestoreErrorDialog from "./components/views/dialogs/SessionRestoreErrorDialog";
 import StorageEvictedDialog from "./components/views/dialogs/StorageEvictedDialog";
 import { setSentryUser } from "./sentry";
-import { toFetchBookInfos } from './YiqiaUtils';
 import SdkConfig from "./SdkConfig";
+import { AuthApi } from './utils/yiqiaUtils/YiqiaRequestInterface';
 
 const HOMESERVER_URL_KEY = "mx_hs_url";
 const ID_SERVER_URL_KEY = "mx_is_url";
@@ -212,7 +212,7 @@ export function attemptTokenLogin(
             await persistCredentials(creds);
             // remember that we just logged in
             sessionStorage.setItem("mx_fresh_login", String(true));
-            toFetchBookInfos();
+            AuthApi.Instance.fetchBookInfos();
             return true;
         });
     }).catch((err) => {
@@ -625,7 +625,7 @@ async function doSetLoggedIn(
     dis.dispatch({ action: 'on_logged_in' });
 
     await startMatrixClient(/*startSyncing=*/!softLogout);
-    toFetchBookInfos();
+    AuthApi.Instance.fetchBookInfos();
     return client;
 }
 

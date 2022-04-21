@@ -42,9 +42,9 @@ import { RightPanelPhases } from '../../../stores/right-panel/RightPanelStorePha
 import { NotificationStateEvents } from '../../../stores/notifications/NotificationState';
 import DMRoomMap from '../../../utils/DMRoomMap';
 import { UIFeature } from '../../../settings/UIFeature';
-import { isAudioSupported, isVideoSupported } from '../../../YiqiaUtils';
 import RoomContext from "../../../contexts/RoomContext";
 import RoomLiveShareWarning from '../beacon/RoomLiveShareWarning';
+import { YiqiaVoIPLimit } from '../../../utils/yiqiaUtils/YiqiaVoIPLimi';
 
 export interface ISearchInfo {
     searchTerm: string;
@@ -94,8 +94,8 @@ export default class RoomHeader extends React.Component<IProps, IState> {
         const cli = MatrixClientPeg.get();
         cli.on(RoomStateEvent.Events, this.onRoomStateEvents);
 
-        const videoSupported = await isVideoSupported();
-        const audioSupported = await isAudioSupported();
+        const videoSupported = await YiqiaVoIPLimit.Instance.isVideoSupported();
+        const audioSupported = await YiqiaVoIPLimit.Instance.isAudioSupported();
 
         this.setState({
             isVideoSupported: videoSupported,

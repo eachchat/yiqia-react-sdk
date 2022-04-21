@@ -71,9 +71,9 @@ import UserIdentifierCustomisations from '../../../customisations/UserIdentifier
 import CopyableText from "../elements/CopyableText";
 import { ScreenName } from '../../../PosthogTrackers';
 import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
-import { yiqiaGmsSearch } from '../../../YiqiaUtils';
 import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 import { getKeyBindingsManager } from "../../../KeyBindingsManager";
+import { YiqiaContact } from '../../../utils/yiqiaUtils/YiqiaContact';
 
 // we have a number of types defined from the Matrix spec which can't reasonably be altered here.
 /* eslint-disable camelcase */
@@ -903,7 +903,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
 
     private updateSuggestions = async (term) => {
         const matrixClient = MatrixClientPeg.get();
-        yiqiaGmsSearch(term).then(async(gmsResult) => {
+        YiqiaContact.Instance.yiqiaGmsSearch(term).then(async(gmsResult) => {
             if(term !== this.state.filterText || term.trim().length === 0) {
                 return;
             }
