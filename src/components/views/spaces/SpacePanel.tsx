@@ -184,7 +184,6 @@ const YiqiaContactButton = ({ selected, isPanelCollapsed }: MetaSpaceButtonProps
         selected={selected}
         isPanelCollapsed={isPanelCollapsed}
         label={getMetaSpaceName(MetaSpace.Contact)}
-        notificationState={SpaceStore.instance.getNotificationState(MetaSpace.Contact)}
     />;
 };
 
