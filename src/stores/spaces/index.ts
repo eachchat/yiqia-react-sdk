@@ -30,6 +30,7 @@ export const UPDATE_SUGGESTED_ROOMS = Symbol("suggested-rooms");
 
 export enum MetaSpace {
     Home = "home-space",
+    Contact = "yiqia-contact",
     Favourites = "favourites-space",
     People = "people-space",
     Orphans = "orphans-space",
@@ -39,6 +40,8 @@ export const getMetaSpaceName = (spaceKey: MetaSpace, allRoomsInHome = false): s
     switch (spaceKey) {
         case MetaSpace.Home:
             return allRoomsInHome ? _t("All rooms") : _t("Home");
+        case MetaSpace.Contact:
+            return _t("Contact");
         case MetaSpace.Favourites:
             return _t("Favourites");
         case MetaSpace.People:
@@ -58,5 +61,6 @@ export function isMetaSpace(spaceKey: SpaceKey): boolean {
     return spaceKey === MetaSpace.Home ||
         spaceKey === MetaSpace.Favourites ||
         spaceKey === MetaSpace.People ||
-        spaceKey === MetaSpace.Orphans;
+        spaceKey === MetaSpace.Orphans ||
+        spaceKey === MetaSpace.Contact;
 }

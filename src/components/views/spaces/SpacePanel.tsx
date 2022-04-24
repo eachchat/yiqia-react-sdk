@@ -177,6 +177,17 @@ const FavouritesButton = ({ selected, isPanelCollapsed }: MetaSpaceButtonProps) 
     />;
 };
 
+const YiqiaContactButton = ({ selected, isPanelCollapsed }: MetaSpaceButtonProps) => {
+    return <MetaSpaceButton
+        spaceKey={MetaSpace.Contact}
+        className="mx_SpaceButton_yiqia_contact"
+        selected={selected}
+        isPanelCollapsed={isPanelCollapsed}
+        label={getMetaSpaceName(MetaSpace.Contact)}
+        notificationState={SpaceStore.instance.getNotificationState(MetaSpace.Contact)}
+    />;
+};
+
 const PeopleButton = ({ selected, isPanelCollapsed }: MetaSpaceButtonProps) => {
     return <MetaSpaceButton
         spaceKey={MetaSpace.People}
@@ -256,6 +267,7 @@ const metaSpaceComponentMap: Record<MetaSpace, typeof HomeButton> = {
     [MetaSpace.Favourites]: FavouritesButton,
     [MetaSpace.People]: PeopleButton,
     [MetaSpace.Orphans]: OrphansButton,
+    [MetaSpace.Contact]: YiqiaContactButton,
 };
 
 interface IInnerSpacePanelProps extends DroppableProvidedProps {

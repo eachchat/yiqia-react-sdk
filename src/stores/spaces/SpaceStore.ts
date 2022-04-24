@@ -69,7 +69,7 @@ interface IState { }
 
 const ACTIVE_SPACE_LS_KEY = "mx_active_space";
 
-const metaSpaceOrder: MetaSpace[] = [MetaSpace.Home, MetaSpace.Favourites, MetaSpace.People, MetaSpace.Orphans];
+const metaSpaceOrder: MetaSpace[] = [MetaSpace.Home, MetaSpace.Contact, MetaSpace.Favourites, MetaSpace.People, MetaSpace.Orphans];
 
 const MAX_SUGGESTED_ROOMS = 20;
 
@@ -510,7 +510,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         return rootSpaces;
     };
 
-    private rebuildSpaceHierarchy = () => {
+    private rebuildSpaceHierarchy = (isOnReady=false) => {
         const visibleSpaces = this.matrixClient.getVisibleRooms().filter(r => r.isSpaceRoom());
         const [joinedSpaces, invitedSpaces] = visibleSpaces.reduce(([joined, invited], s) => {
             switch (getEffectiveMembership(s.getMyMembership())) {
@@ -530,7 +530,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
 
         this.onRoomsUpdate();
 
-        if (arrayHasOrderChange(oldRootSpaces, this.rootSpaces)) {
+        if (arrayHasOrderChange(oldRootSpaces, this.rootSpaces) || isOnReady) {
             this.emit(UPDATE_TOP_LEVEL_SPACES, this.spacePanelSpaces, this.enabledMetaSpaces);
         }
 
@@ -1081,12 +1081,18 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         });
 
         const enabledMetaSpaces = SettingsStore.getValue("Spaces.enabledMetaSpaces");
-        this._enabledMetaSpaces = metaSpaceOrder.filter(k => enabledMetaSpaces[k]) as MetaSpace[];
+        this._enabledMetaSpaces = metaSpaceOrder.filter(k => {
+            if(k !== MetaSpace.Contact) {
+                return enabledMetaSpaces[k]
+            } else {
+                return true;
+            }
+        }) as MetaSpace[];
 
         this._allRoomsInHome = SettingsStore.getValue("Spaces.allRoomsInHome");
         this.sendUserProperties();
 
-        this.rebuildSpaceHierarchy(); // trigger an initial update
+        this.rebuildSpaceHierarchy(true); // trigger an initial update
 
         // restore selected state from last session if any and still valid
         const lastSpaceId = window.localStorage.getItem(ACTIVE_SPACE_LS_KEY);
