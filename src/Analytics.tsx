@@ -27,8 +27,8 @@ import * as sdk from './index';
 import { SnakedObject } from "./utils/SnakedObject";
 import { IConfigOptions } from "./IConfigOptions";
 
-const hashRegex = /#\/(groups?|room|user|settings|register|login|forgot_password|home|directory)/;
-const hashVarRegex = /#\/(group|room|user)\/.*$/;
+const hashRegex = /#\/(groups?|room|user|settings|register|login|forgot_password|home|directory|yiqiaContact)/;
+const hashVarRegex = /#\/(group|room|user|yiqiaContact)\/.*$/;
 
 // Remove all but the first item in the hash path. Redact unexpected hashes.
 function getRedactedHash(hash: string): string {

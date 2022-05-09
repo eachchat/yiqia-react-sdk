@@ -22,7 +22,7 @@ export class YiqiaAttachmentLimit {
     private async getAttachmentState():Promise<AttachmentState> {
         let currentAttachmentInfo;
         try{
-            currentAttachmentInfo = await AuthApi.Instance().fetchAttachmentState();
+            currentAttachmentInfo = await AuthApi.Instance.fetchAttachmentState();
         } catch(error) {
         }
 

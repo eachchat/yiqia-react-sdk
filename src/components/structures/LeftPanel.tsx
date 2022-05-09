@@ -46,6 +46,7 @@ import { UIFeature } from "../../settings/UIFeature";
 import { KeyBindingAction } from "../../accessibility/KeyboardShortcuts";
 import { shouldShowComponent } from "../../customisations/helpers/UIComponents";
 import { UIComponent } from "../../settings/UIFeature";
+import YiqiaContactInterface from "../views/yiqia/YiqiaContactInterface";
 
 interface IProps {
     isMinimized: boolean;
@@ -68,6 +69,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
     private listContainerRef = createRef<HTMLDivElement>();
     private roomSearchRef = createRef<RoomSearch>();
     private roomListRef = createRef<RoomList>();
+    private yiqiaContactRef = createRef<YiqiaContactInterface>();
     private focusedElement = null;
     private isDoingStickyHeaders = false;
 
@@ -340,6 +342,10 @@ export default class LeftPanel extends React.Component<IProps, IState> {
         }
     };
 
+    private isYiqiaContact = () => {
+        return this.state.activeSpace === MetaSpace.Contact;
+    }
+
     private renderBreadcrumbs(): React.ReactNode {
         if (this.state.showBreadcrumbs === BreadcrumbsMode.Legacy && !this.props.isMinimized) {
             return (
@@ -423,28 +429,46 @@ export default class LeftPanel extends React.Component<IProps, IState> {
 
         return (
             <div className={containerClasses}>
-                <aside className="mx_LeftPanel_roomListContainer">
-                    { this.renderSearchDialExplore() }
-                    { this.renderBreadcrumbs() }
-                    { !this.props.isMinimized && (
-                        <RoomListHeader
-                            onVisibilityChange={this.refreshStickyHeaders}
-                            spacePanelDisabled={!SpaceStore.spacesEnabled}
-                        />
-                    ) }
-                    <div className="mx_LeftPanel_roomListWrapper">
-                        <div
-                            className={roomListClasses}
-                            ref={this.listContainerRef}
-                            // Firefox sometimes makes this element focusable due to
-                            // overflow:scroll;, so force it out of tab order.
-                            tabIndex={-1}
-                            onKeyDown={this.onRoomListKeydown}
-                        >
-                            { roomList }
+                {
+                    !this.isYiqiaContact() &&
+                    <aside className="mx_LeftPanel_roomListContainer">
+                        { this.renderSearchDialExplore() }
+                        { this.renderBreadcrumbs() }
+                        { !this.props.isMinimized && (
+                            <RoomListHeader
+                                onVisibilityChange={this.refreshStickyHeaders}
+                                spacePanelDisabled={!SpaceStore.spacesEnabled}
+                            />
+                        ) }
+                        <div className="mx_LeftPanel_roomListWrapper">
+                            <div
+                                className={roomListClasses}
+                                ref={this.listContainerRef}
+                                // Firefox sometimes makes this element focusable due to
+                                // overflow:scroll;, so force it out of tab order.
+                                tabIndex={-1}
+                                onKeyDown={this.onRoomListKeydown}
+                            >
+                                { roomList }
+                            </div>
                         </div>
-                    </div>
-                </aside>
+                    </aside>
+                }
+                {
+                    this.isYiqiaContact() &&
+                    <aside className="mx_LeftPanel_roomListContainer">
+                        <YiqiaContactInterface
+                            onKeyDown={this.onKeyDown}
+                            resizeNotifier={this.props.resizeNotifier}
+                            onFocus={this.onFocus}
+                            onBlur={this.onBlur}
+                            isMinimized={this.props.isMinimized}
+                            onResize={this.refreshStickyHeaders}
+                            onListCollapse={this.refreshStickyHeaders}
+                            ref={this.yiqiaContactRef}
+                        />
+                    </aside>
+                }
             </div>
         );
     }

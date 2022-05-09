@@ -259,4 +259,25 @@ export enum Action {
      * Fired when clicking user name from group view
      */
     ViewStartChatOrReuse = "view_start_chat_or_reuse",
+
+    /**
+     * Show the Contact
+     */
+    ViewYiqiaContact = "view_yiqia_contact",
+
+    /**
+     * Show the Recents
+     */
+     ViewYiqiaRecent = "view_yiqia_recents",
+
+    /**
+     * Show the member of organization
+     */
+     ViewYiqiaOrgMembers = "view_yiqia_org_members",
+
+    /**
+     * Show the member of teams
+     */
+     ViewYiqiaTeamMembers = "view_yiqia_team_members",
+
 }

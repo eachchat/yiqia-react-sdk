@@ -393,6 +393,11 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
             return true;
         }
 
+        //
+        if(space === MetaSpace.Contact) {
+            return true;
+        }
+
         if (this.getSpaceFilteredRoomIds(space, includeDescendantSpaces)?.has(roomId)) {
             return true;
         }

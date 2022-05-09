@@ -5,6 +5,7 @@ export class AuthApi {
     public static AuthApiInstance;
     private host: string;
     private accessToken: string;
+    private baseUrl: string;
 
     constructor() {
     }
@@ -22,23 +23,27 @@ export class AuthApi {
     }
 
     protected fetchAttachmentState() {
-        const authOpts = this.getAuthOptions();
-        return YiqiaRequestInstance.get("/api/apps/org/v1/count/media", authOpts);
+        return YiqiaRequestInstance.newGet(this.baseUrl + "/api/apps/org/v1/count/media", this.accessToken);
     }
 
     protected fetchVideoState() {
-        const authOpts = this.getAuthOptions();
-        return YiqiaRequestInstance.get("/api/apps/org/v1/count/video", authOpts);
+        return YiqiaRequestInstance.newGet(this.baseUrl + "/api/apps/org/v1/count/video", this.accessToken);
     }
 
     protected fetchAudioState() {
-        const authOpts = this.getAuthOptions();
-        return YiqiaRequestInstance.get("/api/apps/org/v1/count/audio", authOpts);
+        return YiqiaRequestInstance.newGet(this.baseUrl + "/api/apps/org/v1/count/audio", this.accessToken);
     }
 
     protected contactSearch(params) {
-        const Opts = Object.assign({}, params, this.getAuthOptions());
-        return YiqiaRequestInstance.post("/api/apps/org/v1/search", Opts);
+        return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/org/v1/search", this.accessToken, params);
+    }
+
+    protected contactGmsInfoFromMatrixId(matrixId) {
+        return YiqiaRequestInstance.newGet(this.baseUrl + "/api/apps/org/v1/user/matrix/" + matrixId, this.accessToken)
+    }
+
+    protected contactGmsContact(params) {
+        return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/contacts/v1/increment", this.accessToken, params)
     }
 
     private getHost() {
@@ -48,17 +53,10 @@ export class AuthApi {
         return this.host;
     }
 
-    private getAuthOptions() {
-        if(!this.accessToken) {
-            this.initMatrixOptions();
-        }
-        return Object.assign({}, {headers: 'Bearer ' + this.accessToken});
-    }
-
     private initMatrixOptions() {
         let cli = MatrixClientPeg.get();
-        let baseUrl = cli.getHomeserverUrl();
-        let hServerUrl = new URL(baseUrl);
+        this.baseUrl = cli.getHomeserverUrl();
+        let hServerUrl = new URL(this.baseUrl);
         this.accessToken = cli.getAccessToken();
         this.host = hServerUrl.host;
     }

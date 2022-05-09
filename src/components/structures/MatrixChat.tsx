@@ -668,6 +668,14 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                 }
                 break;
             }
+            case Action.ViewYiqiaContact: {
+                this.viewYiqiaContact();
+                break;
+            }
+            case Action.ViewYiqiaRecent: {
+                this.viewYiqiaRecents();
+                break;
+            }
             case Action.ViewUserSettings: {
                 const tabPayload = payload as OpenToTabPayload;
                 Modal.createTrackedDialog('User settings', '', UserSettingsDialog,
@@ -1014,6 +1022,28 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         });
         this.setPage(PageType.HomePage);
         this.notifyNewScreen('home');
+        ThemeController.isLogin = false;
+        this.themeWatcher.recheck();
+    }
+
+    private viewYiqiaContact() {
+        // The home page requires the "logged in" view, so we'll set that.
+        this.setStateForNewView({
+            view: Views.LOGGED_IN,
+        });
+        this.setPage(PageType.YiqiaContactUserPage);
+        this.notifyNewScreen('yiqiaContact');
+        ThemeController.isLogin = false;
+        this.themeWatcher.recheck();
+    }
+
+    private viewYiqiaRecents() {
+        // The home page requires the "logged in" view, so we'll set that.
+        this.setStateForNewView({
+            view: Views.LOGGED_IN,
+        });
+        this.setPage(PageType.YiqiaContactUserPage);
+        this.notifyNewScreen('yiqiaContact');
         ThemeController.isLogin = false;
         this.themeWatcher.recheck();
     }
@@ -1760,6 +1790,10 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         } else if (screen === 'home') {
             dis.dispatch({
                 action: Action.ViewHomePage,
+            });
+        } else if (screen === 'yiqiaContact') {
+            dis.dispatch({
+                action: Action.ViewYiqiaContact,
             });
         } else if (screen === 'start') {
             this.showScreen('home');

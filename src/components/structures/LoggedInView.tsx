@@ -77,6 +77,7 @@ import { KeyBindingAction } from "../../accessibility/KeyboardShortcuts";
 import { SwitchSpacePayload } from "../../dispatcher/payloads/SwitchSpacePayload";
 import { IConfigOptions } from "../../IConfigOptions";
 import LeftPanelLiveShareWarning from '../views/beacon/LeftPanelLiveShareWarning';
+import YiqiaContactUserPage from './YiqiaContactUserPage';
 
 // We need to fetch each pinned message individually (if we don't already have it)
 // so each pinned message may trigger a request. Limit the number per room for sanity.
@@ -664,6 +665,9 @@ class LoggedInView extends React.Component<IProps, IState> {
                     />;
                 }
                 break;
+            case PageTypes.YiqiaContactUserPage:
+                pageElement = <YiqiaContactUserPage resizeNotifier={null} />;
+                break;
         }
 
         const wrapperClasses = classNames({
@@ -727,9 +731,18 @@ class LoggedInView extends React.Component<IProps, IState> {
                             </div>
                         </div>
                         <ResizeHandle passRef={this.resizeHandler} id="lp-resizer" />
-                        <div className="mx_RoomView_wrapper">
-                            { pageElement }
-                        </div>
+                        {
+                            this.props.page_type !== PageTypes.YiqiaContactUserPage &&
+                            <div className="mx_RoomView_wrapper">
+                                { pageElement }
+                            </div>
+                        }
+                        {
+                            this.props.page_type === PageTypes.YiqiaContactUserPage &&
+                            <div className="yiqia_ContactUser_wrapper">
+                                { pageElement }
+                            </div>
+                        }
                     </div>
                 </div>
                 <PipContainer />

@@ -1,8 +1,9 @@
-import { AttachmentState, bookInfoParse, bookInfos, DepartmentModal } from "../../models/YiqiaModels";
+import { UserModal } from "../../models/YiqiaModels";
 import { AuthApi } from "./YiqiaRequestInterface";
 
 export class YiqiaContact {
     private static YiqiaContactInstance;
+    private lastUpdateTime:number = 0;
     constructor() {
 
     }
@@ -14,15 +15,30 @@ export class YiqiaContact {
         return this.YiqiaContactInstance;
     }
 
-    public yiqiaGmsSearch(term) {
-        return AuthApi.Instance.contactSearch({
-                body: JSON.stringify({
-                    keywork: term.trim(),
-                }),
+    public yiqiaGmsInfoFromMatrixId(matrixId): Promise<UserModal> {
+        return AuthApi.Instance.contactGmsInfoFromMatrixId(matrixId)
+            .then(resp => {
+                if(resp && resp.code == 200 && resp.obj) {
+                    return resp.obj;
+                } else {
+                    return null;
+                }
             })
+            .catch((err) => {
+                console.log("err ", err);
+                return null;
+            })
+    }
+
+    public yiqiaGmsSearch(term): Promise<UserModal> {
+        return AuthApi.Instance.contactSearch(
+                {
+                    keyword: term.trim(),
+                },
+            )
             .then((resp) => {
                 if(resp && resp.code == 200 && resp.results) {
-                    return resp.results;
+                    return resp;
                 } else {
                     return [];
                 }
@@ -31,6 +47,43 @@ export class YiqiaContact {
                 console.log("err ", err);
                 return [];
             })
+    }
+
+    private yiqiaContactContactsUtil(params) {
+        return AuthApi.Instance.contactGmsContact(params);
+    }
+
+    public async yiqiaContactContacts(): Promise<UserModal[]> {
+        const maxTimes = 10;
+        let sequenceId = 0;
+        let hasNext = true;
+        let fetchTimes = 0;
+        let finalList = [];
+        while(hasNext) {
+            fetchTimes++;
+            const params = {
+                name: "updateContact",
+                updateTime: 0,
+                perPage: 50,
+                sequenceId: sequenceId,
+            };
+            const resp = await this.yiqiaContactContactsUtil(params);
+
+            if(resp && resp.code == 200 && resp.results) {
+                this.lastUpdateTime = resp.obj.updateTime;
+                finalList = finalList.concat(resp.results);
+                sequenceId = finalList.length;
+                if(sequenceId >= resp.total) {
+                    hasNext = false;
+                }
+            } else {
+                return finalList;
+            }
+            if(fetchTimes > maxTimes) {
+                return finalList;
+            }
+        }
+        return finalList;
     }
 }
 
