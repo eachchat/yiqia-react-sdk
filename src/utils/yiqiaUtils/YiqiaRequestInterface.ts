@@ -46,6 +46,18 @@ export class AuthApi {
         return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/contacts/v1/increment", this.accessToken, params)
     }
 
+    protected contactOrganization(departmentId) {
+        return YiqiaRequestInstance.newGet(this.baseUrl + "/api/apps/org/v1/server/departments/tree/1", this.accessToken)
+    }
+
+    protected contactOrganizationInfo(params) {
+        return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/org/v1/departments", this.accessToken, params)
+    }
+
+    protected contactOrganizationMemberInfo(params) {
+        return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/org/v1/server/departments/users", this.accessToken, params)
+    }
+
     private getHost() {
         if(!this.host) {
             this.initMatrixOptions();

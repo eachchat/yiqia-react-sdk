@@ -2,13 +2,16 @@ import { AsyncStoreWithClient } from "./AsyncStoreWithClient";
 import defaultDispatcher from "../dispatcher/dispatcher";
 import { ActionPayload } from "../dispatcher/payloads";
 import { UserModal, DepartmentModal, ContactTagId } from "../models/YiqiaModels";
-import YiqiaRecentsStore from "./YiqiaRecentsStore";
+import YiqiaRecentsStore, { UPDATE_RECENT_EVENT } from "./YiqiaRecentsStore";
 import { YiqiaContactContactStore } from "./YiqiaContactContactStore";
+import YiqiaOrganizationStore, { ORGANIZATION_ITEM_CLICKED_EVENT, ORGANIZATION_MEMBER_UPDATE_EVENT } from "./YiqiaOrganizationStore";
+import { UPDATE_EVENT } from "./AsyncStore";
 // import { getContact } from "../YiqiaUtils";
 
 interface IState {}
 
 export const UPDATE_SELECTED_CONTACT_ITEM = Symbol("selected_contact_item");
+export const UPDATE_USERLIST_INFOS = Symbol("userlist_infos_update");
 
 export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> {
     private static internalInstance = new YiqiaContactUserStore();
@@ -17,10 +20,15 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
 
     constructor() {
         super(defaultDispatcher);
+        YiqiaRecentsStore.Instance.on(UPDATE_RECENT_EVENT, this.updateUsers.bind(this));
+        YiqiaOrganizationStore.Instance.on(ORGANIZATION_ITEM_CLICKED_EVENT, this.updateUsers.bind(this));
+        YiqiaOrganizationStore.Instance.on(ORGANIZATION_MEMBER_UPDATE_EVENT, this.updateUsers.bind(this));
     }
 
     protected async onAction(payload: ActionPayload): Promise<void> {
-        // nothing
+        if(payload.action === "yiqia_organization_item_clicked") {
+            this.setCurItem(ContactTagId.Organization);
+        }
     }
 
     public static get instance(): YiqiaContactUserStore {
@@ -32,13 +40,19 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
     }
 
     public setCurItem(item: ContactTagId) {
-        console.log("setCurItem")
+        console.log("==========setCurItem")
         this._curItem = item;
-        this.updateUsers();
+        this.updateUsersData();
         this.emit(UPDATE_SELECTED_CONTACT_ITEM);
     }
 
-    protected updateUsers() {
+    public updateUsers() {
+        console.log("===========updateUsers");
+        this.updateUsersData();
+        this.emit(UPDATE_EVENT);
+    }
+
+    protected updateUsersData() {
         switch(this._curItem) {
             case ContactTagId.Recent:
                 this.updateUsersListFromRecentData();
@@ -47,6 +61,7 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
                 this.updateUsersListFromContactsData();
                 break;
             case ContactTagId.Organization:
+                this.updateUsersListFromOrganization();
                 break;
             case ContactTagId.Teams:
                 break;
@@ -64,8 +79,13 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
         console.log("updateUsersListFromContactsData ", this._curUsersList);
     }
 
+    private updateUsersListFromOrganization() {
+        this._curUsersList = YiqiaOrganizationStore.Instance.curOrgMembers;
+        console.log("updateUsersListFromOrganization ", this._curUsersList);
+    }
+
     protected async onReady(): Promise<void> {
-        this.updateUsers();
+        this.updateUsersData();
     }
 
     public get usersList():  UserModal[]{

@@ -33,6 +33,7 @@ import YiqiaContactUserStore from "../../../stores/YiqiaContactUserStore";
 import YiqiaUserItem from "./YiqiaUserItem";
 import { UserModal } from "../../../models/YiqiaModels";
 import YiqiaRecentsStore, { UPDATE_RECENT_EVENT } from "../../../stores/YiqiaRecentsStore";
+import YiqiaOrganizationStore, { ORGANIZATION_ITEM_CLICKED_EVENT } from "../../../stores/YiqiaOrganizationStore";
 
 export const HEADER_HEIGHT = 32; // As defined by CSS
 
@@ -46,14 +47,12 @@ export interface IAuxButtonProps {
 
 interface IProps {
     showSkeleton?: boolean;
+    users: UserModal[];
 }
 
 type PartialDOMRect = Pick<DOMRect, "left" | "top" | "height">;
 
 interface IState {
-    contextMenuPosition: PartialDOMRect;
-    height: number;
-    users: UserModal[];
     initCollapse?: boolean;
 }
 
@@ -62,98 +61,63 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
     private sublistRef = createRef<HTMLDivElement>();
     private tilesRef = createRef<HTMLDivElement>();
     private dispatcherRef: string;
-    private isBeingFiltered: boolean;
 
     constructor(props: IProps) {
         super(props);
 
-        this.isBeingFiltered = !!RoomListStore.instance.getFirstNameFilterCondition();
         this.state = {
-            contextMenuPosition: null,
-            height: 0, // to be fixed in a moment, we need `rooms` to calculate this.
-            users: arrayFastClone(YiqiaContactUserStore.instance.usersList || []),
             initCollapse: false,
         };
     }
 
-    public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
-        const stateUpdate: IState & any = {};
-        const curUsers = this.state.users;
-        const nextUsers = arrayFastClone(YiqiaContactUserStore.instance.usersList || []);
-        if(arrayHasDiff(curUsers, nextUsers)) {
-            stateUpdate.users = nextUsers;
-            this.setState(stateUpdate);
+    public shouldComponentUpdate(nextProps: Readonly<IProps>, nextState: Readonly<IState>): boolean {
+        if (objectHasDiff(this.props, nextProps)) {
+            // Something we don't care to optimize has updated, so update.
+            return true;
         }
+
+        const curUsers = this.props.users;
+        const nextUsers = nextProps.users;
+        if(arrayHasDiff(curUsers, nextUsers)) {
+            return true;
+        }
+
+        // Finally, nothing happened so no-op the update
+        return false;
     }
-
-    // public shouldComponentUpdate(nextProps: Readonly<IProps>, nextState: Readonly<IState>): boolean {
-        // if (objectHasDiff(this.props, nextProps)) {
-        //     // Something we don't care to optimize has updated, so update.
-        //     return true;
-        // }
-
-        // // Do the same check used on props for state, without the users we're going to no-op
-        // const prevStateNoRooms = objectExcluding(this.state, ['users']);
-        // const nextStateNoRooms = objectExcluding(nextState, ['users']);
-        // if (objectHasDiff(prevStateNoRooms, nextStateNoRooms)) {
-        //     return true;
-        // }
-
-        // // Quickly double check we're not about to break something due to the number of users changing.
-        // if (this.state.users.length !== nextState.users.length) {
-        //     return true;
-        // }
-
-        // // Finally, nothing happened so no-op the update
-        // return false;
-    // }
 
     public componentDidMount() {
         this.dispatcherRef = defaultDispatcher.register(this.onAction);
-        RoomListStore.instance.on(LISTS_UPDATE_EVENT, this.onListsOrderUpdated);
         // Using the passive option to not block the main thread
         // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#improving_scrolling_performance_with_passive_listeners
         this.tilesRef.current?.addEventListener("scroll", this.onScrollPrevent, { passive: true });
-        YiqiaRecentsStore.Instance.on(UPDATE_RECENT_EVENT, this.onListDataUpdate)
+        // YiqiaRecentsStore.Instance.on(UPDATE_RECENT_EVENT, this.onListDataUpdate);
+        // YiqiaOrganizationStore.Instance.on(ORGANIZATION_ITEM_CLICKED_EVENT, this.onListDataUpdate);
     }
 
     public componentWillUnmount() {
         defaultDispatcher.unregister(this.dispatcherRef);
-        RoomListStore.instance.off(LISTS_UPDATE_EVENT, this.onListsOrderUpdated);
         this.tilesRef.current?.removeEventListener("scroll", this.onScrollPrevent);
-        YiqiaRecentsStore.Instance.removeListener(UPDATE_RECENT_EVENT, this.onListDataUpdate)
+        // YiqiaRecentsStore.Instance.removeListener(UPDATE_RECENT_EVENT, this.onListDataUpdate)
+        // YiqiaOrganizationStore.Instance.removeListener(ORGANIZATION_ITEM_CLICKED_EVENT, this.onListDataUpdate);
     }
 
-    private onListDataUpdate = () => {
-        const stateUpdates: IState & any = {}; // &any is to avoid a cast on the initializer
-        const newUsers = arrayFastClone(YiqiaContactUserStore.instance.usersList || []);
-        stateUpdates.users = newUsers;
-        this.setState(stateUpdates);
-    }
-
-    private onListsOrderUpdated = () => {
-        const stateUpdates: IState & any = {}; // &any is to avoid a cast on the initializer
-
-        const currentUsers = this.state.users;
-        const newUsers = arrayFastClone(YiqiaContactUserStore.instance.usersList || []);
-        if (arrayHasOrderChange(currentUsers, newUsers)) {
-            stateUpdates.users = newUsers;
-        }
-
-        if (Object.keys(stateUpdates).length > 0) {
-            this.setState(stateUpdates);
-        }
-    };
+    // private onListDataUpdate = () => {
+    //     const stateUpdates: IState & any = {}; // &any is to avoid a cast on the initializer
+    //     const newUsers = arrayFastClone(YiqiaContactUserStore.instance.usersList || []);
+    //     stateUpdates.users = newUsers;
+    //     this.setState(stateUpdates);
+    // }
 
     private onAction = (payload: ActionPayload) => {
     };
 
     private renderUsers(): React.ReactElement[] {
-        console.log("renderUsers and users is ", this.state.users)
+        console.log("renderUsers and users is ", this.props.users)
         const tiles: React.ReactElement[] = [];
 
-        if (this.state.users) {
-            let allUsers = this.state.users;
+        if (this.props.users) {
+            let allUsers = this.props.users;
 
             for (const user of allUsers) {
                 tiles.push(

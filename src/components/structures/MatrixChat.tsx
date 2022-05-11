@@ -676,6 +676,10 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                 this.viewYiqiaRecents();
                 break;
             }
+            case Action.ViewYiqiaOrgMembers: {
+                this.viewYiqiaOrganization();
+                break;
+            }
             case Action.ViewUserSettings: {
                 const tabPayload = payload as OpenToTabPayload;
                 Modal.createTrackedDialog('User settings', '', UserSettingsDialog,
@@ -1038,6 +1042,17 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
     }
 
     private viewYiqiaRecents() {
+        // The home page requires the "logged in" view, so we'll set that.
+        this.setStateForNewView({
+            view: Views.LOGGED_IN,
+        });
+        this.setPage(PageType.YiqiaContactUserPage);
+        this.notifyNewScreen('yiqiaContact');
+        ThemeController.isLogin = false;
+        this.themeWatcher.recheck();
+    }
+
+    private viewYiqiaOrganization() {
         // The home page requires the "logged in" view, so we'll set that.
         this.setStateForNewView({
             view: Views.LOGGED_IN,

@@ -32,9 +32,10 @@ import MatrixClientContext from "../../../contexts/MatrixClientContext";
 import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
 import { ContactTagId } from "../../../models/YiqiaModels";
 import AccessibleButton from "../elements/AccessibleButton";
-import { ViewYiqiaContactPayload, ViewYiqiaRecentsPayload } from "../../../dispatcher/payloads/ViewYiqiaContactPayload";
+import { ViewYiqiaContactPayload, ViewYiqiaOrganizationPayload, ViewYiqiaRecentsPayload } from "../../../dispatcher/payloads/ViewYiqiaContactPayload";
 import AutoHideScrollbar from "../../structures/AutoHideScrollbar";
 import YiqiaContactUserStore from "../../../stores/YiqiaContactUserStore";
+import YiqiaOrganizationComponent from "./YiqiaOrganizationComponent";
 
 interface IProps {
     onKeyDown: (ev: React.KeyboardEvent, state: IRovingTabIndexState) => void;
@@ -96,6 +97,11 @@ export default class YiqiaContactInterface extends React.PureComponent<IProps, I
                 });
                 break;
             case ContactTagId.Organization:
+                YiqiaContactUserStore.instance.setCurItem(item);
+                defaultDispatcher.dispatch<ViewYiqiaOrganizationPayload>({
+                    action: Action.ViewYiqiaOrgMembers
+                });
+                break;
             case ContactTagId.Teams:
         }
     }
@@ -164,6 +170,11 @@ export default class YiqiaContactInterface extends React.PureComponent<IProps, I
         console.log("on contact");
     }
 
+    private onOrganizationClick = () => {
+        this.setActiveContactItem(ContactTagId.Organization);
+        console.log("on organization");
+    }
+
     private recentsItem(): React.ReactElement {
         return (
             <AccessibleButton
@@ -188,6 +199,21 @@ export default class YiqiaContactInterface extends React.PureComponent<IProps, I
         );
     }
 
+    private OrgItem(): React.ReactElement {
+        return (
+            <React.Fragment>
+                <AccessibleButton
+                    title={_t("Contacts")}
+                    onFocus={this.props.onFocus}
+                    className="mx_RoomTile"
+                    onClick={this.onOrganizationClick}>
+                        {_t("Organization")}
+                </AccessibleButton>
+                <YiqiaOrganizationComponent></YiqiaOrganizationComponent>
+            </React.Fragment>
+        )
+    }
+
     public render() {
         return (
             <AutoHideScrollbar>
@@ -207,6 +233,7 @@ export default class YiqiaContactInterface extends React.PureComponent<IProps, I
                         >
                             { this.recentsItem() }
                             { this.contactItem() }
+                            { this.OrgItem() }
                         </div>
                     ) }
                 </RovingTabIndexProvider>

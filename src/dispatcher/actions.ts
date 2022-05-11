@@ -280,4 +280,8 @@ export enum Action {
      */
      ViewYiqiaTeamMembers = "view_yiqia_team_members",
 
+    /**
+     * Organization Item clicked
+     */
+     YiqiaOrganizationItemClicked = "yiqia_organization_item_clicked",
 }

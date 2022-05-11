@@ -1,4 +1,4 @@
-import { UserModal } from "../../models/YiqiaModels";
+import { DepartmentModal, UserModal } from "../../models/YiqiaModels";
 import { AuthApi } from "./YiqiaRequestInterface";
 
 export class YiqiaContact {
@@ -49,10 +49,6 @@ export class YiqiaContact {
             })
     }
 
-    private yiqiaContactContactsUtil(params) {
-        return AuthApi.Instance.contactGmsContact(params);
-    }
-
     public async yiqiaContactContacts(): Promise<UserModal[]> {
         const maxTimes = 10;
         let sequenceId = 0;
@@ -67,13 +63,123 @@ export class YiqiaContact {
                 perPage: 50,
                 sequenceId: sequenceId,
             };
-            const resp = await this.yiqiaContactContactsUtil(params);
+            const resp = await AuthApi.Instance.contactGmsContact(params);
 
             if(resp && resp.code == 200 && resp.results) {
                 this.lastUpdateTime = resp.obj.updateTime;
                 finalList = finalList.concat(resp.results);
                 sequenceId = finalList.length;
                 if(sequenceId >= resp.total) {
+                    hasNext = false;
+                }
+            } else {
+                return finalList;
+            }
+            if(fetchTimes > maxTimes) {
+                return finalList;
+            }
+        }
+        return finalList;
+    }
+
+    public async yiqiaOrganization(departmentId): Promise<DepartmentModal> {
+        const resp = await AuthApi.Instance.contactOrganization(departmentId);
+        if(resp && resp.code == 200 && resp.results) {
+            return resp.results
+        } else {
+            return null;
+        }
+    }
+
+    public async yiqiaOrganizationInfo(): Promise<any> {
+        const maxTimes = 10;
+        let sequenceId = 0;
+        let hasNext = true;
+        let fetchTimes = 0;
+        let finalList = [];
+        while(hasNext) {
+            fetchTimes++;
+            const params = {
+                filters: undefined,
+                perPage: undefined,
+                sortOrder: 1,
+                sequenceId: sequenceId
+              };
+            const resp = await AuthApi.Instance.contactOrganizationInfo(params);
+
+            console.log("=========resp ", resp);
+
+            if(resp && resp.code == 200 && resp.results) {
+                this.lastUpdateTime = resp.obj.updateTime;
+                finalList = finalList.concat(resp.results);
+                sequenceId = finalList.length;
+                if(sequenceId >= resp.total) {
+                    hasNext = false;
+                }
+            } else {
+                return finalList;
+            }
+            if(fetchTimes > maxTimes) {
+                return finalList;
+            }
+        }
+        return finalList;
+    }
+    
+    public async yiqiaAllOrganizationMemberInfo(): Promise<any> {
+        const maxTimes = 30;
+        let sequenceId = 0;
+        let hasNext = true;
+        let fetchTimes = 0;
+        let finalList = [];
+        while(hasNext) {
+            fetchTimes++;
+            const params = {
+                filters: undefined,
+                perPage: undefined,
+                sortOrder: 1,
+                sequenceId: sequenceId
+              };
+            const resp = await AuthApi.Instance.contactOrganizationMemberInfo(params);
+
+            console.log("=========resp ", resp);
+
+            if(resp && resp.code == 200 && resp.results) {
+                this.lastUpdateTime = resp.obj.updateTime;
+                finalList = finalList.concat(resp.results);
+                sequenceId = finalList.length;
+                if(sequenceId >= resp.total) {
+                    hasNext = false;
+                }
+            } else {
+                return finalList;
+            }
+            if(fetchTimes > maxTimes) {
+                return finalList;
+            }
+        }
+        return finalList;
+    }
+    
+    public async yiqiaOrganizationMemberInfo(departmentId): Promise<UserModal[]> {
+        const maxTimes = 30;
+        let page = 1;
+        let hasNext = true;
+        let fetchTimes = 0;
+        let finalList = [];
+        while(hasNext) {
+            fetchTimes++;
+            const params = {
+                perPage: 50,
+                departmentId: departmentId,
+                page: page
+              };
+            const resp = await AuthApi.Instance.contactOrganizationMemberInfo(params);
+
+            if(resp && resp.code == 200 && resp.results) {
+                finalList = finalList.concat(resp.results);
+                page = page + 1;
+                if(finalList.length >= resp.total) {
                     hasNext = false;
                 }
             } else {

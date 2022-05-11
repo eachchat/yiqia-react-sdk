@@ -28,6 +28,7 @@ import { useEventEmitter } from "../../hooks/useEventEmitter";
 import YiqiaUserInfo from "../views/right_panel/YiqiaUserInfo";
 import YiqiaUserRightPanelStore from "../../stores/YiqiaUserRightPanelStore";
 import { UPDATE_EVENT } from "../../stores/AsyncStore";
+import { objectHasDiff } from "../../utils/objects";
 
 interface IProps {
     resizeNotifier: ResizeNotifier;
@@ -35,9 +36,12 @@ interface IProps {
 
 const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     const [showRightPanel, setShowRightPanel] = useState(false);
-    const [lastItem, setLastItem] = useState(ContactTagId.Recent);
-    console.log("lastItem init again ", lastItem);
+    const [users, setUsers] = useState([]);
+    
     useEventEmitter(YiqiaContactUserStore.instance, UPDATE_SELECTED_CONTACT_ITEM, () => {
+        pageShouldUpdate();
+    });
+    useEventEmitter(YiqiaContactUserStore.instance, UPDATE_EVENT, () => {
         pageShouldUpdate();
     });
     useEventEmitter(YiqiaUserRightPanelStore.Instance, UPDATE_EVENT, () => {
@@ -64,13 +68,10 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     }
 
     const pageShouldUpdate = () => {
-        console.log("YiqiaContactUserStore.instance.curItem ", YiqiaContactUserStore.instance.curItem);
-        console.log("lastItem ", lastItem);
-        if(YiqiaContactUserStore.instance.curItem !== lastItem) {
-            console.log("pageshould update");
-            console.log("YiqiaContactUserStore.instance.curItem ", YiqiaContactUserStore.instance.curItem);
-            setLastItem(YiqiaContactUserStore.instance.curItem);
-            console.log("lastItem ", lastItem);
+        const curUsers = YiqiaContactUserStore.instance.usersList;
+        console.log("pageShouldUpdate curUsers ", curUsers);
+        if(objectHasDiff(curUsers, users)) {
+            setUsers(curUsers);
         }
     }
 
@@ -117,7 +118,9 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
             <MainSplit panel={rightPanel} resizeNotifier={props.resizeNotifier}>
                 <div className="yiqia_ContactUser_body">
                     { renderContactSearchComponent() }
-                    <YiqiaContactUserList />
+                    <YiqiaContactUserList 
+                        users={users}
+                    />
                 </div>
             </MainSplit>
         </React.Fragment>;

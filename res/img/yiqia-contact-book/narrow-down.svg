@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icon/操作/箭头-收起</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="16" height="16"></rect>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="画板备份-15" transform="translate(-122.000000, -402.000000)">
+            <g id="编组-2备份-28" transform="translate(68.000000, 388.000000)">
+                <g id="Icon/操作/箭头-收起" transform="translate(62.000000, 22.000000) rotate(90.000000) translate(-62.000000, -22.000000) translate(54.000000, 14.000000)">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <g id="矩形"></g>
+                    <polygon id="路径-3" fill="#666666" mask="url(#mask-2)" transform="translate(8.500000, 8.000000) rotate(-90.000000) translate(-8.500000, -8.000000) " points="4 5.5 13 5.5 8.5 10.5"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

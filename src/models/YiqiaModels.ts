@@ -1,15 +1,24 @@
 import { Room } from "matrix-js-sdk/src/models/room";
 
+/**
+ * 
+          department_id: types.string,
+          parent_id:     types.string,
+          display_name:  types.string,
+          description:   types.string,
+          director_id:   types.string,
+          admin_id:      types.string,
+          del:           types.integer,
+          show_order:    types.integer,
+          updatetime:    types.integer,
+          department_type: types.string
+ */
 export interface DepartmentModal {
     id: string;
-    displayName: string;
-    showOrder: number;
+    name: string;
     parendId: string;
-    parentName: string;
-    directorId: string;
-    adminId: string;
-    level: number;
-    departmentType: string;
+    children: DepartmentModal[];
+    users: UserModal[];
 }
 
 export const YIQIA_LOADING = Symbol("yiqia_loading");
@@ -32,6 +41,10 @@ export interface GmsContact {
     userId: string;
     valid: number;
 }
+
+export interface UserClassifyModal {
+    key: UserModal[]
+}[]
 
 export class UserModal {
     public aId: string;

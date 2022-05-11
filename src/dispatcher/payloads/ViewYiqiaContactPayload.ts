@@ -25,4 +25,13 @@ export interface ViewYiqiaContactPayload extends Pick<ActionPayload, "action"> {
 export interface ViewYiqiaRecentsPayload extends Pick<ActionPayload, "action"> {
     action: Action.ViewYiqiaRecent;
 }
+
+export interface ViewYiqiaOrganizationPayload extends Pick<ActionPayload, "action"> {
+    action: Action.ViewYiqiaOrgMembers;
+}
+
+export interface YiqiaOrganizationItemClickedPayload extends Pick<ActionPayload, "action"> {
+    departmentName: string;
+    action: Action.YiqiaOrganizationItemClicked;
+}
 /* eslint-enable camelcase */
