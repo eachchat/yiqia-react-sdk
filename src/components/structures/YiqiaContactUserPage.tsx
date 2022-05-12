@@ -29,6 +29,7 @@ import YiqiaUserInfo from "../views/right_panel/YiqiaUserInfo";
 import YiqiaUserRightPanelStore from "../../stores/YiqiaUserRightPanelStore";
 import { UPDATE_EVENT } from "../../stores/AsyncStore";
 import { objectHasDiff } from "../../utils/objects";
+import { mapHasDiff } from "../../utils/maps";
 
 interface IProps {
     resizeNotifier: ResizeNotifier;
@@ -36,7 +37,7 @@ interface IProps {
 
 const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     const [showRightPanel, setShowRightPanel] = useState(false);
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState(new Map());
     
     useEventEmitter(YiqiaContactUserStore.instance, UPDATE_SELECTED_CONTACT_ITEM, () => {
         pageShouldUpdate();
@@ -69,8 +70,10 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
 
     const pageShouldUpdate = () => {
         const curUsers = YiqiaContactUserStore.instance.usersList;
+        console.log("pageShouldUpdate objectHasDiff ", objectHasDiff(curUsers, users));
         console.log("pageShouldUpdate curUsers ", curUsers);
-        if(objectHasDiff(curUsers, users)) {
+        console.log("pageShouldUpdate users ", users);
+        if(mapHasDiff(curUsers, users)) {
             setUsers(curUsers);
         }
     }

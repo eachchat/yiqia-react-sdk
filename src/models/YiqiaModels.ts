@@ -42,10 +42,6 @@ export interface GmsContact {
     valid: number;
 }
 
-export interface UserClassifyModal {
-    key: UserModal[]
-}[]
-
 export class UserModal {
     public aId: string;
     public active: boolean;
@@ -107,10 +103,11 @@ export class UserModal {
     public userType: string;
     public room: Room;
 
-    constructor(userId: string, displayName?: string, avatarTUrl?: string) {
+    constructor(userId: string, displayName?: string, avatarTUrl?: string, displayNamePy?: string) {
         this.matrixId = userId;
         this.displayName = displayName || "";
         this.avatarTUrl = avatarTUrl || "";
+        this.displayNamePy = displayNamePy || "";
     }
 
     /**
@@ -197,6 +194,14 @@ export class UserModal {
 
     public get DisplayName() {
         return this.displayName;
+    }
+
+    public get DisplayNamePy() {
+        if(this.displayNamePy) {
+            return this.displayNamePy;
+        } else {
+            return this.matrixId.slice(1,2);
+        }
     }
 }
 

@@ -6,16 +6,16 @@ import defaultDispatcher from "../dispatcher/dispatcher";
 import { ActionPayload } from "../dispatcher/payloads";
 import { UserModal, YIQIA_LOADING } from "../models/YiqiaModels";
 import DMRoomMap from "../utils/DMRoomMap";
-import { AsyncStoreWithClient } from "./AsyncStoreWithClient";
 import { DefaultTagID } from "./room-list/models";
 import RoomListStore from "./room-list/RoomListStore";
 import SettingsStore from "../settings/SettingsStore";
 import { YiqiaContact } from "../utils/yiqiaUtils/YiqiaContact";
+import { YiqiaBaseUserStore } from "./YiqiaBaseUserStore";
 
 export const UPDATE_RECENT_EVENT = Symbol("yiqia_recent_user_update");
 
-export default class YiqiaRecentsStore extends AsyncStoreWithClient<IState> {
-    private _recentsList: UserModal[] = [];
+export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
+    private _recentsList: Map<string, UserModal[]> = new Map();
     private _isUpdating: boolean = false;
     public static YiqiaRecentsStoreInstance = new YiqiaRecentsStore();
     constructor() {
@@ -27,11 +27,11 @@ export default class YiqiaRecentsStore extends AsyncStoreWithClient<IState> {
         return YiqiaRecentsStore.YiqiaRecentsStoreInstance;
     }
 
-    public get recents(): UserModal[] {
-        if(this._recentsList.length === 0) {
+    public get recents(): Map<string, UserModal[]> {
+        if(this._recentsList.size === 0) {
             this.generalSortedDMList();
         }
-        return this._recentsList || [];
+        return this._recentsList;
     }
 
     protected async onAction(payload: ActionPayload): Promise<void> {
@@ -42,7 +42,6 @@ export default class YiqiaRecentsStore extends AsyncStoreWithClient<IState> {
         try{
             const userInfo = await YiqiaContact.Instance.yiqiaGmsInfoFromMatrixId(item.matrixId);
             if(userInfo) {
-                console.log("========= user ", userInfo);
                 return userInfo;
             }
             return null;
@@ -57,17 +56,19 @@ export default class YiqiaRecentsStore extends AsyncStoreWithClient<IState> {
         if(this._isUpdating) return;
         this._isUpdating = true;
         let needUpdate = false;
-        for(let item of this._recentsList) {
-            if(item.OrganizationInfo === YIQIA_LOADING) {
-                const gmsUserInfo = await this.updateItemFromGms(item);
-                if(gmsUserInfo) {
-                    if(item.updateProperty(gmsUserInfo)) {
-                        needUpdate = true;
+        for(const [key, value] of this._recentsList.entries()) {
+            for(let i = 0; i < value.length; i++) {
+                const item = value[i];
+                if(item.OrganizationInfo === YIQIA_LOADING) {
+                    const gmsUserInfo = await this.updateItemFromGms(item);
+                    if(gmsUserInfo) {
+                        if(item.updateProperty(gmsUserInfo)) {
+                            needUpdate = true;
+                        }
                     }
                 }
             }
         }
-        console.log("--------- recent list ", this._recentsList);
         this._isUpdating = false;
         if(needUpdate) {
             this.emit(UPDATE_RECENT_EVENT);
@@ -83,7 +84,7 @@ export default class YiqiaRecentsStore extends AsyncStoreWithClient<IState> {
         }
         if(!allRooms || allRooms.length == 0) return;
         const DMMap = DMRoomMap.shared();
-        this._recentsList = allRooms.sort((a, b) => {
+        const improvedList = allRooms.sort((a, b) => {
             return a.timeline[a.timeline.length - 1].getTs() - b.timeline[b.timeline.length - 1].getTs();
         }).map((room:Room) => {
             const curUid = DMMap.getUserIdForRoomId(room.roomId);
@@ -96,6 +97,7 @@ export default class YiqiaRecentsStore extends AsyncStoreWithClient<IState> {
         }).filter(userItem => {
             return !!userItem;
         })
+        this._recentsList = this.dataDeal(improvedList);
         this.selfUpdateFromGms();
     }
 

@@ -3,10 +3,10 @@ import defaultDispatcher from "../dispatcher/dispatcher";
 import { ActionPayload } from "../dispatcher/payloads";
 import { GmsContact, UserModal } from "../models/YiqiaModels";
 import { YiqiaContact } from "../utils/yiqiaUtils/YiqiaContact";
-import { AsyncStoreWithClient } from "./AsyncStoreWithClient";
+import { YiqiaBaseUserStore } from "./YiqiaBaseUserStore";
 
-export class YiqiaContactContactStore extends AsyncStoreWithClient<IState> {
-    private _contactsInGms:UserModal[] = [];
+export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
+    private _contactsInGms: Map<string, UserModal[]> = new Map();
     public static YiqiaContactContactStoreInstance = new YiqiaContactContactStore();
 
     constructor() {
@@ -17,7 +17,7 @@ export class YiqiaContactContactStore extends AsyncStoreWithClient<IState> {
         return YiqiaContactContactStore.YiqiaContactContactStoreInstance;
     }
 
-    public get gmsContacts() {
+    public get gmsContacts():Map<string, UserModal[]> {
         return this._contactsInGms;
     }
     
@@ -25,24 +25,6 @@ export class YiqiaContactContactStore extends AsyncStoreWithClient<IState> {
         return;
     }
 
-    /**
-     *  contactCompany: ""
-        contactEmail: ""
-        contactId: "18"
-        contactMatrixId: "@chengfang:workly.ai"
-        contactMobile: ""
-        contactRemarkName: "程方正式"
-        contactTelephone: ""
-        contactTitle: ""
-        contactType: 1
-        created: "2021-06-07T09:48:58.000+0000"
-        del: 0
-        lastModified: null
-        matrixId: "@wangxin:staging.eachchat.net"
-        updateTimestamp: "1623059338183"
-        userId: "00520195329223DY4qsA"
-        valid: 1
-     */
     protected async generalContactsList(): Promise<void> {
         const results = await YiqiaContact.Instance.yiqiaContactContacts();
         const showResults = results.map((gmsContact: GmsContact) => {
@@ -50,8 +32,7 @@ export class YiqiaContactContactStore extends AsyncStoreWithClient<IState> {
             usermodal.updateFromGmsContact(gmsContact);
             return usermodal;
         })
-        console.log("showResults is ", showResults);
-        this._contactsInGms = showResults;
+        this._contactsInGms = this.dataDeal(showResults);
     }
 
     protected async onReady() {

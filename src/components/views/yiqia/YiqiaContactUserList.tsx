@@ -22,18 +22,13 @@ import classNames from 'classnames';
 import { Dispatcher } from "flux";
 
 import { _t } from "../../../languageHandler";
-import RoomListStore, { LISTS_UPDATE_EVENT } from "../../../stores/room-list/RoomListStore";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
 import { ActionPayload } from "../../../dispatcher/payloads";
 import { polyfillTouchEvent } from "../../../@types/polyfill";
-import { arrayFastClone, arrayHasDiff, arrayHasOrderChange } from "../../../utils/arrays";
-import { objectExcluding, objectHasDiff } from "../../../utils/objects";
+import { mapHasDiff } from "../../../utils/maps";
 import { replaceableComponent } from "../../../utils/replaceableComponent";
-import YiqiaContactUserStore from "../../../stores/YiqiaContactUserStore";
 import YiqiaUserItem from "./YiqiaUserItem";
 import { UserModal } from "../../../models/YiqiaModels";
-import YiqiaRecentsStore, { UPDATE_RECENT_EVENT } from "../../../stores/YiqiaRecentsStore";
-import YiqiaOrganizationStore, { ORGANIZATION_ITEM_CLICKED_EVENT } from "../../../stores/YiqiaOrganizationStore";
 
 export const HEADER_HEIGHT = 32; // As defined by CSS
 
@@ -47,10 +42,8 @@ export interface IAuxButtonProps {
 
 interface IProps {
     showSkeleton?: boolean;
-    users: UserModal[];
+    users: Map<string, UserModal[]>;
 }
-
-type PartialDOMRect = Pick<DOMRect, "left" | "top" | "height">;
 
 interface IState {
     initCollapse?: boolean;
@@ -71,14 +64,9 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
     }
 
     public shouldComponentUpdate(nextProps: Readonly<IProps>, nextState: Readonly<IState>): boolean {
-        if (objectHasDiff(this.props, nextProps)) {
-            // Something we don't care to optimize has updated, so update.
-            return true;
-        }
-
         const curUsers = this.props.users;
         const nextUsers = nextProps.users;
-        if(arrayHasDiff(curUsers, nextUsers)) {
+        if(mapHasDiff(curUsers, nextUsers)) {
             return true;
         }
 
@@ -91,37 +79,34 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
         // Using the passive option to not block the main thread
         // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#improving_scrolling_performance_with_passive_listeners
         this.tilesRef.current?.addEventListener("scroll", this.onScrollPrevent, { passive: true });
-        // YiqiaRecentsStore.Instance.on(UPDATE_RECENT_EVENT, this.onListDataUpdate);
-        // YiqiaOrganizationStore.Instance.on(ORGANIZATION_ITEM_CLICKED_EVENT, this.onListDataUpdate);
     }
 
     public componentWillUnmount() {
         defaultDispatcher.unregister(this.dispatcherRef);
         this.tilesRef.current?.removeEventListener("scroll", this.onScrollPrevent);
-        // YiqiaRecentsStore.Instance.removeListener(UPDATE_RECENT_EVENT, this.onListDataUpdate)
-        // YiqiaOrganizationStore.Instance.removeListener(ORGANIZATION_ITEM_CLICKED_EVENT, this.onListDataUpdate);
     }
-
-    // private onListDataUpdate = () => {
-    //     const stateUpdates: IState & any = {}; // &any is to avoid a cast on the initializer
-    //     const newUsers = arrayFastClone(YiqiaContactUserStore.instance.usersList || []);
-    //     stateUpdates.users = newUsers;
-    //     this.setState(stateUpdates);
-    // }
 
     private onAction = (payload: ActionPayload) => {
     };
 
     private renderUsers(): React.ReactElement[] {
-        console.log("renderUsers and users is ", this.props.users)
         const tiles: React.ReactElement[] = [];
 
         if (this.props.users) {
-            let allUsers = this.props.users;
+            let allLetters = [...this.props.users.keys()];
 
-            for (const user of allUsers) {
+            for (const letter of allLetters) {
                 tiles.push(
-                    <YiqiaUserItem userItem={user}></YiqiaUserItem>
+                    <React.Fragment>
+                        <div>{letter}------------</div>
+                        {
+                            this.props.users.get(letter).map(item => {
+                                return(
+                                    <YiqiaUserItem userItem={item}></YiqiaUserItem>
+                                )
+                            })
+                        }
+                    </React.Fragment>
                 );
             }
         }

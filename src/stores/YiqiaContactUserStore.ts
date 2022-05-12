@@ -15,7 +15,7 @@ export const UPDATE_USERLIST_INFOS = Symbol("userlist_infos_update");
 
 export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> {
     private static internalInstance = new YiqiaContactUserStore();
-    private _curUsersList: UserModal[] = [];
+    private _curUsersList: Map<string, UserModal[]> = new Map();
     private _curItem: ContactTagId = ContactTagId.Recent;
 
     constructor() {
@@ -40,14 +40,12 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
     }
 
     public setCurItem(item: ContactTagId) {
-        console.log("==========setCurItem")
         this._curItem = item;
         this.updateUsersData();
         this.emit(UPDATE_SELECTED_CONTACT_ITEM);
     }
 
     public updateUsers() {
-        console.log("===========updateUsers");
         this.updateUsersData();
         this.emit(UPDATE_EVENT);
     }
@@ -88,7 +86,7 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
         this.updateUsersData();
     }
 
-    public get usersList():  UserModal[]{
+    public get usersList(): Map<string, UserModal[]>{
         return this._curUsersList;
     }
 

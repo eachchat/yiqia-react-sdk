@@ -67,3 +67,23 @@ export class EnhancedMap<K, V> extends Map<K, V> {
         return v;
     }
 }
+
+/**
+ * Determines the keys added, changed, and removed between two Map.
+ * For changes, simple triple equal comparisons are done, not in-depth
+ * tree checking.
+ * @param a The first map. Must be defined.
+ * @param b The second map. Must be defined.
+ * @returns The difference between the keys of each map.
+ */
+ export function mapHasDiff<O extends Map<string, {}>>(a: O, b: O): boolean {
+    if (a === b) return false;
+    const aKeys = [...a.keys()];
+    const bKeys = [...b.keys()];
+    if (aKeys.length !== bKeys.length) return true;
+    const possibleChanges = arrayIntersection(aKeys, bKeys);
+    // if the amalgamation of both sets of keys has the a different length to the inputs then there must be a change
+    if (possibleChanges.length !== aKeys.length) return true;
+
+    return possibleChanges.some(k => a.get(k) !== b.get(k));
+}
