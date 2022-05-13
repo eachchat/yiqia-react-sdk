@@ -23,13 +23,14 @@ import YiqiaContactUserSearch from "./YiqiaContactUserSearch";
 import MainSplit from "./MainSplit";
 import ResizeNotifier from "../../utils/ResizeNotifier";
 import YiqiaContactUserList from "../views/yiqia/YiqiaContactUserList";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useEventEmitter } from "../../hooks/useEventEmitter";
 import YiqiaUserInfo from "../views/right_panel/YiqiaUserInfo";
 import YiqiaUserRightPanelStore from "../../stores/YiqiaUserRightPanelStore";
 import { UPDATE_EVENT } from "../../stores/AsyncStore";
 import { objectHasDiff } from "../../utils/objects";
 import { mapHasDiff } from "../../utils/maps";
+import YiqiaContactUserTitle from "./YiqiaContactUserTitle";
 
 interface IProps {
     resizeNotifier: ResizeNotifier;
@@ -52,13 +53,6 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     function onSelectUser():boolean {
         return true;
     }
-
-    // useEffect(() => {
-    //     YiqiaContactUserStore.instance.on(UPDATE_SELECTED_CONTACT_ITEM, pageShouldUpdate);
-    //     return(() => {
-    //         YiqiaContactUserStore.instance.off(UPDATE_SELECTED_CONTACT_ITEM, pageShouldUpdate);
-    //     })
-    // }, [])
 
     const righaPanelShouldUpdate = () => {
         setShowRightPanel(true);
@@ -117,7 +111,7 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
         : null;
 
     return <React.Fragment>
-            { getTitle() }
+            <YiqiaContactUserTitle />
             <MainSplit panel={rightPanel} resizeNotifier={props.resizeNotifier}>
                 <div className="yiqia_ContactUser_body">
                     { renderContactSearchComponent() }

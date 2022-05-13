@@ -191,6 +191,29 @@ export class YiqiaContact {
         }
         return finalList;
     }
+
+    public async yiqiaContactImport(file): Promise<boolean> {
+        let formdata = new FormData();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async(ev: ProgressEvent<FileReader>) => {
+                formdata.append("fileName", file);
+                const resp = await AuthApi.Instance.contactImport(formdata);
+                resolve(true);
+            }
+            reader.readAsArrayBuffer(file);
+        })
+    }
+    
+    public async yiqiaContactExport(): Promise<any> {
+        return AuthApi.Instance.contactExport().then((resp) => {
+                return resp;
+            })
+            .catch((error) => {
+                console.log("error is ", error);
+                return null;
+            })
+    }
 }
 
 // export class ContactFetcher {

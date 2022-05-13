@@ -58,6 +58,14 @@ export class AuthApi {
         return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/org/v1/server/departments/users", this.accessToken, params)
     }
 
+    protected contactImport(params) {
+        return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/contacts/v1/contact/upload", this.accessToken, params)
+    }
+
+    protected contactExport(params) {
+        return YiqiaRequestInstance.newDownload(this.baseUrl + "/api/apps/contacts/v1/contact/export", this.accessToken, params)
+    }
+
     private getHost() {
         if(!this.host) {
             this.initMatrixOptions();

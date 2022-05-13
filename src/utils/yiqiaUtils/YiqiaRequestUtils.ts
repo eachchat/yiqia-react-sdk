@@ -29,6 +29,23 @@ export const newPost = (url, token, params?:any) => {
     });
 }
 
+export const newUpload = (url, token, params?:any) => {
+    const newInstance = axios.create({
+        headers: {
+            'Authorization': "Bearer " + token,
+        }
+    });
+    return new Promise((resolve, reject) => {
+        newInstance.post(url, params).then(resp => {
+            if(resp.data.code !== 200) {
+                reject(resp.data);
+            } else {
+                resolve(resp.data);
+            }
+        })
+    });
+}
+
 export const newGet = (url, token, params?:any) => {
     const newInstance = axios.create({
         headers: {
@@ -40,6 +57,25 @@ export const newGet = (url, token, params?:any) => {
     return new Promise((resolve, reject) => {
         newInstance.get(url, params).then(resp => {
             if(resp.data.code !== 200) {
+                reject(resp.data);
+            } else {
+                resolve(resp.data);
+            }
+        })
+    });
+}
+
+export const newDownload = (url, token, params?:any) => {
+    const newInstance = axios.create({
+        headers: {
+            'Authorization': "Bearer " + token,
+            'Content-Type': 'application/json',
+            "Response-Type": 'blob',
+        }
+    });
+    return new Promise((resolve, reject) => {
+        newInstance.get(url, params).then(resp => {
+            if(resp.status !== 200) {
                 reject(resp.data);
             } else {
                 resolve(resp.data);
