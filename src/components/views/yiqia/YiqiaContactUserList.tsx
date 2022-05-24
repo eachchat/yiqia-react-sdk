@@ -27,7 +27,7 @@ import { ActionPayload } from "../../../dispatcher/payloads";
 import { polyfillTouchEvent } from "../../../@types/polyfill";
 import { mapHasDiff } from "../../../utils/maps";
 import { replaceableComponent } from "../../../utils/replaceableComponent";
-import YiqiaUserItem from "./YiqiaUserItem";
+import YiqiaUserItem, { DescriptType } from "./YiqiaUserItem";
 import { UserModal } from "../../../models/YiqiaModels";
 
 export const HEADER_HEIGHT = 32; // As defined by CSS
@@ -102,7 +102,7 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
                         {
                             this.props.users.get(letter).map(item => {
                                 return(
-                                    <YiqiaUserItem userItem={item}></YiqiaUserItem>
+                                    <YiqiaUserItem userItem={item} descriptType={DescriptType.Title}></YiqiaUserItem>
                                 )
                             })
                         }

@@ -3548,5 +3548,8 @@
     "Contact": "通讯录",
     "Contacts": "联系人",
     "Recents": "最近联系人",
-    "Import or Export": "导入/导出"
+    "Import or Export": "导入/导出",
+    "Add Contact": "添加联系人",
+    "Create Contact": "创建联系人",
+    "Add a contact with someone using their name, email address, phone number or username (like <userId/>).": "使用某人的名称、电子邮箱地址、手机号或用户名添加联系人（如 <userId/>）。"
 }

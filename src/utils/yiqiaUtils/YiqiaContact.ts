@@ -1,5 +1,49 @@
-import { DepartmentModal, UserModal } from "../../models/YiqiaModels";
+import { string } from "prop-types";
+import { DepartmentModal, UserModal, Phone, Address } from "../../models/YiqiaModels";
+import { arrayFastClone } from "../arrays";
+import { objectClone } from "../objects";
 import { AuthApi } from "./YiqiaRequestInterface";
+
+interface operateContact {
+    family: string, //"姓氏",
+    matrixId: string, //"@junjunyu",
+    given: string, //"名字",
+    prefixes: string, //"姓氏拼音",
+    suffixes: string, //"名字拼音",
+    additionalName: string, //"中间名拼音",
+    nickName: string, //"昵称",
+    organization: string, //"公司",
+    department: string, //"部门",
+    title: string, //"职位",
+    telephoneList: {
+        value: string, //"电话",
+        type: string, //"work"
+    }[],
+    emailList: {
+        value: string, //"email",
+        type: string, //"work"
+    }[],
+    addressList: Address[],
+    imppList: {
+        type: string, //"facebook",
+        value: string, //"123456"
+    }[],
+    urlList: {
+        value: string, //"sina.com"
+    }[],
+    dateList:{
+        value: string, //"1980-09-18",
+        type: string, //"BDAY"
+    }[],
+    note: string, //"备注",
+    categories: string, //"标签",
+    photo: string, //"base64编码"
+    photoType: string, //"JPEG",
+    photoUrl: string,
+    firstName:  string, //"姓氏拼音",
+    middleName:  string, //"中间名拼音",
+    lastName:  string, //"名字拼音"
+};
 
 export class YiqiaContact {
     private static YiqiaContactInstance;
@@ -38,7 +82,7 @@ export class YiqiaContact {
             )
             .then((resp) => {
                 if(resp && resp.code == 200 && resp.results) {
-                    return resp;
+                    return resp.results;
                 } else {
                     return [];
                 }
@@ -58,7 +102,6 @@ export class YiqiaContact {
         while(hasNext) {
             fetchTimes++;
             const params = {
-                name: "updateContact",
                 updateTime: 0,
                 perPage: 50,
                 sequenceId: sequenceId,
@@ -207,6 +250,50 @@ export class YiqiaContact {
     
     public async yiqiaContactExport(): Promise<any> {
         return AuthApi.Instance.contactExport().then((resp) => {
+                return resp;
+            })
+            .catch((error) => {
+                console.log("error is ", error);
+                return null;
+            })
+    }
+
+    public async yiqiaContactAdd(contactInfo:UserModal): Promise<boolean> {
+        // const body:operateContact = {
+        //     family: contactInfo.family,
+        //     middleName: contactInfo.middleName,
+        //     given: contactInfo.given,
+        //     matrixId: contactInfo.matrixId,
+        //     prefixes: contactInfo.prefixes,
+        //     suffixes: contactInfo.suffixes,
+        //     additionalName: contactInfo.additionalName,
+        //     nickName: contactInfo.nickName,
+        //     organization: contactInfo.organization,
+        //     department: contactInfo.department,
+        //     title: contactInfo.title,
+        //     telephoneList: arrayFastClone(contactInfo.telephoneList),
+        //     emailList: arrayFastClone(contactInfo.emailList),
+        //     addressList: arrayFastClone(contactInfo.addressList),
+        //     imppList: arrayFastClone(contactInfo.imppList),
+        //     urlList: arrayFastClone(contactInfo.urlList),
+        //     dateList: arrayFastClone(contactInfo.dateList),
+        //     note: "",
+        //     categories: "",
+        //     photo: "",
+        //     photoType: "",
+        //     firstName: "",
+        //     photoUrl: contactInfo.photoUrl,
+        //     lastName: ""
+        // }
+        const body = objectClone(contactInfo);
+        body.nickName = contactInfo.DisplayName;
+        body.prefixes = contactInfo.DisplayNamePy;
+        body.telephoneList =contactInfo.phoneNumbers;
+        body.emailList = contactInfo.emails;
+        body.addressList = contactInfo.addresses;
+        body.imppList = contactInfo.ims;
+        console.log("======= body ", body);
+        return AuthApi.Instance.addContact(body).then((resp) => {
                 return resp;
             })
             .catch((error) => {

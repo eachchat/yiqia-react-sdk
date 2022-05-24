@@ -42,72 +42,146 @@ export interface GmsContact {
     valid: number;
 }
 
-export class UserModal {
-    public aId: string;
-    public active: boolean;
-    public del: number;
-    public id: string;
-    public departmentId: string;
-    public department: {
-        displayName: string;
-        departmentId: string;
-    }
-    public userName: string;
-    public name: {
-            familyName: string;
-            giverName: string;
-            middleName: string;
-        };
-    public displayName: string;
-    public displayNamePy: string;
-    public nickName: string;
-    public remarkName: string;
-    public avatarOUrl: string;
-    public avatarTUrl: string;
-    public emails: {
-            value: string;
-            type: string;
-            primary: boolean
-        }[];
-    public addresses: {
-            type: string;
-            streetAddress: string;
-            locality: string;
-            region: string;
-            postalCode: string;
-            country: string;
-        }[];
-    public phoneNumbers: {
-            value: string;
-            type: string;
-        }[];
-    public ims: {
-            value: string;
-            type: string;
-        }[];
-    public employeeNumber: number;
-    public entitlements: null;
-    public entryDate: string;
-    public externalId: string;
-    public gender: number;
-    public title: string;
-    public label: string;
-    public workDescription: string;
-    public statusDescription: string;
-    public enableMessageInform: boolean;
-    public manageTeam: boolean;
-    public manager: boolean;
-    public managerId: string;
-    public matrixId: string;
-    public updateTimestamp: string;
-    public userType: string;
-    public room: Room;
+export enum TelephoneType {
+    CELL = "CELL",
+    WORK = "WORK",
+    HOME = "HOME",
+    OTHER = "OTHER",
+}
 
-    constructor(userId: string, displayName?: string, avatarTUrl?: string, displayNamePy?: string) {
+export enum AddressType {
+    WORK = "WORK",
+    HOME = "HOME",
+    OTHER = "OTHER",
+}
+
+export enum EmailType {
+    WORK = "WORK",
+    HOME = "HOME",
+    OTHER = "OTHER",
+}
+
+export enum DateType {
+    BDAY = "BDAY",
+    ANNIVERSARY = "ANNIVERSARY",
+    OTHER = "OTHER",
+}
+
+export enum ImType {
+    qq = "qq",
+    WhatsApp = "WhatsApp",
+    Teams = "Teams",
+    Messenger = "Messenger",
+    Telegram = "Telegram",
+    Facebook = "Facebook",
+    Skype = "Skype",
+}
+
+export interface Email {
+    id: number;
+    contactId: number;
+    value: string;
+    type: EmailType;
+}
+
+export interface Date {
+    id: number;
+    contactId: number;
+    value: string;
+    type: DateType;
+}
+
+export interface Url {
+    id: number;
+    contactId: number;
+    value: string;
+}
+
+export interface Im {
+    id: number;
+    contactId: number;
+    value: string;
+    type: ImType;
+}
+
+export interface Address {
+    id: number;
+    contactId: number;
+    country: string; //"国家",
+    streetAddress: string; //"街道",
+    locality: string; //"城市",
+    region: string; //"直辖市",
+    postalCode: string;
+    label: string;
+    type: AddressType;
+    encoding: any;
+    charset: any;
+    subLocality: string;
+}
+
+export interface Phone {
+    id: number;
+    contactId: number;
+    value: string;
+    type: TelephoneType
+}
+
+export class UserModal {
+    public static UserModelInterface: UserModal;
+    public id: number;
+    public formattedName: string;
+    public nickName: string; //"昵称",
+    public nkEncoding: any;
+    public nkCharset: any;
+    public family: string; //"姓氏",
+    public fnEncoding: any;
+    public fnCharset: any;
+    public given: string; //"名字",
+    public prefixes: string; //"姓氏拼音",
+    public suffixes: string; //"名字拼音",
+    public additionalName: string; //"中间名拼音",
+    public organization: string; //"公司",
+    public orgEncoding: any;
+    public orgCharset: any;
+    public department: string; //"部门",
+    public title: string; //"职位",
+    public titleEncoding: string;
+    public titleCharset: string;
+    public categories: string; //"标签",
+    public del: number;
+    public nEncoding: any;
+    public nCharset: any;
+    public userId: string; // owner uid
+    public matrixId: string; //"@junjunyu",
+    public note: string; //"备注",
+    public noteEncoding: any;
+    public noteCharset: any;
+    public photoData: any;
+    public photoUrl: string;
+    public photoType: string; //"JPEG",
+    public updateTimestamp: number;
+    public telephoneList: Phone[];
+    public phoneNumbers?: Phone[];
+    public addressList: Address[]
+    public addresses?: Address[];
+    public emailList: Email[];
+    public emails?: Email[];
+    public dateList: Date[];
+    public urlList: Url[];
+    public imppList: Im[];
+    public ims?: Im[];
+    public photo: string; //"base64编码"
+    public firstName: string; //"姓氏拼音",
+    public middleName: string; //"中间名拼音",
+    public lastName: string; //"名字拼音"
+    public room: Room;
+    public displayName: string;
+
+    constructor(userId?: string, displayName?: string, avatarTUrl?: string, displayNamePy?: string) {
         this.matrixId = userId;
-        this.displayName = displayName || "";
-        this.avatarTUrl = avatarTUrl || "";
-        this.displayNamePy = displayNamePy || "";
+        this.nickName = displayName || "";
+        this.photoUrl = avatarTUrl || "";
+        this.firstName = displayNamePy || "";
     }
 
     /**
@@ -133,29 +207,25 @@ export class UserModal {
             this.matrixId = gmsContact.matrixId;
         }
         if(gmsContact.contactCompany.trim().length !== 0) {
-            this.department.displayName = gmsContact.contactCompany;
+            this.organization = gmsContact.contactCompany;
         }
         if(gmsContact.contactEmail.trim().length !== 0) {
-            const emailItem = {
+            const emailItem:Email = {
                 value: gmsContact.contactEmail,
-                type: "",
-                primary: false,
+                type: null,
+                id: 0,
+                contactId: 0
             }
-            this.emails.push(emailItem);
+            this.emailList.push(emailItem);
         }
         if(gmsContact.contactMobile.trim().length !== 0) {
-            const mobileItem = {
+            const mobileItem:Phone = {
                 value: gmsContact.contactMobile.trim(),
-                type: "mobile",
+                id: 0,
+                contactId: 0,
+                type: null,
             }
-            this.phoneNumbers.push(mobileItem);
-        }
-        if(gmsContact.contactTelephone.trim().length !== 0) {
-            const mobileItem = {
-                value: gmsContact.contactTelephone.trim(),
-                type: "work",
-            }
-            this.phoneNumbers.push(mobileItem);
+            this.telephoneList.push(mobileItem);
         }
         if(gmsContact.contactTitle.trim().length !== 0) {
             this.title = gmsContact.contactTitle;
@@ -182,26 +252,29 @@ export class UserModal {
     }
 
     public get OrganizationInfo() {
-        if(!this.workDescription) {
+        if(!this.title) {
             return YIQIA_LOADING;
         }
-        return this.workDescription;
+        return this.title;
     }
 
     public set DisplayName(gmsDisplayName: string) {
-        this.displayName = gmsDisplayName;
+        if(gmsDisplayName) this.nickName = gmsDisplayName;
     }
 
     public get DisplayName() {
-        return this.displayName;
+        return this.nickName || this.displayName;
     }
 
     public get DisplayNamePy() {
-        if(this.displayNamePy) {
-            return this.displayNamePy;
+        if(this.firstName) {
+            return this.firstName;
         } else {
             return this.matrixId.slice(1,2);
         }
+    }
+
+    public create2Model(key, value) {
     }
 }
 

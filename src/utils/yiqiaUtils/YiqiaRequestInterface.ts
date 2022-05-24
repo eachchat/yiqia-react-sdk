@@ -43,7 +43,7 @@ export class AuthApi {
     }
 
     protected contactGmsContact(params) {
-        return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/contacts/v1/increment", this.accessToken, params)
+        return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/contacts/v1/contact/increment", this.accessToken, params)
     }
 
     protected contactOrganization(departmentId) {
@@ -64,6 +64,10 @@ export class AuthApi {
 
     protected contactExport(params) {
         return YiqiaRequestInstance.newDownload(this.baseUrl + "/api/apps/contacts/v1/contact/export", this.accessToken, params)
+    }
+
+    protected addContact(params) {
+        return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/contacts/v1/contact/info", this.accessToken, params);
     }
 
     private getHost() {

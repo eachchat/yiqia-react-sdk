@@ -75,7 +75,7 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
         }
     }
 
-    private generalSortedDMList(): void {
+    public generalSortedDMList(): void {
         let allRooms = [];
         if(SettingsStore.getValue("mixedChatsWithDmAndRoom")) {
             allRooms = RoomListStore.instance.orderedLists[DefaultTagID.Chats]

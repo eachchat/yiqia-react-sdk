@@ -50,8 +50,7 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
         righaPanelShouldUpdate();
     });
 
-    function onSelectUser():boolean {
-        return true;
+    function onSelectUser(term:string) {
     }
 
     const righaPanelShouldUpdate = () => {
@@ -98,9 +97,11 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     function renderContactSearchComponent(): React.ReactNode {
         return (
             <div className="yiqia_ContactUser_filterContainer">
-                <YiqiaContactUserSearch
-                    onSelectUser={onSelectUser}
-                />
+                <YiqiaContactUserSearch onSelectUser={function (): boolean {
+                    throw new Error("Function not implemented.");
+                } } onSearch={function (): string {
+                    throw new Error("Function not implemented.");
+                } }                />
             </div>
         )
     }

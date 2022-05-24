@@ -263,6 +263,12 @@ enum Action {
     SetBotPower = "set_bot_power",
 }
 
+function sendResponseNoResponse(event: MessageEvent<any>, res: any): void {
+    const data = objectClone(event.data);
+    // @ts-ignore
+    event.source.postMessage(data, event.origin);
+}
+
 function sendResponse(event: MessageEvent<any>, res: any): void {
     const data = objectClone(event.data);
     data.response = res;
@@ -495,7 +501,10 @@ async function setBotPower(
 
 function getMembershipState(event: MessageEvent<any>, roomId: string, userId: string): void {
     logger.log(`membership_state of ${userId} in room ${roomId} requested.`);
-    returnStateEvent(event, roomId, "m.room.member", userId);
+    // returnStateEventNoResponse(event, roomId, "m.room.member", userId)
+    // setTimeout(() => {
+        returnStateEvent(event, roomId, "m.room.member", userId);
+    // }, 10000);
 }
 
 function getJoinRules(event: MessageEvent<any>, roomId: string): void {
@@ -555,6 +564,25 @@ function canSendEvent(event: MessageEvent<any>, roomId: string): void {
     }
 
     sendResponse(event, true);
+}
+
+function returnStateEventNoResponse(event: MessageEvent<any>, roomId: string, eventType: string, stateKey: string): void {
+    const client = MatrixClientPeg.get();
+    if (!client) {
+        sendError(event, _t('You need to be logged in.'));
+        return;
+    }
+    const room = client.getRoom(roomId);
+    if (!room) {
+        sendError(event, _t('This room is not recognised.'));
+        return;
+    }
+    const stateEvent = room.currentState.getStateEvents(eventType, stateKey);
+    if (!stateEvent) {
+        sendResponse(event, null);
+        return;
+    }
+    sendResponseNoResponse(event, stateEvent.getContent());
 }
 
 function returnStateEvent(event: MessageEvent<any>, roomId: string, eventType: string, stateKey: string): void {

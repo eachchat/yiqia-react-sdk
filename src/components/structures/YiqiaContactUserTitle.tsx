@@ -7,6 +7,9 @@ import { ButtonEvent } from "../views/elements/AccessibleButton";
 import ContextMenu, { ContextMenuTooltipButton, MenuItem } from "./ContextMenu";
 import { contextMenuBelow } from "../views/rooms/RoomTile";
 import { YiqiaContact } from "../../utils/yiqiaUtils/YiqiaContact";
+import Modal from "../../Modal";
+import YiqiaAddContactDialog from "../views/dialogs/YiqiaAddContactDialog";
+import YiqiaCreateContact from "../views/dialogs/YiqiaCreateContactDialog";
 
 enum OPERATE_TYPE {
     EXPORT = "export",
@@ -68,6 +71,14 @@ const YiqiaContactHeaderContextMenu = ({operateType, onFinished, ...props}:IProp
         })
     }
     
+    const vCardAdd = () => {
+        Modal.createTrackedDialog("Add Contact", "", YiqiaAddContactDialog);
+    }
+
+    const vCardCreate = () => {
+        Modal.createTrackedDialog("Add Contact", "", YiqiaCreateContact);
+    }
+
     const onImportClick = (ev:ButtonEvent) => {
         ev.preventDefault();
         ev.stopPropagation();
@@ -86,14 +97,14 @@ const YiqiaContactHeaderContextMenu = ({operateType, onFinished, ...props}:IProp
         ev.preventDefault();
         ev.stopPropagation();
 
-        //Todo import;
+        vCardAdd();
     }
 
     const onCreateClick = (ev:ButtonEvent) => {
         ev.preventDefault();
         ev.stopPropagation();
-
-        //Todo export;
+        
+        vCardCreate();
     }
 
     if(operateType === OPERATE_TYPE.EXPORT) {

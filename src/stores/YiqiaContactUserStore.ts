@@ -67,7 +67,6 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
     }
 
     private updateUsersListFromRecentData() {
-        // this._curUsersList = BreadcrumbsStore.instance.dms.slice();
         this._curUsersList = YiqiaRecentsStore.Instance.recents;
         console.log("updateUsersListFromRecentData ", this._curUsersList);
     }

@@ -59,7 +59,8 @@ import SessionRestoreErrorDialog from "./components/views/dialogs/SessionRestore
 import StorageEvictedDialog from "./components/views/dialogs/StorageEvictedDialog";
 import { setSentryUser } from "./sentry";
 import SdkConfig from "./SdkConfig";
-import { AuthApi } from './utils/yiqiaUtils/YiqiaRequestInterface';
+import { updateBookInfos } from './utils/yiqiaUtils/YiqiaUtils';
+import { ACTIVE_CONTACT_ITEM } from './components/views/yiqia/YiqiaContactInterface';
 
 const HOMESERVER_URL_KEY = "mx_hs_url";
 const ID_SERVER_URL_KEY = "mx_is_url";
@@ -212,7 +213,8 @@ export function attemptTokenLogin(
             await persistCredentials(creds);
             // remember that we just logged in
             sessionStorage.setItem("mx_fresh_login", String(true));
-            AuthApi.Instance.fetchBookInfos();
+            updateBookInfos();
+            localStorage.removeItem(ACTIVE_CONTACT_ITEM);
             return true;
         });
     }).catch((err) => {
@@ -625,7 +627,8 @@ async function doSetLoggedIn(
     dis.dispatch({ action: 'on_logged_in' });
 
     await startMatrixClient(/*startSyncing=*/!softLogout);
-    AuthApi.Instance.fetchBookInfos();
+    updateBookInfos();
+    localStorage.removeItem(ACTIVE_CONTACT_ITEM);
     return client;
 }
 

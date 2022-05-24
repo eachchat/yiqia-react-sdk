@@ -88,7 +88,7 @@ export default class YiqiaOrganizationComponent extends React.Component<{}, ISta
             <div className="yiqia_Organizationlist">
                 <ul>
                     {
-                        this.state.orgDate.map(Item => {
+                        this.state.orgDate?.map(Item => {
                             return (
                                 <li>
                                     <OrganizationItem

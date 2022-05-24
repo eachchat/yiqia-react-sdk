@@ -41,9 +41,10 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
 
     private async fetchNewOrgMembers(departmentId) {
         YiqiaContact.Instance.yiqiaOrganizationMemberInfo(departmentId).then((resp) => {
+            console.log("fetchNewOrgMembers ", resp)
             if(resp && resp.length > 0) {
                 const showResults = resp.map((orgMember: UserModal) => {
-                    const usermodal = new UserModal(orgMember.matrixId, orgMember.displayName, orgMember.avatarOUrl,orgMember.displayNamePy);
+                    const usermodal = new UserModal(orgMember.matrixId, orgMember.DisplayName, orgMember.photoUrl,orgMember.DisplayNamePy);
                     usermodal.updateProperty(orgMember);
                     return usermodal;
                 })
@@ -65,7 +66,7 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
         }
     }
 
-    protected async generalOrganizations(): Promise<void> {
+    public async generalOrganizations(): Promise<void> {
         const results = await YiqiaContact.Instance.yiqiaOrganization();
         this._orgDate = results;
     }

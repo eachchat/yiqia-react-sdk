@@ -23,6 +23,12 @@ import YiqiaUserRightPanelStore from "../../../stores/YiqiaUserRightPanelStore";
 
 interface IProps {
     userItem: UserModal,
+    descriptType: DescriptType,
+}
+
+export enum DescriptType {
+    Title,
+    MatrixId,
 }
 
 export type Member = User | RoomMember;
@@ -52,10 +58,14 @@ export default function YiqiaUserItem(props:IProps) {
         </div>
     );
 
+    console.log("========= props.userItem ", props.userItem);
+    console.log("========= props.userItem.DisplayName ", props.userItem.DisplayName);
+
+
     let nameContainer:React.ReactNode = (
         <div className="yiqia_ContactUser_nameContainer">
-            <div title={props.userItem.displayName} tabIndex={-1} dir="auto">
-                { props.userItem.displayName }
+            <div title={props.userItem.DisplayName} tabIndex={-1} dir="auto">
+                { props.userItem.DisplayName }
             </div>
         </div>
     );
@@ -63,10 +73,15 @@ export default function YiqiaUserItem(props:IProps) {
     let description:React.ReactNode = (
         <div className="yiqia_ContactUser_descriptionContainer">
             <div title={props.userItem.title } tabIndex={-1} dir="auto">
-                { props.userItem.title }
+                { props.descriptType === DescriptType.Title &&
+                    props.userItem.title 
+                }
+                { props.descriptType !== DescriptType.Title &&
+                    props.userItem.matrixId 
+                }
             </div>
         </div>
-    )
+    );
 
     return(
         <div className="yiqia_UserItem">

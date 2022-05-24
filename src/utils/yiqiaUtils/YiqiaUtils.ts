@@ -2,7 +2,7 @@ import { bookInfoParse, bookInfos } from "../../models/YiqiaModels";
 import SdkConfig from "../../SdkConfig";
 import { AuthApi } from "./YiqiaRequestInterface";
 
-async function updageBookInfos(): Promise<bookInfos> {
+export async function updateBookInfos(): Promise<bookInfos> {
     const bookLimitResp = await AuthApi.Instance.fetchBookInfos();
     const bookLimitInstance = new bookInfoParse(bookLimitResp);
     let bookLimit = bookLimitInstance.dealedData;
@@ -25,7 +25,7 @@ export async function toGetBookInfos(): Promise<bookInfos> {
     }
 
     if(!bookLimit) {
-        bookLimit = await updageBookInfos();
+        bookLimit = await updateBookInfos();
     } else {
         const lastUpdateTime = parseInt(bookLimit.lastUpdateTime);
         const currentTime = new Date().getTime();
@@ -34,7 +34,7 @@ export async function toGetBookInfos(): Promise<bookInfos> {
         const theInterval = parseInt(configureInterval);
 
         if(currentTime - lastUpdateTime > theInterval) {
-            bookLimit = await updageBookInfos();
+            bookLimit = await updateBookInfos();
         }
     }
 

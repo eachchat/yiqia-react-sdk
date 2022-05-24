@@ -58,7 +58,7 @@ const Contact_Item: ContactTagId[] = [
     ContactTagId.Teams,
 ]
 
-const ACTIVE_CONTACT_ITEM = "yiqia_contact_active_item";
+export const ACTIVE_CONTACT_ITEM = "yiqia_contact_active_item";
 
 @replaceableComponent("views.rooms.YiqiaContactInterface")
 export default class YiqiaContactInterface extends React.PureComponent<IProps, IState> {

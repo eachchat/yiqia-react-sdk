@@ -36,6 +36,7 @@ interface IProps {
      * @returns true if a room has been selected and the search field should be cleared
      */
     onSelectUser(): boolean;
+    onSearch(): string;
 }
 
 interface IState {
