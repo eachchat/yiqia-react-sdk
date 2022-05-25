@@ -36,6 +36,8 @@ import { useEventEmitter } from '../../../hooks/useEventEmitter';
 import YiqiaUserRightPanelStore from '../../../stores/YiqiaUserRightPanelStore';
 import { UPDATE_EVENT } from '../../../stores/AsyncStore';
 import { objectClone, objectHasDiff } from '../../../utils/objects';
+import { YiqiaContactContactStore } from '../../../stores/YiqiaContactContactStore';
+import { YiqiaContact } from '../../../utils/yiqiaUtils/YiqiaContact';
 
 export interface IDevice {
     deviceId: string;
@@ -94,7 +96,7 @@ const MessageButton = ({ userId }: { userId: string }) => {
                 await openDMForUser(cli, userId, ev.type !== "click");
                 setBusy(false);
             }}
-            className="mx_UserInfo_field"
+            className="yiqia_UserInfo_field yiqia_UserInfo_field_message"
             disabled={busy}
         >
             { _t("Message") }
@@ -127,7 +129,7 @@ const VoIPButton = ({ userId, operate }: { userId: string, operate: YiqiaUserInf
                 await openVoIP(cli, userId, operate);
                 setBusy(false);
             }}
-            className="mx_UserInfo_field"
+            className="yiqia_UserInfo_field yiqia_UserInfo_field_voip"
             disabled={busy}
         >
             { _t("Message") }
@@ -161,16 +163,10 @@ const UserOptionsSection: React.FC<{
     }
     
     return (
-        <div className="mx_UserInfo_container">
-            {
-                hasOptions &&
-                <h3>{ _t("Options") }</h3>
-            }
-            <div>
+        <div className="yiqia_UserInfo_operate_container">
                 { directMessageButton }
                 { voiceButton }
                 { videoButton }
-            </div>
         </div>
     );
 };
@@ -191,43 +187,39 @@ const UserInfoHeader: React.FC<{
             name: user.displayName,
         };
 
-        Modal.createDialog(ImageView, params, "mx_Dialog_lightbox", null, true);
+        Modal.createDialog(ImageView, params, "yiqia_Dialog_lightbox", null, true);
     }, [user]);
 
     const avatarElement = (
-        <div className="mx_UserInfo_avatar">
+        <div className="yiqia_UserInfo_avatar">
             <div>
-                <div>
-                    <BaseAvatar
-                        key={user.matrixId} // to instantly blank the avatar when UserInfo changes members
-                        name={user.DisplayName}
-                        title={user.matrixId}
-                        idName={user.matrixId}
-                        url={user.avatarTUrl}
-                        onClick={onMemberAvatarClick}/>
-                </div>
+                <BaseAvatar
+                    key={user.matrixId} // to instantly blank the avatar when UserInfo changes members
+                    name={user.DisplayName}
+                    title={user.matrixId}
+                    idName={user.matrixId}
+                    url={user.photoUrl}
+                    onClick={onMemberAvatarClick}/>
             </div>
         </div>
     );
 
     const displayName = user.DisplayName;
     return (
-        <React.Fragment>
+        <div className='yiqia_RightPanel_header'>
             { avatarElement }
 
-            <div className="mx_UserInfo_container mx_UserInfo_separator">
-                <div className="mx_UserInfo_profile">
-                    <div>
-                        <span title={displayName} aria-label={displayName}>
-                            { displayName }
-                        </span>
-                        <span title={user.matrixId} aria-label={displayName}>
-                            { user.matrixId }
-                        </span>
+            <div className="yiqia_UserInfo_container yiqia_UserInfo_separator">
+                <div className="yiqia_UserInfo_profile">
+                    <div className="yiqia_UserInfo_displayname" title={displayName} aria-label={displayName}>
+                        { displayName }
+                    </div>
+                    <div className="yiqia_UserInfo_matrixId" title={user.matrixId} aria-label={displayName}>
+                        { user.matrixId }
                     </div>
                 </div>
             </div>
-        </React.Fragment>
+        </div>
     )
 };
 
@@ -273,11 +265,52 @@ class YiqiaUserInfo extends React.Component<IProps1, IState> {
 
     public render(): JSX.Element {
         return (
-            <aside className="mx_RightPanel dark-panel" id="mx_RightPanel">
+            <aside className="yiqia_RightPanel" id="yiqia_RightPanel">
                 { <YiqiaUserInfoContent user={this.state.user} onClose={this.props.onClose} />}
             </aside>
         )
     }
+}
+
+const DetailsShowItems = ["DisplayName", "nickName", "telephone", "email", "department", "title"];
+
+const YiqiaUserDetailItem: React.FC<{itemLabel: string, itemContent: string}> = (props) => {
+    const theContent = typeof props.itemContent === "string" ? (props.itemContent || "") : props.itemContent?.displayName || "";
+    return (
+        <div className='yiqia_user_details_item'>
+            <div className='yiqia_user_details_item_label'>{props.itemLabel || ""}</div>
+            <div className='yiqia_user_details_item_info'>{theContent || ""}</div>
+        </div>
+    )
+}
+
+const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
+    user,
+}) => {
+
+    function getItemContent(itemLabel) {
+        if(itemLabel === "telephone") {
+            return user.telephoneList ? user.telephoneList[0].value || "" : "";
+        } else if(itemLabel === "email") {
+            return user.emailList ? user.emailList[0].value || "" : "";
+        } else {
+            return user[itemLabel];
+        }
+    }
+
+    return (
+        <div className='yiqia_User_Details'>
+            {
+                DetailsShowItems.map(item => {
+                    const itemLabel = _t(item);
+                    const itemContent = getItemContent(item);
+                    return (
+                        <YiqiaUserDetailItem key={item} itemLabel={itemLabel} itemContent={itemContent}></YiqiaUserDetailItem>
+                    )
+                })
+            }
+        </div>
+    )
 }
 
 const YiqiaUserInfoContent: React.FC<IProps2> = ({
@@ -285,20 +318,44 @@ const YiqiaUserInfoContent: React.FC<IProps2> = ({
     onClose,
     ...props
 }) => {
-    const classes = ["mx_UserInfo"];
+    const contactOperText = YiqiaContactContactStore.Instance.isUserInContact(user) ? _t("remove from my contact") : _t("add to my contact");
 
     const closeButton = <AccessibleButton
             data-test-id='base-card-close-button'
-            className="mx_BaseCard_close"
+            className="yiqia_BaseCard_close"
             onClick={onClose}
             title={_t("Close")}
         />;
 
+    const contactOperate = () => {
+        if(YiqiaContactContactStore.Instance.isUserInContact(user)) {
+            YiqiaContact.Instance.yiqiaContactRemove(
+                user
+            ).then((res) => {
+                YiqiaContactContactStore.Instance.generalContactsList();
+            })
+        } else {
+            YiqiaContact.Instance.yiqiaContactAdd(user).then(res => {
+                YiqiaContactContactStore.Instance.generalContactsList();
+            })
+        }
+    }
+    
+    const removeContactButton = <AccessibleButton
+            className="yiqia_BaseCard_remove_from_contact"
+            onClick={contactOperate}
+            title={contactOperText}>
+                <span>{ contactOperText }</span>
+            </AccessibleButton>
 
-    return <div className=''>
+    return <div className='yiqia_UserInfo'>
+        <div className='yiqia_BaseCard_header'>
             {closeButton}
+        </div>
             <UserInfoHeader user={user}></UserInfoHeader>
             <UserOptionsSection user={user}></UserOptionsSection>
+            <YiqiaUserDetails user={user}></YiqiaUserDetails>
+            {removeContactButton}
         </div>
 };
 

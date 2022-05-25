@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Url } from "url";
 import { _t } from "../../../languageHandler";
 import { AddressType, DateType, Email, EmailType, Im, ImType, Phone, TelephoneType, UserModal } from "../../../models/YiqiaModels";
+import { YiqiaContactContactStore } from "../../../stores/YiqiaContactContactStore";
+import { YiqiaContact } from "../../../utils/yiqiaUtils/YiqiaContact";
 import AutoHideScrollbar from "../../structures/AutoHideScrollbar";
 import ContextMenu, { ContextMenuTooltipButton, MenuItem } from "../../structures/ContextMenu";
 import { ButtonEvent } from "../elements/AccessibleButton";
@@ -20,26 +22,6 @@ interface IProps {
 }
 
 const CreateContact = {
-    matrixId: _t("Please input Matrix ID"),
-    family: _t("Please input Family"),
-    given: _t("Please input Given"),
-    prefixes: _t("Please input prefixes"),
-    additionalName: _t("Please input additionalName"),
-    suffixes: _t("Please input suffixes"),
-    nickName: _t("Please input nickName"),
-    organization: _t("Please input Organization"),
-    telephone: _t("Please input telephone"),
-    email: _t("Please input email"),
-    title: _t("Please input title"),
-    address: _t("Please input address"),
-    url: _t("Please input url"),
-    impp: _t("Please input impp"),
-    date: _t("Please input date"),
-    note: _t("Please input note"),
-    categories: _t("Please input categories"),
-}
-
-const CreateContactNoTrans = {
     matrixId: "Please input Matrix ID",
     family: "Please input Family",
     given: "Please input Given",
@@ -57,6 +39,17 @@ const CreateContactNoTrans = {
     date: "Please input date",
     note: "Please input note",
     categories: "Please input categories",
+    department: "Please input department",
+}
+
+const CreateContactSimple = {
+    matrixId: "Please input Matrix ID",
+    family: "Please input Family",
+    given: "Please input Given",
+    nickName: "Please input nickName",
+    organization: "Please input Organization",
+    telephone: "Please input telephone",
+    email: "Please input email",
 }
 
 interface TypeProps {
@@ -92,8 +85,9 @@ const YiqiaContactItemType:React.FC<TypeProps> = (props) => {
     switch(props.type) {
         case "email":
             items = Object.keys(EmailType).map(key => {
+                const showText = _t(key);
                 return <MenuItem
-                    label={_t(key)}
+                    label={showText}
                     className="yiqia_contact_type_option"
                     onClick={onItemClick}>
                     <span className="mx_IconizedContextMenu_label">{ _t("Create") }</span>
@@ -102,8 +96,9 @@ const YiqiaContactItemType:React.FC<TypeProps> = (props) => {
             break;
         case "address":
             items = Object.keys(AddressType).map(key => {
+                const showText = _t(key);
                 return <MenuItem
-                    label={_t(key)}
+                    label={showText}
                     className="yiqia_contact_type_option"
                     onClick={onItemClick}>
                     <span className="mx_IconizedContextMenu_label">{ _t("Create") }</span>
@@ -112,8 +107,9 @@ const YiqiaContactItemType:React.FC<TypeProps> = (props) => {
             break;
         case "impp":
             items = Object.keys(ImType).map(key => {
+                const showText = _t(key);
                 return <MenuItem
-                    label={_t(key)}
+                    label={showText}
                     className="yiqia_contact_type_option"
                     onClick={onItemClick}>
                     <span className="mx_IconizedContextMenu_label">{ _t("Create") }</span>
@@ -122,8 +118,9 @@ const YiqiaContactItemType:React.FC<TypeProps> = (props) => {
             break;
         case "date":
             items = Object.keys(DateType).map(key => {
+                const showText = _t(key);
                 return <MenuItem
-                    label={_t(key)}
+                    label={showText}
                     className="yiqia_contact_type_option"
                     onClick={onItemClick}>
                     <span className="mx_IconizedContextMenu_label">{ _t("Create") }</span>
@@ -132,8 +129,9 @@ const YiqiaContactItemType:React.FC<TypeProps> = (props) => {
             break;
         case "date":
             items = Object.keys(TelephoneType).map(key => {
+                const showText = _t(key);
                 return <MenuItem
-                    label={_t(key)}
+                    label={showText}
                     className="yiqia_contact_type_option"
                     onClick={onItemClick}>
                     <span className="mx_IconizedContextMenu_label">{ _t("Create") }</span>
@@ -169,11 +167,13 @@ const YiqiaCreateContactBaseItem:React.FC<IProps> = (props) => {
         setExpanded(!expanded);
     }
 
+    const showText = _t(props.label);
+
     return (
         <div className="yiqia_CreateContact_base_item">
             <div className="yiqia_CreateContact_base_item_label">
                 {
-                    props.label
+                    showText
                 }
                 {
                     props.isNecessary &&
@@ -215,11 +215,14 @@ const YiqiaCreateContactListItem:React.FC<IProps> = (props) => {
     const listRef = useRef<HTMLDivElement>(null);
     
     const onInputChanged = (key, value, id) => {
+        let curState = {};
         if(listState.has(id)) {
-            const curState = listState.get(id);
-            curState[key]
+            curState = listState.get(id);
         }
-        props.onInputChanged(key, value, null);
+
+        curState[key] = value;
+
+        props.onInputChanged(key, curState, null);
     };
 
     return (
@@ -231,6 +234,7 @@ const YiqiaCreateContactListItem:React.FC<IProps> = (props) => {
                 placeHolder={props.placeHolder}
                 isNecessary={props.isNecessary}
                 hasType={props.hasType}
+                id={0}
             ></YiqiaCreateContactBaseItem>
         </div>
     )
@@ -240,13 +244,14 @@ const YiqiaCreateContact:React.FC<{}> = () => {
     const [disableForm, setDisableForm] = useState(false);
     const [contactInfo, setContactInfo] = useState(null);
     const [userInstance, setUserInstance] = useState<UserModal>(null);
+    const [expanded, setExpanded] = useState(false)
 
     const onFinished = () => {
 
     }
 
     const onInputChanged = (key, value, id) => {
-        console.log("=====key ", key, " ++++++++ value ", value);
+        // console.log("=====key ", key, " ++++++++ value ", value);
         userInstance.create2Model(key, value);
     }
 
@@ -254,10 +259,17 @@ const YiqiaCreateContact:React.FC<{}> = () => {
 
     }
 
-    const onSubmit = (ev: React.FormEvent) => {
+    const onSubmit = async(ev: React.FormEvent) => {
         ev.preventDefault();
-        // this.startImport(this.file.current.files[0], this.passphrase.current.value);
-        return false;
+        try{
+            console.log("lllll ", userInstance);
+            YiqiaContact.Instance.yiqiaContactAdd(userInstance).then(res => {
+                YiqiaContactContactStore.Instance.generalContactsList();
+            })
+        }
+        catch(error) {
+            console.log("YiqiaCreateContactItem error ", error);
+        }
     }
 
     useEffect(() => {
@@ -273,61 +285,124 @@ const YiqiaCreateContact:React.FC<{}> = () => {
             title={_t("Create Contact")}
         >
             <form onSubmit={onSubmit} className="yiqia_ContactCreate_form">
-                <AutoHideScrollbar className="yiqia_ContactCreate_scroll">
-                    {
-                        Object.keys(CreateContactNoTrans).map(key => {
-                            switch(key){
-                                case "telephone":
-                                case "email":
-                                case "url":
-                                case "date":
-                                case "impp":
-                                    return (
-                                        <YiqiaCreateContactListItem 
-                                            busy={false}
-                                            onInputChanged={onInputChanged}
-                                            label={key}
-                                            placeHolder={CreateContactNoTrans[key]}
-                                            isNecessary={false}
-                                            hasType={true}
-                                        >
-                                        </YiqiaCreateContactListItem>
-                                    )
-                                    break;
-                                case "address":
-                                    break;
-                                case "family":
-                                case "given":
-                                    return (
-                                        <YiqiaCreateContactBaseItem
-                                            busy={false}
-                                            onInputChanged={onInputChanged}
-                                            label={key}
-                                            placeHolder={CreateContactNoTrans[key]}
-                                            isNecessary={true}
-                                            hasType={false}/>
-                                    )
-                                    break;
-                                default:
-                                    return (
-                                        <YiqiaCreateContactBaseItem
-                                            busy={false}
-                                            onInputChanged={onInputChanged}
-                                            label={key}
-                                            placeHolder={CreateContact[key]}
-                                            isNecessary={false}
-                                            hasType={false}/>
-                                    )
-                                    break;
-                            }
-                        })
-                    }
-                </AutoHideScrollbar>
+                {
+                    expanded &&
+                    <AutoHideScrollbar className="yiqia_ContactCreate_scroll">
+                        {
+                            Object.keys(CreateContact).map(key => {
+                                const placeHolderText = _t(CreateContact[key])
+                                console.log("all placeholder ", placeHolderText);
+                                switch(key){
+                                    case "telephone":
+                                    case "email":
+                                    case "url":
+                                    case "date":
+                                    case "impp":
+                                        return (
+                                            <YiqiaCreateContactListItem 
+                                                busy={false}
+                                                onInputChanged={onInputChanged}
+                                                label={key}
+                                                placeHolder={placeHolderText}
+                                                isNecessary={false}
+                                                hasType={false}
+                                            >
+                                            </YiqiaCreateContactListItem>
+                                        )
+                                        break;
+                                    case "address":
+                                        break;
+                                    case "family":
+                                    case "given":
+                                        return (
+                                            <YiqiaCreateContactBaseItem
+                                                busy={false}
+                                                onInputChanged={onInputChanged}
+                                                label={key}
+                                                placeHolder={placeHolderText}
+                                                isNecessary={true}
+                                                hasType={false}/>
+                                        )
+                                        break;
+                                    default:
+                                        return (
+                                            <YiqiaCreateContactBaseItem
+                                                busy={false}
+                                                onInputChanged={onInputChanged}
+                                                label={key}
+                                                placeHolder={placeHolderText}
+                                                isNecessary={false}
+                                                hasType={false}/>
+                                        )
+                                        break;
+                                }
+                            })
+                        }
+                    </AutoHideScrollbar>
+                }
+                {
+                    !expanded &&
+                    <div>
+                        {
+                            Object.keys(CreateContactSimple).map(key => {
+                                const placeHolderText = _t(CreateContactSimple[key])
+                                switch(key){
+                                    case "telephone":
+                                    case "email":
+                                    case "url":
+                                    case "date":
+                                    case "impp":
+                                        return (
+                                            <YiqiaCreateContactListItem 
+                                                busy={false}
+                                                onInputChanged={onInputChanged}
+                                                label={key}
+                                                placeHolder={placeHolderText}
+                                                isNecessary={false}
+                                                hasType={false}
+                                            >
+                                            </YiqiaCreateContactListItem>
+                                        )
+                                        break;
+                                    case "address":
+                                        break;
+                                    case "family":
+                                    case "given":
+                                        return (
+                                            <YiqiaCreateContactBaseItem
+                                                busy={false}
+                                                onInputChanged={onInputChanged}
+                                                label={key}
+                                                placeHolder={placeHolderText}
+                                                isNecessary={true}
+                                                hasType={false}/>
+                                        )
+                                        break;
+                                    default:
+                                        return (
+                                            <YiqiaCreateContactBaseItem
+                                                busy={false}
+                                                onInputChanged={onInputChanged}
+                                                label={key}
+                                                placeHolder={placeHolderText}
+                                                isNecessary={false}
+                                                hasType={false}/>
+                                        )
+                                        break;
+                                }
+                            })
+                        }
+                        <div
+                            style={{color: "blue", cursor: "pointer"}}
+                            onClick={() => {setExpanded(!expanded)}}
+                        >显示更多</div>
+                    </div>
+                }
                 <div className='mx_Dialog_buttons'>
                     <input
                         className='mx_Dialog_primary'
                         type='submit'
-                        value={_t('Export')}
+                        value={_t('Create')}
                         disabled={disableForm}
                     />
                     <button onClick={onCancelClick} disabled={disableForm}>

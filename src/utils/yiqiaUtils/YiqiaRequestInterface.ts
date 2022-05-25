@@ -70,6 +70,10 @@ export class AuthApi {
         return YiqiaRequestInstance.newPost(this.baseUrl + "/api/apps/contacts/v1/contact/info", this.accessToken, params);
     }
 
+    protected deleteContact(params) {
+        return YiqiaRequestInstance.newDelete(this.baseUrl + "/api/apps/contacts/v1/contact/info/" + params, this.accessToken);
+    }
+
     private getHost() {
         if(!this.host) {
             this.initMatrixOptions();

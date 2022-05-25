@@ -18,12 +18,13 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
     public isUserInContact(user:UserModal) {
         let res = false;
         for(const conatct of this._allUsers) {
-            if(!objectHasDiff(user, conatct)) {
+            user.id = conatct.id;
+            if(user.matrixId === conatct.matrixId) {
                 res = true;
                 break;
             }
         }
-        return false;
+        return res;
     }
 
     public static get Instance() {

@@ -36,7 +36,8 @@ export type Member = User | RoomMember;
 export default function YiqiaUserItem(props:IProps) {
     const member:Member = props.userItem.Room && props.userItem.Room.getMember(props.userItem.matrixId);
 
-    function onMemberAvatarClick() {
+    function onMemberClick() {
+        console.log("------- ", props.userItem)
         YiqiaUserRightPanelStore.Instance.setCurd(props.userItem);
     }
 
@@ -51,7 +52,6 @@ export default function YiqiaUserItem(props:IProps) {
                         height={32} // 2x@30vh
                         resizeMethod="scale"
                         fallbackUserId={member ? member.userId : props.userItem.matrixId}
-                        onClick={onMemberAvatarClick}
                         urls={(member as unknown as User)?.avatarUrl ? [(member as unknown as User)?.avatarUrl] : undefined} />
                 </div>
             </div>
@@ -84,7 +84,7 @@ export default function YiqiaUserItem(props:IProps) {
     );
 
     return(
-        <div className="yiqia_UserItem">
+        <div className="yiqia_UserItem" onClick={onMemberClick}>
             { getUserAvatar }
             <div>
                 { nameContainer }

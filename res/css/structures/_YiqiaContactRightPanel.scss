@@ -1,0 +1,476 @@
+/*
+Copyright 2015, 2016 OpenMarket Ltd
+Copyright 2020 The Matrix.org Foundation C.I.C.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+.yiqia_UserInfo {
+    text-align: center;
+}
+
+.yiqia_BaseCard_header {
+    margin: 4px 0;
+
+    .yiqia_BaseCard_close {
+        position: absolute;
+        background-color: rgba(141, 151, 165, 0.2);
+        height: 20px;
+        width: 20px;
+        margin: 12px;
+        top: 0;
+        border-radius: 50%;
+
+        &::before {
+            content: "";
+            position: absolute;
+            height: inherit;
+            width: inherit;
+            top: 0;
+            left: 0;
+            mask-repeat: no-repeat;
+            mask-position: center;
+            background-color: $header-panel-text-primary-color;
+        }
+    }
+
+    .yiqia_BaseCard_close {
+        right: 0;
+
+        &::before {
+            mask-image: url('$(res)/img/icons-close.svg');
+            mask-size: 8px;
+        }
+    }
+}
+
+.yiqia_BaseCard_remove_from_contact {
+    flex: 0 0 auto;
+    height: 36px;
+    position: absolute;
+    background-color: $accent;
+    border-radius: 4px;
+    margin: 5px 9px 9px;
+    display: flex;
+    justify-content: center;
+    color: $button-fg-color;
+    font-weight: 600;
+    bottom: 0px;
+    width: 100%;
+}
+
+.yiqia_user_details_item {
+    display: flex;
+
+    .yiqia_user_details_item_label {
+        width: 54px;
+    }
+
+    .yiqia_user_details_item_info {
+        width: calc(100% - 54px);
+    }
+}
+
+.yiqia_BaseCard_remove_from_contact.mx_AccessibleButton_disabled {
+    background-color: $info-plinth-fg-color;
+    cursor: not-allowed;
+}
+
+.yiqia_BaseCard_remove_from_contact span {
+    padding: 8px 0;
+    display: inline-flex;
+}
+
+.yiqia_RightPanel {
+    overflow-x: hidden;
+    flex: 0 0 auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    padding: $container-border-width 0;
+    box-sizing: border-box;
+    height: 100%;
+    contain: strict;
+}
+
+.yiqia_UserInfo_container {
+    padding: 8px 16px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-content: space-around;
+}
+
+.yiqia_UserInfo_field {
+    position: relative;
+    margin-left: 1px;
+    margin-right: 1px;
+    cursor: pointer;
+    height: 20px;
+    width: 88px;
+    border-radius: 100%;
+
+    &::before {
+        content: '';
+        position: absolute;
+        bottom: 23px; // center with parent of 32px
+        left: 32px; // center with parent of 32px
+        height: 24px;
+        width: 24px;
+        background-color: $icon-button-color;
+        mask-repeat: no-repeat;
+        mask-size: contain;
+    }
+
+    &:hover {
+        background: rgba($accent, 0.1);
+
+        &::before {
+            background-color: $accent;
+        }
+    }
+}
+
+.yiqia_UserInfo_field_voip::before {
+    mask-image: url('$(res)/img/element-icons/leave.svg');
+    width: 26px;
+}
+
+.yiqia_UserInfo_field_message::before {
+    mask-image: url('$(res)/img/element-icons/leave.svg');
+    width: 26px;
+}
+
+.yiqia_UserInfo_separator {
+    border-bottom: 1px solid rgba($primary-content, .1);
+}
+
+.yiqia_UserInfo_profile {
+    text-align: center;
+
+    h2 {
+        display: flex;
+        font-size: $font-18px;
+        line-height: $font-25px;
+        flex: 1;
+        justify-content: center;
+
+        span {
+            // limit to 2 lines, show an ellipsis if it overflows
+            // this looks webkit specific but is supported by Firefox 68+
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+
+            overflow: hidden;
+            word-break: break-all;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+.yiqia_UserInfo_operate_container {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-content: space-around;
+    justify-content: center;
+    width: 100%;
+    margin-top: 43px;
+}
+
+.yiqia_UserInfo_displayname
+.yiqia_UserInfo_matrixId {
+    width: 100%;
+    height: 26px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #000000;
+    line-height: 26px;
+    text-align: center;
+}
+
+.yiqia_UserInfo_avatar {
+    margin: 24px 32px 0 32px;
+    width: 54px;
+    height: 54px;
+    border-radius: 100%;
+}
+
+.yiqia_UserInfo_avatar > div > div * {
+    border-radius: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.yiqia_RightPanel_header {
+    order: 1;
+    border-bottom: 1px solid $primary-hairline-color;
+    flex: 0 0 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/** Fixme - factor this out with the main header **/
+
+.mx_RightPanel_headerButtonGroup {
+    height: 100%;
+    display: flex;
+    background-color: $background;
+    padding: 0 9px;
+    align-items: center;
+}
+
+.mx_RightPanel_headerButton {
+    cursor: pointer;
+    flex: 0 0 auto;
+    margin-left: 1px;
+    margin-right: 1px;
+    height: 32px;
+    width: 32px;
+    position: relative;
+    border-radius: 100%;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 4px; // center with parent of 32px
+        left: 4px; // center with parent of 32px
+        height: 24px;
+        width: 24px;
+        background-color: $icon-button-color;
+        mask-repeat: no-repeat;
+        mask-size: contain;
+    }
+
+    &:hover {
+        background: rgba($accent, 0.1);
+
+        &::before {
+            background-color: $accent;
+        }
+    }
+}
+
+.mx_RightPanel_threadsButton::before {
+    mask-image: url('$(res)/img/element-icons/room/thread.svg');
+}
+
+.mx_RightPanel_notifsButton::before {
+    mask-image: url('$(res)/img/element-icons/notifications.svg');
+    mask-position: center;
+}
+
+.mx_RightPanel_roomSummaryButton::before {
+    mask-image: url('$(res)/img/element-icons/room/room-summary.svg');
+    mask-position: center;
+}
+
+.mx_RightPanel_groupMembersButton::before {
+    mask-image: url('$(res)/img/element-icons/community-members.svg');
+    mask-position: center;
+}
+
+.mx_RightPanel_roomsButton::before {
+    mask-image: url('$(res)/img/element-icons/community-rooms.svg');
+    mask-position: center;
+}
+
+$dot-size: 7px;
+$pulse-color: $alert;
+
+.mx_RightPanel_pinnedMessagesButton {
+    &::before {
+        mask-image: url('$(res)/img/element-icons/room/pin.svg');
+        mask-position: center;
+    }
+}
+.mx_RightPanel_headerButton_unreadIndicator_bg {
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 4px;
+    width: $dot-size;
+    height: $dot-size;
+    border-radius: 50%;
+    transform: scale(1.6);
+    transform-origin: center center;
+    background: rgba($background, 1);
+}
+
+.mx_RightPanel_headerButton_unreadIndicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 4px;
+    width: $dot-size;
+    height: $dot-size;
+    border-radius: 50%;
+    transform: scale(1);
+    background: rgba($pulse-color, 1);
+    box-shadow: 0 0 0 0 rgba($pulse-color, 1);
+    animation: mx_RightPanel_indicator_pulse 2s infinite;
+    animation-iteration-count: 1;
+
+    &.mx_Indicator_red {
+        background: rgba($alert, 1);
+        box-shadow: rgba($alert, 1);
+    }
+
+    &.mx_Indicator_gray {
+        background: rgba($roomtile-default-badge-bg-color, 1);
+        box-shadow: rgba($roomtile-default-badge-bg-color, 1);
+    }
+
+    &.mx_Indicator_bold {
+        background: rgba($input-darker-fg-color, 1);
+        box-shadow: rgba($input-darker-fg-color, 1);
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        width: inherit;
+        height: inherit;
+        top: 0;
+        left: 0;
+        transform: scale(1);
+        transform-origin: center center;
+        animation-name: mx_RightPanel_indicator_pulse_shadow;
+        animation-duration: inherit;
+        animation-iteration-count: inherit;
+        border-radius: 50%;
+        background: inherit;
+    }
+}
+
+.mx_RightPanel_timelineCardButton {
+    &::before {
+        mask-image: url('$(res)/img/element-icons/feedback.svg');
+        mask-position: center;
+    }
+}
+
+@keyframes mx_RightPanel_indicator_pulse {
+    0% {
+        transform: scale(0.95);
+    }
+
+    70% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(0.95);
+    }
+}
+
+@keyframes mx_RightPanel_indicator_pulse_shadow {
+    0% {
+        opacity: 0.7;
+    }
+
+    70% {
+        transform: scale(2.2);
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.mx_RightPanel_headerButton_highlight {
+    &::before {
+        background-color: $accent !important;
+    }
+}
+
+.mx_RightPanel_headerButton_badge {
+    font-size: $font-8px;
+    border-radius: 8px;
+    color: $accent-fg-color;
+    background-color: $accent;
+    font-weight: bold;
+    position: absolute;
+    top: -4px;
+    left: 20px;
+    padding: 2px 4px;
+}
+
+.mx_RightPanel_collapsebutton {
+    flex: 1;
+    text-align: right;
+    height: 16px;
+    border: none;
+}
+
+.mx_RightPanel .mx_MemberList,
+.mx_RightPanel .mx_MemberInfo,
+.mx_RightPanel .mx_GroupRoomList,
+.mx_RightPanel_blank {
+    order: 2;
+    flex: 1 1 0;
+}
+
+.mx_RightPanel .mx_RoomView_messagePanelSpinner {
+    order: 2;
+    margin: auto;
+}
+
+.mx_RightPanel_empty {
+    margin-right: -28px;
+
+    h2 {
+        font-weight: 700;
+        margin: 16px 0;
+    }
+
+    h2, p {
+        font-size: $font-14px;
+    }
+
+    &::before {
+        content: '';
+        display: block;
+        margin: 11px auto 29px auto;
+        height: 42px;
+        width: 42px;
+        background-color: $header-panel-text-primary-color;
+        mask-repeat: no-repeat;
+        mask-size: contain;
+        mask-position: center;
+    }
+}
+
+.mx_RightPanel_scopeHeader {
+    margin: 24px;
+    text-align: center;
+    font-weight: $font-semi-bold;
+    font-size: $font-18px;
+    line-height: $font-22px;
+
+    .mx_BaseAvatar {
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+
+    .mx_BaseAvatar_image {
+        border-radius: 8px;
+    }
+}

@@ -285,8 +285,10 @@ export class YiqiaContact {
         //     photoUrl: contactInfo.photoUrl,
         //     lastName: ""
         // }
-        const body = objectClone(contactInfo);
-        body.nickName = contactInfo.DisplayName;
+        const newContactInfo = Object.assign({}, contactInfo, {room: null})
+        console.log("contactInfo ", newContactInfo);
+        const body = objectClone(newContactInfo);
+        body.nickName = contactInfo.DisplayName || contactInfo.family+contactInfo.given || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
         body.prefixes = contactInfo.DisplayNamePy;
         body.telephoneList =contactInfo.phoneNumbers;
         body.emailList = contactInfo.emails;
@@ -294,6 +296,43 @@ export class YiqiaContact {
         body.imppList = contactInfo.ims;
         console.log("======= body ", body);
         return AuthApi.Instance.addContact(body).then((resp) => {
+                return resp;
+            })
+            .catch((error) => {
+                console.log("error is ", error);
+                return null;
+            })
+    }
+
+    public async yiqiaContactRemove(contactInfo:UserModal): Promise<boolean> {
+        // const body:operateContact = {
+        //     family: contactInfo.family,
+        //     middleName: contactInfo.middleName,
+        //     given: contactInfo.given,
+        //     matrixId: contactInfo.matrixId,
+        //     prefixes: contactInfo.prefixes,
+        //     suffixes: contactInfo.suffixes,
+        //     additionalName: contactInfo.additionalName,
+        //     nickName: contactInfo.nickName,
+        //     organization: contactInfo.organization,
+        //     department: contactInfo.department,
+        //     title: contactInfo.title,
+        //     telephoneList: arrayFastClone(contactInfo.telephoneList),
+        //     emailList: arrayFastClone(contactInfo.emailList),
+        //     addressList: arrayFastClone(contactInfo.addressList),
+        //     imppList: arrayFastClone(contactInfo.imppList),
+        //     urlList: arrayFastClone(contactInfo.urlList),
+        //     dateList: arrayFastClone(contactInfo.dateList),
+        //     note: "",
+        //     categories: "",
+        //     photo: "",
+        //     photoType: "",
+        //     firstName: "",
+        //     photoUrl: contactInfo.photoUrl,
+        //     lastName: ""
+        // }
+        console.log("id is ", contactInfo);
+        return AuthApi.Instance.deleteContact(contactInfo.id).then((resp) => {
                 return resp;
             })
             .catch((error) => {

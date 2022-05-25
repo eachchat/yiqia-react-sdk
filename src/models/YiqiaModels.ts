@@ -170,6 +170,7 @@ export class UserModal {
     public urlList: Url[];
     public imppList: Im[];
     public ims?: Im[];
+    public contactId?: string;
     public photo: string; //"base64编码"
     public firstName: string; //"姓氏拼音",
     public middleName: string; //"中间名拼音",
@@ -275,6 +276,57 @@ export class UserModal {
     }
 
     public create2Model(key, value) {
+        console.log("key is ", key);
+        console.log("value is ", value);
+        switch(key){
+            case "telephone":
+                break;
+            case "email":
+                break;
+            case "address":
+                break;
+            case "url":
+                break;
+            case "impp":
+                break;
+            case "date":
+                break;
+            case "family":
+                this.family = value;
+                break;
+            case "given":
+                this.given = value;
+                break;
+            case "matrixId":
+                this.matrixId = value;
+                break;
+            case "prefixes":
+                this.prefixes = value;
+                break;
+            case "additionalName":
+                this.additionalName = value;
+                break;
+            case "suffixes":
+                this.suffixes = value;
+                break;
+            case "nickName":
+                this.nickName = value;
+                break;
+            case "organization":
+                this.organization = value;
+                break;
+            case "title":
+                this.title = value;
+                break;
+            case "note":
+                this.note = value;
+                break;
+            case "categories":
+                this.categories = value;
+                break;
+            default:
+                break;
+        }
     }
 }
 
