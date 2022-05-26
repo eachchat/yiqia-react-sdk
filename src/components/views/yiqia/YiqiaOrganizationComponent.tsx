@@ -37,6 +37,7 @@ const OrganizationItem:React.FC<IProps> = ({orgItem, level}) => {
     }
     
     const orgItemClicked = () => {
+        setExpanded(!expanded);
         dispatcher.dispatch<YiqiaOrganizationItemClickedPayload>({
             action: Action.YiqiaOrganizationItemClicked,
             departmentName: orgItem.id,
@@ -50,6 +51,7 @@ const OrganizationItem:React.FC<IProps> = ({orgItem, level}) => {
     const collapseClasses = classNames({
         'yiqia_Organization_collapseBtn': true,
         'yiqia_Organization_collapseBtn_collapsed': !expanded,
+        'yiqia_OrganizationItem_root': (level === 0),
     });
 
     const classes = classNames({
@@ -60,8 +62,15 @@ const OrganizationItem:React.FC<IProps> = ({orgItem, level}) => {
     return(
         <div className="yiqia_OrganizationItemContainer">
             <div className={classes}>
-                <span className={collapseClasses} onClick={onItemExpand}/>
-                <span onClick={orgItemClicked}>{ orgItem.name }</span>
+                {
+                    orgItem.children &&
+                    <span className={collapseClasses} onClick={onItemExpand}/>
+                }
+                {
+                    !orgItem.children &&
+                    <span className="yiqia_Organization_collapseBtn_empty" onClick={onItemExpand}/>
+                }
+                <span className="yiqia_organization_name" onClick={orgItemClicked}>{ orgItem.name }</span>
             </div>
             {
                 expanded &&

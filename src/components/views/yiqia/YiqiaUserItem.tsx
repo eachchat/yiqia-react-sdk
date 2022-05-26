@@ -64,7 +64,7 @@ export default function YiqiaUserItem(props:IProps) {
 
     let nameContainer:React.ReactNode = (
         <div className="yiqia_ContactUser_nameContainer">
-            <div title={props.userItem.DisplayName} tabIndex={-1} dir="auto">
+            <div className="yiqia_ContactUser_namt_text" title={props.userItem.DisplayName} tabIndex={-1} dir="auto">
                 { props.userItem.DisplayName }
             </div>
         </div>
@@ -72,7 +72,7 @@ export default function YiqiaUserItem(props:IProps) {
     
     let description:React.ReactNode = (
         <div className="yiqia_ContactUser_descriptionContainer">
-            <div title={props.userItem.title } tabIndex={-1} dir="auto">
+            <div className="yiqia_ContactUser_title_text" title={props.userItem.title } tabIndex={-1} dir="auto">
                 { props.descriptType === DescriptType.Title &&
                     props.userItem.title 
                 }
@@ -86,7 +86,7 @@ export default function YiqiaUserItem(props:IProps) {
     return(
         <div className="yiqia_UserItem" onClick={onMemberClick}>
             { getUserAvatar }
-            <div>
+            <div className="yiqia_contact_useritem_container">
                 { nameContainer }
                 { description }
             </div>

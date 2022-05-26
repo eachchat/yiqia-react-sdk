@@ -40,7 +40,9 @@ limitations under the License.
         left: 20px;
 
         .yiqia_OrganizationItem {
-            padding: 4px;
+            height: 44px;
+            display: flex;
+            align-items: center;
 
             &.yiqia_OrganizationItem_selected,
             &:hover,
@@ -58,7 +60,6 @@ limitations under the License.
                 position: relative;
                 width: 14px;
                 height: 14px;
-                margin-right: 6px;
         
                 &::before {
                     content: '';
@@ -76,7 +77,42 @@ limitations under the License.
                     mask-image: url('$(res)/img/yiqia-contact-book/narrow-right.svg');
                 }
             }
+
+            .yiqia_organization_name {
+                margin-left: 11px;
+            }
+            
+            .yiqia_OrganizationItem_root {
+                display: inline-block;
+                position: relative;
+                width: 14px;
+                height: 14px;
+        
+                &::before {
+                    content: '';
+                    width: 18px;
+                    height: 18px;
+                    position: absolute;
+                    mask-position: center;
+                    mask-size: contain;
+                    mask-repeat: no-repeat;
+                    background-color: $tertiary-content;
+                    mask-image: url('$(res)/img/yiqia-contact-book/yiqia_org_company.svg');
+                }
+    
+                &.yiqia_Organization_collapseBtn_collapsed::before {
+                    mask-image: url('$(res)/img/yiqia-contact-book/yiqia_org_company.svg');
+                }
+            }
         }
+
+        .yiqia_Organization_collapseBtn_empty {
+            display: inline-block;
+            position: relative;
+            width: 14px;
+            height: 14px;
+        }
+        
     }
 
     ul {

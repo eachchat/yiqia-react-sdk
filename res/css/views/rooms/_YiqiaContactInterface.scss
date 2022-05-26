@@ -1,0 +1,29 @@
+.yiqia_ContactTitle {
+    width: 100%;
+    height: 56px;
+    line-height: 56px;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 0 12px 0 12px;
+}
+.yiqia_contact_item {
+    display: flex;
+    align-items: center;
+    padding: 0 8px 0 8px;
+    height: 52px;
+
+    .yiqia_contact_icon {
+        width: 36px;
+        height: 36px;
+        padding: 0 2px 0 4px;
+        margin-right: 8px;
+    }
+
+    .yiqia_ContactItem {
+        height: 44px;
+        width: 100%;
+        line-height: 44px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}

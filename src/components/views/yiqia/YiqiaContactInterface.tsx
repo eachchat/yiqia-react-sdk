@@ -177,38 +177,47 @@ export default class YiqiaContactInterface extends React.PureComponent<IProps, I
 
     private recentsItem(): React.ReactElement {
         return (
-            <AccessibleButton
-                title={_t("Recents")}
-                onFocus={this.props.onFocus}
-                className="mx_RoomTile"
-                onClick={this.onRecentsClick}>
-                    {_t("Recents")}
-            </AccessibleButton>
+            <div className="yiqia_contact_item">
+                <img className="yiqia_contact_icon" src={require("../../../../res/img/yiqia-contact-book/yiqia_recents.svg").default}></img>
+                <AccessibleButton
+                    title={_t("Recents")}
+                    onFocus={this.props.onFocus}
+                    className="yiqia_ContactItem"
+                    onClick={this.onRecentsClick}>
+                        {_t("Recents")}
+                </AccessibleButton>
+            </div>
         );
     }
 
     private contactItem(): React.ReactElement {
         return (
-            <AccessibleButton
-                title={_t("Contacts")}
-                onFocus={this.props.onFocus}
-                className="mx_RoomTile"
-                onClick={this.onContactClick}>
-                    {_t("Contacts")}
-            </AccessibleButton>
+            <div className="yiqia_contact_item">
+                <img className="yiqia_contact_icon" src={require("../../../../res/img/yiqia-contact-book/yiqia_contact.svg").default}></img>
+                <AccessibleButton
+                    title={_t("Contacts")}
+                    onFocus={this.props.onFocus}
+                    className="yiqia_ContactItem"
+                    onClick={this.onContactClick}>
+                        {_t("Contacts")}
+                </AccessibleButton>
+            </div>
         );
     }
 
     private OrgItem(): React.ReactElement {
         return (
             <React.Fragment>
-                <AccessibleButton
-                    title={_t("Contacts")}
-                    onFocus={this.props.onFocus}
-                    className="mx_RoomTile"
-                    onClick={this.onOrganizationClick}>
-                        {_t("Organization")}
-                </AccessibleButton>
+                <div className="yiqia_contact_item">
+                    <img className="yiqia_contact_icon" src={require("../../../../res/img/yiqia-contact-book/yiqia_organization.svg").default}></img>
+                    <AccessibleButton
+                        title={_t("Contacts")}
+                        onFocus={this.props.onFocus}
+                        className="yiqia_ContactItem"
+                        onClick={this.onOrganizationClick}>
+                            {_t("Organization")}
+                    </AccessibleButton>
+                </div>
                 <YiqiaOrganizationComponent></YiqiaOrganizationComponent>
             </React.Fragment>
         )
@@ -226,7 +235,7 @@ export default class YiqiaContactInterface extends React.PureComponent<IProps, I
                             onFocus={this.props.onFocus}
                             onBlur={this.props.onBlur}
                             onKeyDown={onKeyDownHandler}
-                            className="mx_RoomList"
+                            className="yiqia_ItemList"
                             role="tree"
                             aria-label={_t("Rooms")}
                             ref={this.treeRef}

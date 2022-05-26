@@ -98,7 +98,7 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
             for (const letter of allLetters) {
                 tiles.push(
                     <React.Fragment>
-                        <div>{letter}------------</div>
+                        <div className="yiqia_index_letter">{letter.toUpperCase()}</div>
                         {
                             this.props.users.get(letter).map(item => {
                                 return(

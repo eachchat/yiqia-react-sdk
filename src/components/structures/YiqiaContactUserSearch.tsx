@@ -167,15 +167,10 @@ export default class YiqiaContactUserSearch extends React.PureComponent<IProps, 
             />
         );
 
-        let shortcutPrompt = <div className="yiqia_ContactUserSearch_shortcutPrompt">
-            { isMac ? "⌘ K" : _t(ALTERNATE_KEY_NAME[Key.CONTROL]) + " K" }
-        </div>;
-
         return (
             <div className={classes} onClick={this.focus}>
                 { icon }
                 { input }
-                { shortcutPrompt }
                 <AccessibleButton
                     tabIndex={-1}
                     title={_t("Clear filter")}
