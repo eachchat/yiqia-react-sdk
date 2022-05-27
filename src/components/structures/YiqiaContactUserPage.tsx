@@ -38,7 +38,7 @@ interface IProps {
 
 const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     const [showRightPanel, setShowRightPanel] = useState(false);
-    const [users, setUsers] = useState(new Map());
+    const [users, setUsers] = useState(new Map()); //<Map<string, UserModal[]>
     
     useEventEmitter(YiqiaContactUserStore.instance, UPDATE_SELECTED_CONTACT_ITEM, () => {
         pageShouldUpdate();
@@ -50,7 +50,26 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
         righaPanelShouldUpdate();
     });
 
-    function onSelectUser(term:string) {
+    function onSearchInputChange(term:string) {
+        if(term.length == 0) {
+            setUsers(YiqiaContactUserStore.instance.usersList);
+        } else {
+            const origin = YiqiaContactUserStore.instance.usersList;
+            const newUsers = new Map();
+            for(const item of origin) {
+                const users = item[1];
+                for(const user of users) {
+                    if((user.DisplayName + user.additionalName + user.family + user.firstName + user.formattedName + user.given + 
+                        user.lastName + user.prefixes + user.middleName + user.nickName + user.suffixes).indexOf(term) >= 0) {
+                            if(!newUsers.has(item[0])) {
+                                newUsers.set(item[0], []);
+                            }
+                            newUsers.set(item[0], [...newUsers.get(item[0]), user]);
+                        }
+                }
+            }
+            setUsers(newUsers);
+        }
     }
 
     const righaPanelShouldUpdate = () => {
@@ -101,7 +120,8 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
                     throw new Error("Function not implemented.");
                 } } onSearch={function (): string {
                     throw new Error("Function not implemented.");
-                } }                />
+                } } onInputChange={onSearchInputChange.bind(this)}
+            />
             </div>
         )
     }

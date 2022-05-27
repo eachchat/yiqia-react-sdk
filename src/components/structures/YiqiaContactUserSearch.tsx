@@ -37,6 +37,7 @@ interface IProps {
      */
     onSelectUser(): boolean;
     onSearch(): string;
+    onInputChange(term:string);
 }
 
 interface IState {
@@ -99,7 +100,9 @@ export default class YiqiaContactUserSearch extends React.PureComponent<IProps, 
 
     private onChange = () => {
         if (this.elementRef.current?.tagName !== "INPUT") return;
+        const value = (this.elementRef.current as HTMLInputElement).value;
         this.setState({ query: (this.elementRef.current as HTMLInputElement).value });
+        this.props.onInputChange(value);
     };
 
     private onFocus = (ev: React.FocusEvent<HTMLInputElement>) => {
