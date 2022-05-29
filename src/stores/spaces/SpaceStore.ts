@@ -67,7 +67,7 @@ import { AfterLeaveRoomPayload } from "../../dispatcher/payloads/AfterLeaveRoomP
 
 interface IState { }
 
-const ACTIVE_SPACE_LS_KEY = "mx_active_space";
+export const ACTIVE_SPACE_LS_KEY = "mx_active_space";
 
 const metaSpaceOrder: MetaSpace[] = [MetaSpace.Home, MetaSpace.Contact, MetaSpace.Favourites, MetaSpace.People, MetaSpace.Orphans];
 

@@ -97,7 +97,7 @@ const MessageButton = ({ userId }: { userId: string }) => {
                 setBusy(false);
             }}
             className="yiqia_UserInfo_field yiqia_UserInfo_field_message"
-            disabled={busy}
+            disabled={busy || !!userId}
         >
             { _t("Message") }
         </AccessibleButton>
@@ -111,7 +111,7 @@ async function openVoIP(matrixClient: MatrixClient, userId: string, operate:Yiqi
         dis.dispatch<ViewRoomPayload>({
             action: Action.ViewRoom,
             room_id: lastActiveRoom.roomId,
-            metricsTrigger: "MessageUser",
+            metricsTrigger: operate === YiqiaUserInfoOperate.VIDEO ? "CallVideo" : "CallAudio",
         });
         return;
     }
@@ -121,6 +121,8 @@ const VoIPButton = ({ userId, operate }: { userId: string, operate: YiqiaUserInf
     const cli = useContext(MatrixClientContext);
     const [busy, setBusy] = useState(false);
 
+    const classname = operate === YiqiaUserInfoOperate.VOICE ? "yiqia_UserInfo_field yiqia_UserInfo_field_voip_audio" : "yiqia_UserInfo_field yiqia_UserInfo_field_voip_video"
+
     return (
         <AccessibleButton
             onClick={async (ev) => {
@@ -129,7 +131,7 @@ const VoIPButton = ({ userId, operate }: { userId: string, operate: YiqiaUserInf
                 await openVoIP(cli, userId, operate);
                 setBusy(false);
             }}
-            className="yiqia_UserInfo_field yiqia_UserInfo_field_voip"
+            className={classname}
             disabled={busy}
         >
             { _t("Message") }
@@ -165,8 +167,14 @@ const UserOptionsSection: React.FC<{
     return (
         <div className="yiqia_UserInfo_operate_container">
                 { directMessageButton }
-                { voiceButton }
-                { videoButton }
+                {
+                    YiqiaContactContactStore.Instance.isUserInContact(user) &&
+                    voiceButton
+                }
+                {
+                    YiqiaContactContactStore.Instance.isUserInContact(user) &&
+                    videoButton
+                }
         </div>
     );
 };
@@ -209,7 +217,7 @@ const UserInfoHeader: React.FC<{
         <div className='yiqia_RightPanel_header'>
             { avatarElement }
 
-            <div className="yiqia_UserInfo_container yiqia_UserInfo_separator">
+            <div className="yiqia_UserInfo_container">
                 <div className="yiqia_UserInfo_profile">
                     <div className="yiqia_UserInfo_displayname" title={displayName} aria-label={displayName}>
                         { displayName }
@@ -265,7 +273,7 @@ class YiqiaUserInfo extends React.Component<IProps1, IState> {
 
     public render(): JSX.Element {
         return (
-            <aside className="yiqia_RightPanel" id="yiqia_RightPanel">
+            <aside className="yiqia_RightPanel dark-panel" id="yiqia_RightPanel">
                 { <YiqiaUserInfoContent user={this.state.user} onClose={this.props.onClose} />}
             </aside>
         )
@@ -290,9 +298,9 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
 
     function getItemContent(itemLabel) {
         if(itemLabel === "telephone") {
-            return user.telephoneList ? user.telephoneList[0].value || "" : "";
+            return user.telephoneList ? user.telephoneList[0]?.value || "" : "";
         } else if(itemLabel === "email") {
-            return user.emailList ? user.emailList[0].value || "" : "";
+            return user.emailList ? user.emailList[0]?.value || "" : "";
         } else {
             return user[itemLabel];
         }
@@ -319,6 +327,7 @@ const YiqiaUserInfoContent: React.FC<IProps2> = ({
     ...props
 }) => {
     const contactOperText = YiqiaContactContactStore.Instance.isUserInContact(user) ? _t("remove from my contact") : _t("add to my contact");
+    const operClassName = YiqiaContactContactStore.Instance.isUserInContact(user) ? "yiqia_BaseCard_remove_from_contact" : "yiqia_BaseCard_add_to_contact";
 
     const closeButton = <AccessibleButton
             data-test-id='base-card-close-button'
@@ -342,7 +351,7 @@ const YiqiaUserInfoContent: React.FC<IProps2> = ({
     }
     
     const removeContactButton = <AccessibleButton
-            className="yiqia_BaseCard_remove_from_contact"
+            className={operClassName}
             onClick={contactOperate}
             title={contactOperText}>
                 <span>{ contactOperText }</span>

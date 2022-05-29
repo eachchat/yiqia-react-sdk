@@ -17,10 +17,22 @@ export const UPDATE_RECENT_EVENT = Symbol("yiqia_recent_user_update");
 export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
     private _recentsList: Map<string, UserModal[]> = new Map();
     private _isUpdating: boolean = false;
+    private _allUsers: UserModal[];
     public static YiqiaRecentsStoreInstance = new YiqiaRecentsStore();
     constructor() {
         super(defaultDispatcher);
         this.onRoomTimeline = this.onRoomTimeline.bind(this);
+    }
+
+    public isUserInContact(user:UserModal) {
+        let res = false;
+        for(const conatct of this._allUsers) {
+            if(user.matrixId === conatct?.matrixId) {
+                res = true;
+                break;
+            }
+        }
+        return res;
     }
 
     public static get Instance(): YiqiaRecentsStore {
@@ -97,6 +109,7 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
         }).filter(userItem => {
             return !!userItem;
         })
+        this._allUsers = improvedList;
         this._recentsList = this.dataDeal(improvedList);
         this.selfUpdateFromGms();
     }

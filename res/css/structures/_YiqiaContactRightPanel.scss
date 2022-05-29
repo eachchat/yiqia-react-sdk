@@ -54,7 +54,7 @@ limitations under the License.
     }
 }
 
-.yiqia_BaseCard_remove_from_contact {
+.yiqia_BaseCard_add_to_contact {
     flex: 0 0 auto;
     height: 36px;
     position: absolute;
@@ -69,15 +69,51 @@ limitations under the License.
     width: 100%;
 }
 
+.yiqia_BaseCard_add_to_contact.mx_AccessibleButton_disabled {
+    background-color: $info-plinth-fg-color;
+    cursor: not-allowed;
+}
+
+.yiqia_BaseCard_add_to_contact span {
+    padding: 8px 0;
+    display: inline-flex;
+}
+
+.yiqia_BaseCard_remove_from_contact {
+    flex: 0 0 auto;
+    height: 36px;
+    position: absolute;
+    background-color: transparent;
+    border: 1px solid $alert;
+    border-radius: 4px;
+    margin: 5px 9px 9px;
+    display: flex;
+    justify-content: center;
+    color: $alert;
+    font-weight: 600;
+    bottom: 0px;
+    width: 100%;
+}
+
+.yiqia_User_Details {
+    margin: 24px 24px 24px 24px;
+}
+
 .yiqia_user_details_item {
     display: flex;
+    margin: 10px 0 10px 0;
 
     .yiqia_user_details_item_label {
-        width: 54px;
+        width: 80px;
+        text-align: left;
+        color: #85878A;
+        font-weight: 400;
+        font-size: 14px;
     }
 
     .yiqia_user_details_item_info {
         width: calc(100% - 54px);
+        text-align: left;
     }
 }
 
@@ -114,27 +150,30 @@ limitations under the License.
 
 .yiqia_UserInfo_field {
     position: relative;
-    margin-left: 1px;
-    margin-right: 1px;
+    margin-left: 6px;
+    margin-right: 7px;
     cursor: pointer;
-    height: 20px;
+    height: 44px;
+    line-height: 66px;
     width: 88px;
-    border-radius: 100%;
+    border-radius: 8px;
+    font-size: 10px;
+    background-color: #FFFFFF;
 
     &::before {
         content: '';
         position: absolute;
-        bottom: 23px; // center with parent of 32px
+        bottom: 20px; // center with parent of 32px
         left: 32px; // center with parent of 32px
-        height: 24px;
-        width: 24px;
-        background-color: $icon-button-color;
+        height: 20px;
+        width: 20px;
+        background-color: $topleftmenu-color;
         mask-repeat: no-repeat;
         mask-size: contain;
     }
 
     &:hover {
-        background: rgba($accent, 0.1);
+        // background: rgba($selected-color, 0.1);
 
         &::before {
             background-color: $accent;
@@ -142,13 +181,18 @@ limitations under the License.
     }
 }
 
-.yiqia_UserInfo_field_voip::before {
-    mask-image: url('$(res)/img/element-icons/leave.svg');
+.yiqia_UserInfo_field_voip_audio::before {
+    mask-image: url('$(res)/img/yiqia-contact-book/yiqia_user_audio.svg');
+    width: 26px;
+}
+
+.yiqia_UserInfo_field_voip_video::before {
+    mask-image: url('$(res)/img/yiqia-contact-book/yiqia_user_video.svg');
     width: 26px;
 }
 
 .yiqia_UserInfo_field_message::before {
-    mask-image: url('$(res)/img/element-icons/leave.svg');
+    mask-image: url('$(res)/img/yiqia-contact-book/sidebar_contact.png');
     width: 26px;
 }
 
@@ -187,7 +231,7 @@ limitations under the License.
     align-content: space-around;
     justify-content: center;
     width: 100%;
-    margin-top: 43px;
+    margin-top: 20px;
 }
 
 .yiqia_UserInfo_displayname
