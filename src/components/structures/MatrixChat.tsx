@@ -242,6 +242,11 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
     constructor(props: IProps) {
         super(props);
 
+        const { hash } = window.location;
+        if(hash === "#/yiqiaContact") {
+            window.location.href = window.location.href.replace(hash, "");
+        }
+        
         this.state = {
             view: Views.LOADING,
             collapseLhs: false,
