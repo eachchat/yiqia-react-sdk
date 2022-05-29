@@ -90,6 +90,10 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
         }
     }
 
+    React.useEffect(() => {
+        pageShouldUpdate();
+    }, [])
+
     function getTitle(): React.ReactNode{
         let title = _t("Recents");
         switch(YiqiaContactUserStore.instance.curItem) {
