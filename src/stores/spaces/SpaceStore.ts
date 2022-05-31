@@ -1151,7 +1151,8 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
                 } else if(payload.metricsTrigger === "MessageUserFromContact" ||
                     payload.metricsTrigger === "CallAudio" ||
                     payload.metricsTrigger === "CallVideo") {
-                        this.setActiveSpace(MetaSpace.Home, true, payload.metricsTrigger);
+                        window.localStorage.setItem(getSpaceContextKey(this.activeSpace), payload.room_id);
+                        this.setActiveSpace(MetaSpace.Home, false, payload.metricsTrigger);
                 }
 
                 // Persist last viewed room from a space

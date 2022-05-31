@@ -97,7 +97,7 @@ const MessageButton = ({ userId }: { userId: string }) => {
                 setBusy(false);
             }}
             className="yiqia_UserInfo_field yiqia_UserInfo_field_message"
-            disabled={busy || !!userId}
+            disabled={busy || !userId}
         >
             { _t("Message") }
         </AccessibleButton>
@@ -113,6 +113,12 @@ async function openVoIP(matrixClient: MatrixClient, userId: string, operate:Yiqi
             show_room_tile: true,
             room_id: lastActiveRoom.roomId,
             metricsTrigger: operate === YiqiaUserInfoOperate.VIDEO ? "CallVideo" : "CallAudio",
+            deferred_action: {
+                action: Action.ViewRoom,
+                room_id: lastActiveRoom.roomId,
+                context_switch: true,
+                metricsTrigger: operate === YiqiaUserInfoOperate.VIDEO ? "CallVideo" : "CallAudio",
+            },
         });
         return;
     }
