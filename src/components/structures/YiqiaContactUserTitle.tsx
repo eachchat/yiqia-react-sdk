@@ -18,6 +18,7 @@ enum OPERATE_TYPE {
 
 interface IProps extends IContextMenuProps {
     operateType:OPERATE_TYPE;
+    pageShouldUpdate();
 }
 
 // XXX: workaround for https://github.com/microsoft/TypeScript/issues/31816
@@ -30,7 +31,7 @@ enum ImportState {
     DONE = "done",
 }
 
-const YiqiaContactHeaderContextMenu = ({operateType, onFinished, ...props}:IProps) => {
+const YiqiaContactHeaderContextMenu = ({operateType, onFinished, pageShouldUpdate, ...props}:IProps) => {
     const [importState, setImportState] = useState(ImportState.LOADING);
     let importOption: JSX.Element;
     let exportOption: JSX.Element;
@@ -48,6 +49,7 @@ const YiqiaContactHeaderContextMenu = ({operateType, onFinished, ...props}:IProp
                 const file = ev.target.files[0];
                 YiqiaContact.Instance.yiqiaContactImport(file).then(resp => {
                     setImportState(ImportState.DONE);
+                    pageShouldUpdate();
                 })
             };
     
@@ -70,20 +72,23 @@ const YiqiaContactHeaderContextMenu = ({operateType, onFinished, ...props}:IProp
             a.click();
             setImportState(ImportState.DONE);
             onFinished();
+            pageShouldUpdate();
         })
     }
     
-    const vCardAdd = () => {
-        Modal.createTrackedDialog("Add Contact", "", YiqiaAddContactDialog);
+    const vCardAdd = async () => {
+        const { finished } = Modal.createTrackedDialog("Add Contact", "", YiqiaAddContactDialog);
         onFinished();
+        const result = await finished;
+        pageShouldUpdate();
     }
 
-    const vCardCreate = () => {
+    const vCardCreate = async () => {
         onFinished();
         const { finished } = Modal.createTrackedDialog("Add Contact", "", YiqiaCreateContact);
-        if(finished) {
-            console.log("111111111111111")
-        }
+        const result = await finished;
+        pageShouldUpdate();
+        
     }
 
     const onImportClick = (ev:ButtonEvent) => {
@@ -159,7 +164,7 @@ const YiqiaContactHeaderContextMenu = ({operateType, onFinished, ...props}:IProp
     </React.Fragment>
 }
 
-const YiqiaContactUserTitle:React.FC<{}> = () => {
+const YiqiaContactUserTitle:React.FC<{onPageUpdate()}> = (props) => {
     const [exportMenuPosition, setExportMenuPosition] = useState(null)
     const [contactOperateMenuPosition, setContactOperateMenuPosition] = useState(null)
 
@@ -197,7 +202,9 @@ const YiqiaContactUserTitle:React.FC<{}> = () => {
             <YiqiaContactHeaderContextMenu
                 {...contextMenuBelow(exportMenuPosition)}
                 operateType={OPERATE_TYPE.EXPORT}
-                onFinished={onExportMenuCloseClick}/>
+                onFinished={onExportMenuCloseClick}
+                pageShouldUpdate={props.onPageUpdate}
+                />
         )
     }
 
@@ -206,7 +213,9 @@ const YiqiaContactUserTitle:React.FC<{}> = () => {
             <YiqiaContactHeaderContextMenu
                 {...contextMenuBelow(contactOperateMenuPosition)}
                 operateType={OPERATE_TYPE.ADD}
-                onFinished={onContactOperateMenuCloseClick}/>
+                onFinished={onContactOperateMenuCloseClick}
+                pageShouldUpdate={props.onPageUpdate}
+            />
         )
     }
 

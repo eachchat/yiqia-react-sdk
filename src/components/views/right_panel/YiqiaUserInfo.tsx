@@ -241,6 +241,7 @@ const UserInfoHeader: React.FC<{
 
 interface IProps1 {
     onClose(): void;
+    onPageUpdate(): void;
 };
 
 interface IProps2 {
@@ -281,10 +282,7 @@ class YiqiaUserInfo extends React.Component<IProps1, IState> {
     }
 
     private updatePage = () => {
-        const newUser = YiqiaUserRightPanelStore.Instance.curUser;
-        this.setState({
-            user: newUser,
-        })
+        this.props.onPageUpdate();
     }
 
     public render(): JSX.Element {
@@ -362,6 +360,7 @@ const YiqiaUserInfoContent: React.FC<IProps2> = ({
                 YiqiaContactContactStore.Instance.generalContactsList()
                     .then((res) => {
                         props.updatePage();
+                        onClose();
                     })
             })
         } else {

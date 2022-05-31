@@ -282,18 +282,45 @@ export class UserModal {
         console.log("value is ", value);
         switch(key){
             case "telephone":
-                this.telephoneList = [...value.values()];
+                this.telephoneList = [...value.values()].map(item => {
+                    return {
+                        id: null,
+                        value: item,
+                        contactId: null,
+                        type: null,
+                    }
+                });
                 break;
             case "email":
-                this.telephoneList = [...value.values()];
+                this.emailList = [...value.values()].map(item => {
+                    return {
+                        id: null,
+                        value: item,
+                        contactId: null,
+                        type: null,
+                    }
+                });
                 break;
             case "address":
                 break;
             case "url":
-                this.telephoneList = [...value.values()];
+                this.urlList = [...value.values()].map(item => {
+                    return {
+                        id: null,
+                        value: item,
+                        contactId: null,
+                    }
+                });
                 break;
             case "impp":
-                this.telephoneList = [...value.values()];
+                this.imppList = [...value.values()].map(item => {
+                    return {
+                        id: null,
+                        value: item,
+                        contactId: null,
+                        type: null,
+                    }
+                });
                 break;
             case "date":
                 break;

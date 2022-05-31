@@ -18,7 +18,6 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
     public isUserInContact(user:UserModal) {
         let res = false;
         for(const conatct of this._allUsers) {
-            user.id = conatct.id;
             if(user.matrixId === conatct.matrixId) {
                 res = true;
                 break;
@@ -49,6 +48,7 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
         console.log("generalContactsList ", showResults);
         this._allUsers = showResults;
         this._contactsInGms = this.dataDeal(showResults);
+        console.log("_contactsInGms ", this._contactsInGms);
     }
 
     protected async onReady() {

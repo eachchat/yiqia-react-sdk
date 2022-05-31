@@ -35,7 +35,7 @@ export abstract class YiqiaBaseUserStore<T extends Object> extends AsyncStoreWit
     public dataDeal(data:UserModal[]): Map<string, UserModal[]> {
         const dealedDate:Map<string, UserModal[]> = new Map();
         data.forEach(item => {
-            if(item.del === 1) return;
+            if(item.del == 1) return;
             const firstLetter = this.getBGColorFromDisplayName(item.DisplayName);
             if(dealedDate.has(firstLetter)) {
                 dealedDate.get(firstLetter).push(item);

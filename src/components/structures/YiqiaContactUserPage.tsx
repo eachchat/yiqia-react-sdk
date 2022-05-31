@@ -90,6 +90,13 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
         }
     }
 
+    const pageForceUpdate = () => {
+        const curUsers = YiqiaContactUserStore.instance.usersList;
+        console.log("pageForceUpdate curUsers ", curUsers);
+        console.log("pageForceUpdate users ", users);
+        setUsers(curUsers);
+    }
+
     React.useEffect(() => {
         pageShouldUpdate();
     }, [])
@@ -132,11 +139,12 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     
     const rightPanel = showRightPanel
         ? <YiqiaUserInfo 
-            onClose={rightPanelClose} />
+            onClose={rightPanelClose}
+            onPageUpdate={pageForceUpdate} />
         : null;
 
     return <React.Fragment>
-            <YiqiaContactUserTitle />
+            <YiqiaContactUserTitle onPageUpdate={pageForceUpdate} />
             <MainSplit panel={rightPanel} resizeNotifier={props.resizeNotifier}>
                 <div className="yiqia_ContactUser_body">
                     { renderContactSearchComponent() }

@@ -86,6 +86,7 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
     }
 
     public get usersList(): Map<string, UserModal[]>{
+        this.updateUsersData();
         return this._curUsersList;
     }
 

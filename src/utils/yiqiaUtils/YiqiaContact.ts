@@ -290,10 +290,11 @@ export class YiqiaContact {
         const body = objectClone(newContactInfo);
         body.nickName = contactInfo.DisplayName || contactInfo.family+contactInfo.given || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
         body.prefixes = contactInfo.DisplayNamePy;
-        body.telephoneList =contactInfo.phoneNumbers;
-        body.emailList = contactInfo.emails;
-        body.addressList = contactInfo.addresses;
-        body.imppList = contactInfo.ims;
+        body.telephoneList = contactInfo.phoneNumbers || contactInfo.telephoneList;
+        body.emailList = contactInfo.emails || contactInfo.emailList;
+        body.addressList = contactInfo.addresses || contactInfo.addressList;
+        body.imppList = contactInfo.ims || contactInfo.imppList;
+        body.urlList = contactInfo.urlList;
         console.log("======= body ", body);
         return AuthApi.Instance.addContact(body).then((resp) => {
                 return resp;

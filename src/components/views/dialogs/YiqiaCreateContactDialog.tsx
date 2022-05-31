@@ -302,8 +302,8 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
             if(userInstance.given?.length == 0 || userInstance.family?.length == 0) {
                 alert("input name");
             }
-            YiqiaContact.Instance.yiqiaContactAdd(userInstance).then(res => {
-                YiqiaContactContactStore.Instance.generalContactsList();
+            YiqiaContact.Instance.yiqiaContactAdd(userInstance).then(async (res) => {
+                await YiqiaContactContactStore.Instance.generalContactsList()
                 props.onFinished();
             })
         }
