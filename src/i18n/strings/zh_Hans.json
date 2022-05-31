@@ -715,7 +715,7 @@
     "Unable to load backup status": "无法获取备份状态",
     "Next": "下一个",
     "Previous step": "上一步",
-    "Organization": "组织名称",
+    "Organization": "组织架构",
     "Enter an organization": "请输入组织名称",
     "Enter your organization.": "请输入您的组织名称",
     "Next step": "下一步",
@@ -3546,8 +3546,8 @@
     "Your organization supported video VoIP time is spent, please to update your set meal.": "您的视频通话时长已用尽，请联系管理员升级您的通话套餐，以继续使用视频通话。",
     "Remove from room": "从聊天室移除",
     "Contact": "通讯录",
-    "Contacts": "联系人",
-    "Recents": "最近联系人",
+    "Contacts": "我的联系人",
+    "Recents": "最近联系",
     "Import or Export": "导入/导出",
     "Add Contact": "添加联系人",
     "Create Contact": "创建联系人",
@@ -3590,5 +3590,7 @@
     "department": "部门",
     "DisplayName": "姓名",
     "remove from my contact": "从我的联系人移除",
-    "add to my contact": "加入我的联系人"
+    "add to my contact": "加入我的联系人",
+    "Call Voice": "语音",
+    "Call Video": "视频"
 }

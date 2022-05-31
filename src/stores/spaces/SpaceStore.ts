@@ -224,13 +224,13 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
      * @param contextSwitch whether to switch the user's context,
      * should not be done when the space switch is done implicitly due to another event like switching room.
      */
-    public setActiveSpace(space: SpaceKey, contextSwitch = true) {
+    public setActiveSpace(space: SpaceKey, contextSwitch = true, metricsTrigger = null) {
         if (!space || !this.matrixClient || space === this.activeSpace) return;
 
         let cliSpace: Room;
         if (!isMetaSpace(space)) {
             cliSpace = this.matrixClient.getRoom(space);
-            if (!cliSpace?.isSpaceRoom()) return;
+            if (!cliSpace?.isSpaceRoom() && !metricsTrigger) return;
         } else if (!this.enabledMetaSpaces.includes(space as MetaSpace)) {
             return;
         }
@@ -252,14 +252,14 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
                     action: Action.ViewRoom,
                     room_id: roomId,
                     context_switch: true,
-                    metricsTrigger: "WebSpaceContextSwitch",
+                    metricsTrigger: metricsTrigger ? metricsTrigger : "WebSpaceContextSwitch",
                 });
             } else if (cliSpace) {
                 defaultDispatcher.dispatch<ViewRoomPayload>({
                     action: Action.ViewRoom,
                     room_id: space,
                     context_switch: true,
-                    metricsTrigger: "WebSpaceContextSwitch",
+                    metricsTrigger: metricsTrigger ? metricsTrigger : "WebSpaceContextSwitch",
                 });
             } else {
                 defaultDispatcher.dispatch<ViewHomePagePayload>({
@@ -268,7 +268,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
                 });
             }
         }
-
+        console.log("========== update_sele ")
         this.emit(UPDATE_SELECTED_SPACE, this.activeSpace);
         this.emit(UPDATE_SUGGESTED_ROOMS, this._suggestedRooms = []);
 
@@ -1148,6 +1148,10 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
                     this.setActiveSpace(room.roomId, false);
                 } else if (!this.isRoomInSpace(this.activeSpace, roomId)) {
                     this.switchToRelatedSpace(roomId);
+                } else if(payload.metricsTrigger === "MessageUserFromContact" ||
+                    payload.metricsTrigger === "CallAudio" ||
+                    payload.metricsTrigger === "CallVideo") {
+                        this.setActiveSpace(MetaSpace.Home, true, payload.metricsTrigger);
                 }
 
                 // Persist last viewed room from a space

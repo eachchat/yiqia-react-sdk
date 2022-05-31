@@ -818,6 +818,13 @@ export class RoomView extends React.Component<IRoomProps, IRoomState> {
 
     private onAction = async (payload: ActionPayload): Promise<void> => {
         switch (payload.action) {
+            case Action.ViewRoom:
+                if(payload.metricsTrigger === "CallVideo") {
+                    this.onCallPlaced(CallType.Video);
+                } else if(payload.metricsTrigger === "CallAudio") {
+                    this.onCallPlaced(CallType.Voice);
+                }
+                break;
             case 'message_sent':
                 this.checkDesktopNotifications();
                 break;

@@ -57,7 +57,7 @@ async function openDMForUser(matrixClient: MatrixClient, userId: string, viaKeyb
         dis.dispatch<ViewRoomPayload>({
             action: Action.ViewRoom,
             room_id: lastActiveRoom.roomId,
-            metricsTrigger: "MessageUser",
+            metricsTrigger: "MessageUserFromContact",
             metricsViaKeyboard: viaKeyboard,
         });
         return;
@@ -110,6 +110,7 @@ async function openVoIP(matrixClient: MatrixClient, userId: string, operate:Yiqi
     if (lastActiveRoom) {
         dis.dispatch<ViewRoomPayload>({
             action: Action.ViewRoom,
+            show_room_tile: true,
             room_id: lastActiveRoom.roomId,
             metricsTrigger: operate === YiqiaUserInfoOperate.VIDEO ? "CallVideo" : "CallAudio",
         });
@@ -122,6 +123,7 @@ const VoIPButton = ({ userId, operate }: { userId: string, operate: YiqiaUserInf
     const [busy, setBusy] = useState(false);
 
     const classname = operate === YiqiaUserInfoOperate.VOICE ? "yiqia_UserInfo_field yiqia_UserInfo_field_voip_audio" : "yiqia_UserInfo_field yiqia_UserInfo_field_voip_video"
+    const buttonText = operate === YiqiaUserInfoOperate.VOICE ? _t("Call Voice") : _t("Call Video");
 
     return (
         <AccessibleButton
@@ -134,7 +136,7 @@ const VoIPButton = ({ userId, operate }: { userId: string, operate: YiqiaUserInf
             className={classname}
             disabled={busy}
         >
-            { _t("Message") }
+            { buttonText }
         </AccessibleButton>
     );
 };
