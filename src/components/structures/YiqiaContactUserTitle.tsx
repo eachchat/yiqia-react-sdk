@@ -52,6 +52,7 @@ const YiqiaContactHeaderContextMenu = ({operateType, onFinished, ...props}:IProp
             };
     
             fileSelector.click();
+            onFinished();
         });
     };
 
@@ -68,15 +69,21 @@ const YiqiaContactHeaderContextMenu = ({operateType, onFinished, ...props}:IProp
             a.href = URL.createObjectURL(new Blob([resp]));
             a.click();
             setImportState(ImportState.DONE);
+            onFinished();
         })
     }
     
     const vCardAdd = () => {
         Modal.createTrackedDialog("Add Contact", "", YiqiaAddContactDialog);
+        onFinished();
     }
 
     const vCardCreate = () => {
-        Modal.createTrackedDialog("Add Contact", "", YiqiaCreateContact);
+        onFinished();
+        const { finished } = Modal.createTrackedDialog("Add Contact", "", YiqiaCreateContact);
+        if(finished) {
+            console.log("111111111111111")
+        }
     }
 
     const onImportClick = (ev:ButtonEvent) => {

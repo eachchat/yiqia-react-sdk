@@ -29,6 +29,7 @@ import { mapHasDiff } from "../../../utils/maps";
 import { replaceableComponent } from "../../../utils/replaceableComponent";
 import YiqiaUserItem, { DescriptType } from "./YiqiaUserItem";
 import { UserModal } from "../../../models/YiqiaModels";
+import AutoHideScrollbar from "../../structures/AutoHideScrollbar";
 
 export const HEADER_HEIGHT = 32; // As defined by CSS
 
@@ -52,7 +53,6 @@ interface IState {
 @replaceableComponent("views.rooms.YiqiaContactUserList")
 export default class YiqiaContactUserList extends React.Component<IProps, IState> {
     private sublistRef = createRef<HTMLDivElement>();
-    private tilesRef = createRef<HTMLDivElement>();
     private dispatcherRef: string;
 
     constructor(props: IProps) {
@@ -78,12 +78,12 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
         this.dispatcherRef = defaultDispatcher.register(this.onAction);
         // Using the passive option to not block the main thread
         // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#improving_scrolling_performance_with_passive_listeners
-        this.tilesRef.current?.addEventListener("scroll", this.onScrollPrevent, { passive: true });
+        // this.tilesRef.current?.addEventListener("scroll", this.onScrollPrevent, { passive: true });
     }
 
     public componentWillUnmount() {
         defaultDispatcher.unregister(this.dispatcherRef);
-        this.tilesRef.current?.removeEventListener("scroll", this.onScrollPrevent);
+        // this.tilesRef.current?.removeEventListener("scroll", this.onScrollPrevent);
     }
 
     private onAction = (payload: ActionPayload) => {
@@ -129,9 +129,9 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
         let content = null;
         if (visibleUsers.length > 0) {
             content = (
-                <div className="yiqia_ContactUserList_tiles" ref={this.tilesRef}>
+                <AutoHideScrollbar className="yiqia_ContactUserList_tiles">
                     { visibleUsers }
-                </div>
+                </AutoHideScrollbar>
             );
         } else if (this.props.showSkeleton) {
             content = <div className="yiqia_ContactUserList_skeletonUI" />;

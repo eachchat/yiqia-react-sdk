@@ -39,7 +39,7 @@ export const newDelete = (url, token, params?:any) => {
         }
     });
     return new Promise((resolve, reject) => {
-        newInstance.delete(url, params).then(resp => {
+        newInstance.delete(url).then(resp => {
             if(resp.data.code !== 200) {
                 reject(resp.data);
             } else {

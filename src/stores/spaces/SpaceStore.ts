@@ -533,7 +533,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         const oldRootSpaces = this.rootSpaces;
         this.rootSpaces = this.sortRootSpaces(rootSpaces);
 
-        this.onRoomsUpdate();
+        this.onRoomsUpdate(isOnReady);
 
         if (arrayHasOrderChange(oldRootSpaces, this.rootSpaces) || isOnReady) {
             this.emit(UPDATE_TOP_LEVEL_SPACES, this.spacePanelSpaces, this.enabledMetaSpaces);
@@ -562,7 +562,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         PosthogAnalytics.instance.setProperty("numSpaces", joinedSpaces.length);
     };
 
-    private rebuildHomeSpace = () => {
+    private rebuildHomeSpace = (isOnReady=false) => {
         if (this.allRoomsInHome) {
             // this is a special-case to not have to maintain a set of all rooms
             this.roomIdsBySpace.delete(MetaSpace.Home);
@@ -572,16 +572,16 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         }
 
         if (this.activeSpace === MetaSpace.Home) {
-            this.switchSpaceIfNeeded();
+            this.switchSpaceIfNeeded(isOnReady);
         }
     };
 
-    private rebuildMetaSpaces = () => {
+    private rebuildMetaSpaces = (isOnReady=false) => {
         const enabledMetaSpaces = new Set(this.enabledMetaSpaces);
         const visibleRooms = this.matrixClient.getVisibleRooms();
 
         if (enabledMetaSpaces.has(MetaSpace.Home)) {
-            this.rebuildHomeSpace();
+            this.rebuildHomeSpace(isOnReady);
         } else {
             this.roomIdsBySpace.delete(MetaSpace.Home);
         }
@@ -606,7 +606,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         }
 
         if (isMetaSpace(this.activeSpace)) {
-            this.switchSpaceIfNeeded();
+            this.switchSpaceIfNeeded(isOnReady);
         }
     };
 
@@ -693,7 +693,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         }
     };
 
-    private onRoomsUpdate = () => {
+    private onRoomsUpdate = (isOnReady=false) => {
         const visibleRooms = this.matrixClient.getVisibleRooms();
 
         const prevRoomsBySpace = this.roomIdsBySpace;
@@ -706,7 +706,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
 
         this.rebuildParentMap();
         // mutates this.roomIdsBySpace
-        this.rebuildMetaSpaces();
+        this.rebuildMetaSpaces(isOnReady);
 
         const hiddenChildren = new EnhancedMap<string, Set<string>>();
         visibleRooms.forEach(room => {
@@ -799,7 +799,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         });
 
         if (changeSet.has(this.activeSpace)) {
-            this.switchSpaceIfNeeded();
+            this.switchSpaceIfNeeded(isOnReady);
         }
 
         const notificationStatesToUpdate = [...changeSet];
@@ -811,14 +811,14 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         this.updateNotificationStates(notificationStatesToUpdate);
     };
 
-    private switchSpaceIfNeeded = () => {
+    private switchSpaceIfNeeded = (isOnReady=false) => {
         const roomId = RoomViewStore.getRoomId();
         if (!this.isRoomInSpace(this.activeSpace, roomId) && !this.matrixClient.getRoom(roomId)?.isSpaceRoom()) {
-            this.switchToRelatedSpace(roomId);
+            this.switchToRelatedSpace(roomId, isOnReady);
         }
     };
 
-    private switchToRelatedSpace = (roomId: string) => {
+    private switchToRelatedSpace = (roomId: string, isOnReady=false) => {
         if (this.suggestedRooms.find(r => r.room_id === roomId)) return;
 
         // try to find the canonical parent first
@@ -830,7 +830,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
         }
 
         // otherwise, try to find a metaspace which contains this room
-        if (!parent) {
+        if (!parent && !isOnReady) {
             // search meta spaces in reverse as Home is the first and least specific one
             parent = [...this.enabledMetaSpaces].reverse().find(s => this.isRoomInSpace(s, roomId));
         }

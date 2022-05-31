@@ -101,7 +101,7 @@ limitations under the License.
 
 .yiqia_user_details_item {
     display: flex;
-    margin: 10px 0 10px 0;
+    padding: 10px 0 10px 0;
 
     .yiqia_user_details_item_label {
         width: 80px;
@@ -192,7 +192,7 @@ limitations under the License.
 }
 
 .yiqia_UserInfo_field_message::before {
-    mask-image: url('$(res)/img/yiqia-contact-book/sidebar_contact.png');
+    mask-image: url('$(res)/img/yiqia-contact-book/yiqia_user_chat.svg');
     width: 26px;
 }
 

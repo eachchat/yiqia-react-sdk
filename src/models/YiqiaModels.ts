@@ -264,14 +264,16 @@ export class UserModal {
     }
 
     public get DisplayName() {
-        return this.nickName || this.displayName;
+        return this.family || this.displayName || this.nickName || this.matrixId.slice(1,2);
     }
 
     public get DisplayNamePy() {
-        if(this.firstName) {
+        if(this.firstName && this.firstName.length > 0) {
             return this.firstName;
+        } else if(this.matrixId) {
+            return this.matrixId?.slice(1,2);
         } else {
-            return this.matrixId.slice(1,2);
+            return null;
         }
     }
 
@@ -280,14 +282,18 @@ export class UserModal {
         console.log("value is ", value);
         switch(key){
             case "telephone":
+                this.telephoneList = [...value.values()];
                 break;
             case "email":
+                this.telephoneList = [...value.values()];
                 break;
             case "address":
                 break;
             case "url":
+                this.telephoneList = [...value.values()];
                 break;
             case "impp":
+                this.telephoneList = [...value.values()];
                 break;
             case "date":
                 break;

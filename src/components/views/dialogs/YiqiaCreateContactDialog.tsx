@@ -3,6 +3,7 @@ import { Url } from "url";
 import { _t } from "../../../languageHandler";
 import { AddressType, DateType, Email, EmailType, Im, ImType, Phone, TelephoneType, UserModal } from "../../../models/YiqiaModels";
 import { YiqiaContactContactStore } from "../../../stores/YiqiaContactContactStore";
+import { objectClone } from "../../../utils/objects";
 import { YiqiaContact } from "../../../utils/yiqiaUtils/YiqiaContact";
 import AutoHideScrollbar from "../../structures/AutoHideScrollbar";
 import ContextMenu, { ContextMenuTooltipButton, MenuItem } from "../../structures/ContextMenu";
@@ -210,23 +211,48 @@ const YiqiaCreateContactBaseItem:React.FC<IProps> = (props) => {
 }
 
 const YiqiaCreateContactListItem:React.FC<IProps> = (props) => {
-    const [listState, setListState] = useState<Map<string, UserModal>>(new Map());
+    const [listState, setListState] = useState<Map<number, number>>(new Map());
     const [itemObj, setItemObj] = useState<Phone | Im | Url | Date | Email>(null);
+
     const listRef = useRef<HTMLDivElement>(null);
     
     const onInputChanged = (key, value, id) => {
-        let curState = {};
-        if(listState.has(id)) {
-            curState = listState.get(id);
-        }
+        const newListState = new Map();
+        newListState.set(id, value);
+        console.log("newListState ", newListState);
+        listState.forEach((theValue, key) => {
+            if(key !== id) {
+                newListState.set(id, theValue);
+            }
+        })
+        console.log("newListState 1", newListState);
+        newListState.forEach((theValue, key) => {
+            if(!theValue) newListState.delete(key);
+        })
 
-        curState[key] = value;
+        console.log("newListState 2", newListState);
+        setListState(newListState);
 
-        props.onInputChanged(key, curState, null);
+        console.log("key ", key, " value ", value, " id ", id, " content ", listState);
+
+        props.onInputChanged(key, listState, null);
     };
 
-    return (
-        <div ref={listRef}>
+    let content:React.ReactNode[] = [
+        <YiqiaCreateContactBaseItem
+            busy={props.busy}
+            onInputChanged={onInputChanged}
+            label={props.label}
+            placeHolder={props.placeHolder}
+            isNecessary={props.isNecessary}
+            hasType={props.hasType}
+            id={0}
+        ></YiqiaCreateContactBaseItem>
+    ];
+
+    listState.forEach((user, key) => {
+        console.log("======push ")
+        content.push(
             <YiqiaCreateContactBaseItem
                 busy={props.busy}
                 onInputChanged={onInputChanged}
@@ -234,37 +260,51 @@ const YiqiaCreateContactListItem:React.FC<IProps> = (props) => {
                 placeHolder={props.placeHolder}
                 isNecessary={props.isNecessary}
                 hasType={props.hasType}
-                id={0}
+                id={key+1}
             ></YiqiaCreateContactBaseItem>
+        )
+    })
+
+    console.log("======content ", listState);
+    return (
+        <div ref={listRef}>
+            {
+                content
+            }
         </div>
     )
 }
 
-const YiqiaCreateContact:React.FC<{}> = () => {
+const YiqiaCreateContact:React.FC<{}> = (props) => {
     const [disableForm, setDisableForm] = useState(false);
     const [contactInfo, setContactInfo] = useState(null);
     const [userInstance, setUserInstance] = useState<UserModal>(null);
     const [expanded, setExpanded] = useState(false)
 
     const onFinished = () => {
-
+        props.onFinished();
     }
 
     const onInputChanged = (key, value, id) => {
-        // console.log("=====key ", key, " ++++++++ value ", value);
+        console.log("=====key ", key, " ++++++++ value ", value);
         userInstance.create2Model(key, value);
+        console.log("=====userInstance ", userInstance);
     }
 
     const onCancelClick = () => {
-
+        props.onFinished();
     }
 
     const onSubmit = async(ev: React.FormEvent) => {
         ev.preventDefault();
         try{
             console.log("lllll ", userInstance);
+            if(userInstance.given?.length == 0 || userInstance.family?.length == 0) {
+                alert("input name");
+            }
             YiqiaContact.Instance.yiqiaContactAdd(userInstance).then(res => {
                 YiqiaContactContactStore.Instance.generalContactsList();
+                props.onFinished();
             })
         }
         catch(error) {
@@ -342,7 +382,7 @@ const YiqiaCreateContact:React.FC<{}> = () => {
                 }
                 {
                     !expanded &&
-                    <div>
+                    <AutoHideScrollbar className="yiqia_ContactCreate_scroll">
                         {
                             Object.keys(CreateContactSimple).map(key => {
                                 const placeHolderText = _t(CreateContactSimple[key])
@@ -396,7 +436,7 @@ const YiqiaCreateContact:React.FC<{}> = () => {
                             style={{color: "blue", cursor: "pointer"}}
                             onClick={() => {setExpanded(!expanded)}}
                         >显示更多</div>
-                    </div>
+                    </AutoHideScrollbar>
                 }
                 <div className='mx_Dialog_buttons'>
                     <input

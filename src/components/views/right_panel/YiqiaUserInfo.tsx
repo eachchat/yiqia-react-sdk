@@ -246,6 +246,7 @@ interface IProps1 {
 interface IProps2 {
     onClose(): void;
     user: UserModal;
+    updatePage(): void;
 };
 
 interface IState {
@@ -279,16 +280,23 @@ class YiqiaUserInfo extends React.Component<IProps1, IState> {
         }
     }
 
+    private updatePage = () => {
+        const newUser = YiqiaUserRightPanelStore.Instance.curUser;
+        this.setState({
+            user: newUser,
+        })
+    }
+
     public render(): JSX.Element {
         return (
             <aside className="yiqia_RightPanel dark-panel" id="yiqia_RightPanel">
-                { <YiqiaUserInfoContent user={this.state.user} onClose={this.props.onClose} />}
+                { <YiqiaUserInfoContent user={this.state.user} onClose={this.props.onClose} updatePage={this.updatePage}/>}
             </aside>
         )
     }
 }
 
-const DetailsShowItems = ["DisplayName", "nickName", "telephone", "email", "department", "title"];
+const DetailsShowItems = ["nickName", "telephone", "email", "department", "title"];
 
 const YiqiaUserDetailItem: React.FC<{itemLabel: string, itemContent: string}> = (props) => {
     const theContent = typeof props.itemContent === "string" ? (props.itemContent || "") : props.itemContent?.displayName || "";
@@ -309,6 +317,8 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
             return user.telephoneList ? user.telephoneList[0]?.value || "" : "";
         } else if(itemLabel === "email") {
             return user.emailList ? user.emailList[0]?.value || "" : "";
+        } else if(itemLabel === "department") {
+            return user.department || user.organization;
         } else {
             return user[itemLabel];
         }
@@ -349,7 +359,10 @@ const YiqiaUserInfoContent: React.FC<IProps2> = ({
             YiqiaContact.Instance.yiqiaContactRemove(
                 user
             ).then((res) => {
-                YiqiaContactContactStore.Instance.generalContactsList();
+                YiqiaContactContactStore.Instance.generalContactsList()
+                    .then((res) => {
+                        props.updatePage();
+                    })
             })
         } else {
             YiqiaContact.Instance.yiqiaContactAdd(user).then(res => {

@@ -37,7 +37,7 @@ const OrganizationItem:React.FC<IProps> = ({orgItem, level}) => {
     }
     
     const orgItemClicked = () => {
-        setExpanded(!expanded);
+        if(level === 0) setExpanded(!expanded);
         dispatcher.dispatch<YiqiaOrganizationItemClickedPayload>({
             action: Action.YiqiaOrganizationItemClicked,
             departmentName: orgItem.id,

@@ -51,15 +51,15 @@ export default function YiqiaUserItem(props:IProps) {
                         width={32} // 2x@30vh
                         height={32} // 2x@30vh
                         resizeMethod="scale"
-                        fallbackUserId={member ? member.userId : props.userItem.matrixId}
+                        fallbackUserId={member ? member.userId : props.userItem.matrixId || props.userItem.DisplayName}
                         urls={(member as unknown as User)?.avatarUrl ? [(member as unknown as User)?.avatarUrl] : undefined} />
                 </div>
             </div>
         </div>
     );
 
-    console.log("========= props.userItem ", props.userItem);
-    console.log("========= props.userItem.DisplayName ", props.userItem.DisplayName);
+    // console.log("========= props.userItem ", props.userItem);
+    // console.log("========= props.userItem.DisplayName ", props.userItem.DisplayName);
 
 
     let nameContainer:React.ReactNode = (

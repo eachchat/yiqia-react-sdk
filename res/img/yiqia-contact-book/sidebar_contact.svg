@@ -1,29 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>编组</title>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icon/Tab Bar/Me/Selected</title>
     <defs>
-        <rect id="path-1" x="0" y="0" width="19.8095238" height="19.8095238"></rect>
-        <rect id="path-3" x="0" y="0" width="19.8095238" height="19.8095238"></rect>
+        <rect id="path-1" x="0" y="0" width="24" height="24"></rect>
     </defs>
     <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="画板备份-18" transform="translate(-20.000000, -113.000000)">
+        <g id="18.-通讯录-团队" transform="translate(-29.000000, -122.000000)">
             <g id="编组" transform="translate(20.000000, 113.000000)">
-                <rect id="矩形" fill="#BFBEBF" x="0" y="0" width="32" height="32" rx="8"></rect>
-                <g id="Icon/Tab-Bar/Me/Selected" transform="translate(6.095238, 6.095238)">
+                <g id="Icon/Tab-Bar/Me/Selected" transform="translate(9.000000, 9.000000)">
                     <mask id="mask-2" fill="white">
                         <use xlink:href="#path-1"></use>
                     </mask>
                     <g id="Background"></g>
-                    <circle id="椭圆形" fill="#18191D" mask="url(#mask-2)" cx="9.9047619" cy="5.94285714" r="3.96190476"></circle>
-                    <path d="M6.7352381,10.6971429 L13.0742857,10.6971429 C15.0435753,10.6971429 16.64,12.2935675 16.64,14.2628571 L16.64,14.8285714 C16.64,16.4854257 15.2968542,17.8285714 13.64,17.8285714 L6.16952381,17.8285714 C4.51266956,17.8285714 3.16952381,16.4854257 3.16952381,14.8285714 L3.16952381,14.2628571 C3.16952381,12.2935675 4.76594847,10.6971429 6.7352381,10.6971429 Z" id="矩形" fill="#18191D" mask="url(#mask-2)"></path>
-                </g>
-                <g id="Icon/Tab-Bar/Me/Selected" transform="translate(6.095238, 6.095238)">
-                    <mask id="mask-4" fill="white">
-                        <use xlink:href="#path-3"></use>
-                    </mask>
-                    <g id="Background"></g>
-                    <circle id="椭圆形" fill="#737D8B" mask="url(#mask-4)" cx="9.9047619" cy="5.94285714" r="3.96190476"></circle>
-                    <path d="M6.7352381,10.6971429 L13.0742857,10.6971429 C15.0435753,10.6971429 16.64,12.2935675 16.64,14.2628571 L16.64,14.8285714 C16.64,16.4854257 15.2968542,17.8285714 13.64,17.8285714 L6.16952381,17.8285714 C4.51266956,17.8285714 3.16952381,16.4854257 3.16952381,14.8285714 L3.16952381,14.2628571 C3.16952381,12.2935675 4.76594847,10.6971429 6.7352381,10.6971429 Z" id="矩形" fill="#737D8B" mask="url(#mask-4)"></path>
+                    <circle id="椭圆形" fill="#737D8B" mask="url(#mask-2)" cx="12" cy="6.8" r="5.2"></circle>
+                    <path d="M7.84,13.04 L16.16,13.04 C18.7446926,13.04 20.84,15.1353074 20.84,17.72 L20.84,19.4 C20.84,21.0568542 19.4968542,22.4 17.84,22.4 L6.16,22.4 C4.50314575,22.4 3.16,21.0568542 3.16,19.4 L3.16,17.72 C3.16,15.1353074 5.25530737,13.04 7.84,13.04 Z" id="矩形" fill="#737D8B" mask="url(#mask-2)"></path>
                 </g>
             </g>
         </g>

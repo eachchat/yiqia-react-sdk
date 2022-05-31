@@ -61,6 +61,8 @@ import { setSentryUser } from "./sentry";
 import SdkConfig from "./SdkConfig";
 import { updateBookInfos } from './utils/yiqiaUtils/YiqiaUtils';
 import { ACTIVE_CONTACT_ITEM } from './components/views/yiqia/YiqiaContactInterface';
+import { ACTIVE_SPACE_LS_KEY } from './stores/spaces/SpaceStore';
+import { MetaSpace } from './stores/spaces';
 
 const HOMESERVER_URL_KEY = "mx_hs_url";
 const ID_SERVER_URL_KEY = "mx_is_url";
@@ -215,6 +217,8 @@ export function attemptTokenLogin(
             sessionStorage.setItem("mx_fresh_login", String(true));
             updateBookInfos();
             localStorage.removeItem(ACTIVE_CONTACT_ITEM);
+            localStorage.setItem(ACTIVE_SPACE_LS_KEY, MetaSpace.Home);
+    
             return true;
         });
     }).catch((err) => {
@@ -629,6 +633,7 @@ async function doSetLoggedIn(
     await startMatrixClient(/*startSyncing=*/!softLogout);
     updateBookInfos();
     localStorage.removeItem(ACTIVE_CONTACT_ITEM);
+    localStorage.setItem(ACTIVE_SPACE_LS_KEY, MetaSpace.Home);
     return client;
 }
 

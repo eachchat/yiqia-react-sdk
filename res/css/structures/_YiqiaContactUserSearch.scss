@@ -62,8 +62,8 @@ limitations under the License.
     }
 
     &.yiqia_ContactUserSearch_focused {
-        box-shadow: 0 0 4px 4px rgba(0, 132, 255, 0.5);
-        border-color: transparent;
+        box-shadow: 0 0 1px 1px rgba(0, 132, 255, 0.5);
+        border-color: $primary-content;
     }
 
     &.yiqia_ContactUserSearch_focused, &.yiqia_ContactUserSearch_hasQuery {
