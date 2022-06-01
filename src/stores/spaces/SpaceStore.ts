@@ -64,12 +64,16 @@ import { ViewRoomPayload } from "../../dispatcher/payloads/ViewRoomPayload";
 import { ViewHomePagePayload } from "../../dispatcher/payloads/ViewHomePagePayload";
 import { SwitchSpacePayload } from "../../dispatcher/payloads/SwitchSpacePayload";
 import { AfterLeaveRoomPayload } from "../../dispatcher/payloads/AfterLeaveRoomPayload";
+import { UIFeature } from "../../settings/UIFeature";
 
 interface IState { }
 
 export const ACTIVE_SPACE_LS_KEY = "mx_active_space";
 
-const metaSpaceOrder: MetaSpace[] = [MetaSpace.Home, MetaSpace.Contact, MetaSpace.Favourites, MetaSpace.People, MetaSpace.Orphans];
+let metaSpaceOrder: MetaSpace[] = [MetaSpace.Home, MetaSpace.Contact, MetaSpace.Favourites, MetaSpace.People, MetaSpace.Orphans];
+if(!SettingsStore.getValue(UIFeature.SpaceEnabled)) {
+    metaSpaceOrder = [MetaSpace.Home, MetaSpace.Contact];
+}
 
 const MAX_SUGGESTED_ROOMS = 20;
 

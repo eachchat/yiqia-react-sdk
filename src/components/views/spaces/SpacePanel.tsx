@@ -71,7 +71,7 @@ import { Action } from "../../../dispatcher/actions";
 import { NotificationState } from "../../../stores/notifications/NotificationState";
 import { ALTERNATE_KEY_NAME } from "../../../accessibility/KeyboardShortcuts";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
-import { UIComponent } from "../../../settings/UIFeature";
+import { UIComponent, UIFeature } from "../../../settings/UIFeature";
 
 const useSpaces = (): [Room[], MetaSpace[], Room[], SpaceKey] => {
     const invites = useEventEmitterState<Room[]>(SpaceStore.instance, UPDATE_INVITED_SPACES, () => {
@@ -161,7 +161,7 @@ const HomeButton = ({ selected, isPanelCollapsed }: MetaSpaceButtonProps) => {
         isPanelCollapsed={isPanelCollapsed}
         label={getMetaSpaceName(MetaSpace.Home, allRoomsInHome)}
         notificationState={notificationState}
-        ContextMenuComponent={HomeButtonContextMenu}
+        ContextMenuComponent={SettingsStore.getValue(UIFeature.SpaceEnabled) ? HomeButtonContextMenu : null}
         contextMenuTooltip={_t("Options")}
     />;
 };
@@ -398,8 +398,10 @@ const SpacePanel = () => {
                                 </InnerSpacePanel>
                             ) }
                         </Droppable>
-
-                        <QuickSettingsButton isPanelCollapsed={isPanelCollapsed} />
+                        {
+                            SettingsStore.getValue(UIFeature.SpaceEnabled) &&
+                            <QuickSettingsButton isPanelCollapsed={isPanelCollapsed} />
+                        }
                     </ul>
                 ) }
             </RovingTabIndexProvider>
