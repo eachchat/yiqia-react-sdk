@@ -312,11 +312,11 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
 
     function getItemContent(itemLabel) {
         if(itemLabel === "telephone") {
-            return user.telephoneList ? user.telephoneList[0]?.value || "" : "";
+            return user.Phones;
         } else if(itemLabel === "email") {
-            return user.emailList ? user.emailList[0]?.value || "" : "";
+            return user.Emails;
         } else if(itemLabel === "department") {
-            return user.department || user.organization;
+            return user.department?.name || user.organization;
         } else {
             return user[itemLabel];
         }
@@ -328,9 +328,13 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
                 DetailsShowItems.map(item => {
                     const itemLabel = _t(item);
                     const itemContent = getItemContent(item);
-                    return (
-                        <YiqiaUserDetailItem key={item} itemLabel={itemLabel} itemContent={itemContent}></YiqiaUserDetailItem>
-                    )
+                    if(itemContent && itemContent.length > 0) {
+                        return (
+                            <YiqiaUserDetailItem key={item} itemLabel={itemLabel} itemContent={itemContent}></YiqiaUserDetailItem>
+                        )
+                    } else {
+                        return null;
+                    }
                 })
             }
         </div>

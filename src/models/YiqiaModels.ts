@@ -252,6 +252,26 @@ export class UserModal {
         return this.room;
     }
 
+    public get Emails() {
+        if(this.emailList && this.emailList.length > 0) {
+            return this.emailList[0]?.value;
+        } else if(this.emails && this.emails.length > 0) {
+            return this.emails[0]?.value;
+        } else {
+            return null;
+        }
+    }
+
+    public get Phones() {
+        if(this.telephoneList && this.telephoneList.length > 0) {
+            return this.telephoneList[0]?.value;
+        } else if(this.phoneNumbers && this.phoneNumbers.length > 0) {
+            return this.phoneNumbers[0]?.value;
+        } else {
+            return null;
+        }
+    }
+
     public get OrganizationInfo() {
         if(!this.title) {
             return YIQIA_LOADING;
