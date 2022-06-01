@@ -89,6 +89,7 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
 
     public generalSortedDMList(): void {
         let allRooms = [];
+        let availUids = [];
         if(SettingsStore.getValue("mixedChatsWithDmAndRoom")) {
             allRooms = RoomListStore.instance.orderedLists[DefaultTagID.Chats]
         } else {
@@ -107,6 +108,11 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
                 return usermodal;
             }
         }).filter(userItem => {
+            if(!userItem) return false;
+            if(availUids.indexOf(userItem.matrixId) >= 0) {
+                return false;
+            }
+            availUids.push(userItem.matrixId)
             return !!userItem;
         })
         this._allUsers = improvedList;
