@@ -1089,7 +1089,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
                 ?.["m.room_versions"]?.["org.matrix.msc3244.room_capabilities"]?.["restricted"];
         });
 
-        const enabledMetaSpaces = SettingsStore.getValue("Spaces.enabledMetaSpaces");
+        const enabledMetaSpaces = Object.assign({}, SettingsStore.getValue("Spaces.enabledMetaSpaces"), { "yiqia-contact": true}) ;
         this._enabledMetaSpaces = metaSpaceOrder.filter(k => {
             if(k !== MetaSpace.Contact) {
                 return enabledMetaSpaces[k]
@@ -1209,7 +1209,7 @@ export class SpaceStoreClass extends AsyncStoreWithClient<IState> {
                     }
 
                     case "Spaces.enabledMetaSpaces": {
-                        const newValue = SettingsStore.getValue("Spaces.enabledMetaSpaces");
+                        const newValue = Object.assign({}, SettingsStore.getValue("Spaces.enabledMetaSpaces"), { "yiqia-contact": true });
                         const enabledMetaSpaces = metaSpaceOrder.filter(k => newValue[k]) as MetaSpace[];
                         if (arrayHasDiff(this._enabledMetaSpaces, enabledMetaSpaces)) {
                             const hadPeopleOrHomeEnabled = this.enabledMetaSpaces.some(s => {
