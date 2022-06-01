@@ -74,7 +74,7 @@ export default function YiqiaUserItem(props:IProps) {
         <div className="yiqia_ContactUser_descriptionContainer">
             <div className="yiqia_ContactUser_title_text" title={props.userItem.title } tabIndex={-1} dir="auto">
                 { props.descriptType === DescriptType.Title &&
-                    props.userItem.title 
+                    props.userItem.DepartmentInfo ? props.userItem.DepartmentInfo + " " + props.userItem.title : props.userItem.title
                 }
                 { props.descriptType !== DescriptType.Title &&
                     props.userItem.matrixId 

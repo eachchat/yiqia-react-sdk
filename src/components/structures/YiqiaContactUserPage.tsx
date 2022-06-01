@@ -41,10 +41,10 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     const [users, setUsers] = useState(new Map()); //<Map<string, UserModal[]>
     
     useEventEmitter(YiqiaContactUserStore.instance, UPDATE_SELECTED_CONTACT_ITEM, () => {
-        pageShouldUpdate();
+        pageForceUpdate();
     });
     useEventEmitter(YiqiaContactUserStore.instance, UPDATE_EVENT, () => {
-        pageShouldUpdate();
+        pageForceUpdate();
     });
     useEventEmitter(YiqiaUserRightPanelStore.Instance, UPDATE_EVENT, () => {
         righaPanelShouldUpdate();
@@ -93,7 +93,6 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     const pageForceUpdate = () => {
         const curUsers = YiqiaContactUserStore.instance.usersList;
         console.log("pageForceUpdate curUsers ", curUsers);
-        console.log("pageForceUpdate users ", users);
         setUsers(curUsers);
     }
 

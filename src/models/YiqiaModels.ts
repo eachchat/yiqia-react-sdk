@@ -279,6 +279,10 @@ export class UserModal {
         return this.title;
     }
 
+    public get DepartmentInfo() {
+        return this.department?.name || this.department?.displayName || this.organization;
+    }
+
     public set DisplayName(gmsDisplayName: string) {
         if(gmsDisplayName) this.nickName = gmsDisplayName;
     }

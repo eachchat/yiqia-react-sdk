@@ -63,16 +63,16 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
         };
     }
 
-    public shouldComponentUpdate(nextProps: Readonly<IProps>, nextState: Readonly<IState>): boolean {
-        const curUsers = this.props.users;
-        const nextUsers = nextProps.users;
-        if(mapHasDiff(curUsers, nextUsers)) {
-            return true;
-        }
+    // public shouldComponentUpdate(nextProps: Readonly<IProps>, nextState: Readonly<IState>): boolean {
+    //     const curUsers = this.props.users;
+    //     const nextUsers = nextProps.users;
+    //     if(mapHasDiff(curUsers, nextUsers)) {
+    //         return true;
+    //     }
 
-        // Finally, nothing happened so no-op the update
-        return false;
-    }
+    //     // Finally, nothing happened so no-op the update
+    //     return false;
+    // }
 
     public componentDidMount() {
         this.dispatcherRef = defaultDispatcher.register(this.onAction);

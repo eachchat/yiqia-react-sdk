@@ -66,9 +66,11 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
 
     private async selfUpdateFromGms(): Promise<void> {
         if(this._isUpdating) return;
+        let newData = new Map<string, UserModal[]>();
         this._isUpdating = true;
         let needUpdate = false;
         for(const [key, value] of this._recentsList.entries()) {
+            let newList = [];
             for(let i = 0; i < value.length; i++) {
                 const item = value[i];
                 if(item.OrganizationInfo === YIQIA_LOADING) {
@@ -79,9 +81,12 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
                         }
                     }
                 }
+                newList.push(item);
             }
+            newData.set(key, newList);
         }
         this._isUpdating = false;
+        this._recentsList = newData;
         if(needUpdate) {
             this.emit(UPDATE_RECENT_EVENT);
         }
