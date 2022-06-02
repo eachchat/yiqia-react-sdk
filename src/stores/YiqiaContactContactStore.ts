@@ -26,6 +26,15 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
         return res;
     }
 
+    public getContact(user:UserModal) {
+        for(const conatct of this._allUsers) {
+            if(user.matrixId === conatct.matrixId) {
+                return conatct;
+            }
+        }
+        return null;
+    }
+
     public static get Instance() {
         return YiqiaContactContactStore.YiqiaContactContactStoreInstance;
     }

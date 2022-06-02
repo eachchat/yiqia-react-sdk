@@ -1,5 +1,6 @@
 import { string } from "prop-types";
 import { DepartmentModal, UserModal, Phone, Address } from "../../models/YiqiaModels";
+import { YiqiaContactContactStore } from "../../stores/YiqiaContactContactStore";
 import { arrayFastClone } from "../arrays";
 import { objectClone } from "../objects";
 import { AuthApi } from "./YiqiaRequestInterface";
@@ -405,7 +406,8 @@ export class YiqiaContact {
         //     lastName: ""
         // }
         console.log("id is ", contactInfo);
-        return AuthApi.Instance.deleteContact(contactInfo.id).then((resp) => {
+        const gmsContact = YiqiaContactContactStore.Instance.getContact(contactInfo);
+        return AuthApi.Instance.deleteContact(gmsContact.id).then((resp) => {
                 return resp;
             })
             .catch((error) => {

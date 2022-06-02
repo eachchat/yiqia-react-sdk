@@ -286,6 +286,11 @@ class YiqiaUserInfo extends React.Component<IProps1, IState> {
 
     private updatePage = () => {
         this.props.onPageUpdate();
+        const newUser = YiqiaUserRightPanelStore.Instance.curUser;
+        console.log("newUser ", newUser);
+        this.setState({
+            user: newUser,
+        })
     }
 
     public render(): JSX.Element {
@@ -405,7 +410,10 @@ const YiqiaUserInfoContent: React.FC<IProps2> = ({
             })
         } else {
             YiqiaContact.Instance.yiqiaContactAdd(user).then(res => {
-                YiqiaContactContactStore.Instance.generalContactsList();
+                YiqiaContactContactStore.Instance.generalContactsList()
+                    .then((res) => {
+                        props.updatePage();
+                })
             })
         }
     }

@@ -26,4 +26,8 @@
         font-size: 14px;
         font-weight: 500;
     }
+
+    &:hover {
+        background-color: $panel-actions;
+    }
 }

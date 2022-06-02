@@ -43,6 +43,8 @@ limitations under the License.
             height: 44px;
             display: flex;
             align-items: center;
+            cursor: pointer;
+            width: 100%;
 
             &.yiqia_OrganizationItem_selected,
             &:hover,
@@ -80,6 +82,7 @@ limitations under the License.
 
             .yiqia_organization_name {
                 margin-left: 11px;
+                width: 100%     ;
             }
             
             .yiqia_OrganizationItem_root {
