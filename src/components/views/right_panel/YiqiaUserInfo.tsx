@@ -38,6 +38,8 @@ import { UPDATE_EVENT } from '../../../stores/AsyncStore';
 import { objectClone, objectHasDiff } from '../../../utils/objects';
 import { YiqiaContactContactStore } from '../../../stores/YiqiaContactContactStore';
 import { YiqiaContact } from '../../../utils/yiqiaUtils/YiqiaContact';
+import classNames from 'classnames';
+import YiqiaOrganizationStore from '../../../stores/YiqiaOrganizationStore';
 
 export interface IDevice {
     deviceId: string;
@@ -206,6 +208,7 @@ const UserInfoHeader: React.FC<{
         Modal.createDialog(ImageView, params, "yiqia_Dialog_lightbox", null, true);
     }, [user]);
 
+    const httpUrl = (user.photoUrl && user.photoUrl.length > 0) ? mediaFromMxc(user.photoUrl).srcHttp : "";
     const avatarElement = (
         <div className="yiqia_UserInfo_avatar">
             <div>
@@ -214,7 +217,7 @@ const UserInfoHeader: React.FC<{
                     name={user.DisplayName}
                     title={user.matrixId}
                     idName={user.matrixId}
-                    url={user.photoUrl}
+                    url={httpUrl}
                     onClick={onMemberAvatarClick}/>
             </div>
         </div>
@@ -295,6 +298,7 @@ class YiqiaUserInfo extends React.Component<IProps1, IState> {
 }
 
 const DetailsShowItems = ["nickName", "telephone", "email", "department", "title"];
+const DetailsShowItemsWithReport = ["nickName", "telephone", "email", "department", "title", "report"];
 
 const YiqiaUserDetailItem: React.FC<{itemLabel: string, itemContent: string}> = (props) => {
     const theContent = typeof props.itemContent === "string" ? (props.itemContent || "") : props.itemContent?.displayName || "";
@@ -310,6 +314,10 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
     user,
 }) => {
 
+    const [expanded, setExpanded] = React.useState(false);
+    const [showItems, setShowItems] = React.useState(DetailsShowItems);
+    const [managerInfo, setManagerInfo] = React.useState(null);
+
     function getItemContent(itemLabel) {
         if(itemLabel === "telephone") {
             return user.Phones;
@@ -317,15 +325,36 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
             return user.Emails;
         } else if(itemLabel === "department") {
             return user.department?.name || user.organization;
-        } else {
+        } else if(itemLabel === "report") {
+            console.log("======managerInfo ", managerInfo);
+            return managerInfo;
+        }else {
             return user[itemLabel];
         }
     }
 
+    const collapseClasses = classNames({
+        'yiqia_User_Details_See_More_collapseBtn': true,
+        'yiqia_User_Details_See_More_collapseBtn_collapsed': !expanded,
+    });
+
+    const onItemExpand = () => {
+        if(expanded) {
+            setShowItems(DetailsShowItems);
+        } else {
+            setManagerInfo(YiqiaOrganizationStore.Instance.TheManagerInfo(user));
+        
+            setShowItems(DetailsShowItemsWithReport);
+        }
+        setExpanded(!expanded);
+    }
+
+    const seeMoreText = expanded ? "收起" : "显示更多";
+
     return (
         <div className='yiqia_User_Details'>
             {
-                DetailsShowItems.map(item => {
+                showItems.map(item => {
                     const itemLabel = _t(item);
                     const itemContent = getItemContent(item);
                     if(itemContent && itemContent.length > 0) {
@@ -336,6 +365,13 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
                         return null;
                     }
                 })
+            }
+            {
+                YiqiaOrganizationStore.Instance.hasReporter(user) &&
+                <div className="yiqia_User_Details_See_More">
+                    <span className="yiqia_User_Details_See_More_label" onClick={onItemExpand}>{ seeMoreText }</span>
+                    <span className={collapseClasses} onClick={onItemExpand}/>
+                </div>
             }
         </div>
     )

@@ -13,6 +13,8 @@ export const ORGANIZATION_MEMBER_UPDATE_EVENT = Symbol("organization_member_upda
 export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
     private _orgMembers: Map<string, UserModal[]> = new Map();
     private _orgDate: DepartmentModal[];
+    private _allUsersWithId = new Map();
+    private _allUsersWithMatrixId = new Map();
     private _departmentId2Member: Map<string, Map<string, UserModal[]>> = new Map();
     public static YiqiaOrganizationStoreInstance = new YiqiaOrganizationStore();
     constructor() {
@@ -29,6 +31,32 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
 
     public get orgDate() {
         return this._orgDate;
+    }
+
+    public hasReporter(user) {
+        let curUserinfo = this._allUsersWithMatrixId.get(user.matrixId);
+        if(!curUserinfo) {
+            curUserinfo = this._allUsersWithId.get(user.id);
+        }
+        return !!curUserinfo;
+    }
+
+    public TheManagerInfo(user) {
+        let index = 0;
+        const combined = "→";
+        const managerList = [];
+        let curUserinfo = this._allUsersWithMatrixId.get(user.matrixId);
+        let usermodal = new UserModal(curUserinfo.matrixId, curUserinfo.DisplayName, curUserinfo.photoUrl,curUserinfo.DisplayNamePy);
+        usermodal.updateProperty(curUserinfo);
+        managerList.push(usermodal.DisplayName);
+        while(curUserinfo.managerId) {
+            index++;
+            curUserinfo = this._allUsersWithId.get(curUserinfo.managerId);
+            usermodal = new UserModal(curUserinfo.matrixId, curUserinfo.DisplayName, curUserinfo.photoUrl,curUserinfo.DisplayNamePy);
+            usermodal.updateProperty(curUserinfo);
+            managerList.push(usermodal.DisplayName);
+        }
+        return managerList.join(combined);
     }
 
     private getOrgMembers(departmentId) {
@@ -67,6 +95,12 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
     }
 
     public async generalOrganizations(): Promise<void> {
+        YiqiaContact.Instance.yiqiaOrgMembers().then((res) => {
+            for(const user of res) {
+                this._allUsersWithId.set(user.id, user);
+                this._allUsersWithMatrixId.set(user.matrixId, user);
+            }
+        })
         const results = await YiqiaContact.Instance.yiqiaOrganization();
         this._orgDate = results;
     }

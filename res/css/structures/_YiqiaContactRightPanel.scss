@@ -117,6 +117,49 @@ limitations under the License.
     }
 }
 
+.yiqia_User_Details_See_More {
+    height: 44px;
+    display: flex;
+    align-items: center;
+
+    &:hover,
+    &:focus-within {
+        cursor: pointer;
+        border-radius: 8px;
+    }
+
+    .yiqia_User_Details_See_More_collapseBtn {
+        display: inline-block;
+        position: relative;
+        width: 14px;
+        height: 14px;
+
+        &::before {
+            content: '';
+            width: 18px;
+            height: 18px;
+            position: absolute;
+            mask-position: center;
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            background-color: $tertiary-content;
+            mask-image: url('$(res)/img/yiqia-contact-book/narrow-down.svg');
+        }
+
+        &.yiqia_User_Details_See_More_collapseBtn_collapsed::before {
+            transform: rotate(180deg);
+            mask-image: url('$(res)/img/yiqia-contact-book/narrow-down.svg');
+        }
+    }
+
+    .yiqia_User_Details_See_More_label {
+        text-align: left;
+        color: #85878A;
+        font-weight: 400;
+        font-size: 14px;
+    }
+}
+
 .yiqia_BaseCard_remove_from_contact.mx_AccessibleButton_disabled {
     background-color: $info-plinth-fg-color;
     cursor: not-allowed;

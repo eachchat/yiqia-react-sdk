@@ -93,6 +93,39 @@ export class YiqiaContact {
             })
     }
 
+    public async yiqiaOrgMembers(): Promise<UserModal[]> {
+        const maxTimes = 500;
+        let sequenceId = 0;
+        let hasNext = true;
+        let fetchTimes = 0;
+        let finalList = [];
+        while(hasNext) {
+            fetchTimes++;
+            const params = {
+                name: "updateUser",
+                updateTime: 0,
+                perPage: 50,
+                sequenceId: sequenceId,
+            };
+            const resp = await AuthApi.Instance.contactOrgContact(params);
+
+            if(resp && resp.code == 200 && resp.results) {
+                this.lastUpdateTime = resp.obj.updateTime;
+                finalList = finalList.concat(resp.results);
+                sequenceId = finalList.length;
+                if(sequenceId >= resp.total) {
+                    hasNext = false;
+                }
+            } else {
+                return finalList;
+            }
+            if(fetchTimes > maxTimes) {
+                return finalList;
+            }
+        }
+        return finalList;
+    }
+
     public async yiqiaContactContacts(): Promise<UserModal[]> {
         const maxTimes = 10;
         let sequenceId = 0;
@@ -204,6 +237,45 @@ export class YiqiaContact {
         return finalList;
     }
     
+    
+    public async yiqiaOrganizationMember(userId): Promise<UserModal[]> {
+        const maxTimes = 30;
+        let page = 1;
+        let sequenceId = 0;
+        let hasNext = true;
+        let fetchTimes = 0;
+        let finalList = [];
+        while(hasNext) {
+            fetchTimes++;
+            const params = {
+                filters: {
+                    field: "userName",
+                    operator: "eq",
+                    logic: 0,
+                    value: userId,
+                },
+                perPage: undefined,
+                sortOrder: 1,
+                sequenceId: sequenceId
+              };
+            const resp = await AuthApi.Instance.contactOrganizationMember(params);
+
+            if(resp && resp.code == 200 && resp.results) {
+                finalList = finalList.concat(resp.results);
+                page = page + 1;
+                if(finalList.length >= resp.total) {
+                    hasNext = false;
+                }
+            } else {
+                return finalList;
+            }
+            if(fetchTimes > maxTimes) {
+                return finalList;
+            }
+        }
+        return finalList;
+    }
+
     public async yiqiaOrganizationMemberInfo(departmentId): Promise<UserModal[]> {
         const maxTimes = 30;
         let page = 1;
@@ -342,92 +414,3 @@ export class YiqiaContact {
             })
     }
 }
-
-// export class ContactFetcher {
-//     private static internalInstance: ContactFetcher;
-//     private cli: any;
-//     private homeserver_base_url: string;
-//     private hAccessToken: string;
-
-//     private constructor() {
-//         this.cli = MatrixClientPeg.get();
-//         this.homeserver_base_url = this.cli.getHomeserverUrl();
-//         this.fetchContactInfos();
-//     }
-
-//     public static get instance(): ContactFetcher {
-//         if(!this.internalInstance) {
-//             this.internalInstance = new ContactFetcher();
-//         }
-//         return ContactFetcher.internalInstance;
-//     }
-
-//     private async fetchContactInfos() {
-//         if(!this.hAccessToken) {
-//             this.hAccessToken = await this.cli.getAccessToken();
-//         }
-//         this._fetchDepartmentInfos();
-//         this._fetchUserInfos();
-//     }
-
-//     private async _fetchDepartmentInfos(sequenceId = 0) {
-//         let newSequence = sequenceId;
-//         try {
-//             const allInfo = await (await fetch(this.homeserver_base_url + "/api/apps/org/v1/increment", {
-//                     method: "POST",
-//                     mode: "cors",
-//                     headers: {
-//                         'Content-Type': 'application/json',
-//                         'Accept': 'application/json',
-//                         'Authorization': 'Bearer ' + this.hAccessToken,
-//                     },
-//                     body: JSON.stringify({
-//                         name: "updateDepartment",
-//                         updateTime: 0,
-//                         perPage: 10,
-//                         sequenceId: newSequence,
-//                     }),
-//                 })).json();
-//             console.log(allInfo);
-//             for(let index in allInfo.data.results) {
-//                 newSequence++;
-//                 const item = allInfo.data.results[index];
-//             }
-//         } catch(error) {
-    
-//         }
-//     }
-
-//     private async _fetchUserInfos(sequenceId = 0) {
-
-//     }
-// }
-
-// export async function getContact(): Promise<DepartmentModal[]> {
-//     const matrixClient = MatrixClientPeg.get();
-//     const homeserver_base_url = matrixClient.getHomeserverUrl();
-//     const hAccessToken = await matrixClient.getAccessToken();
-
-//     try {
-//         const allInfo = await (await fetch(homeserver_base_url + "/api/apps/org/v1/increment", {
-//                 method: "POST",
-//                 mode: "cors",
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                     'Accept': 'application/json',
-//                     'Authorization': 'Bearer ' + hAccessToken,
-//                 },
-//                 body: JSON.stringify({
-//                     name: "updateDepartment",
-//                     updateTime: 0,
-//                     perPage: 10,
-//                     sequenceId: 0,
-//                 }),
-//             })).json();
-//         console.log(allInfo);
-//         return allInfo.results;
-//         }
-//     catch(error) {
-
-//     }
-// }
