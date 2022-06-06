@@ -340,7 +340,7 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
 
     const collapseClasses = classNames({
         'yiqia_User_Details_See_More_collapseBtn': true,
-        'yiqia_User_Details_See_More_collapseBtn_collapsed': !expanded,
+        'yiqia_User_Details_See_More_collapseBtn_collapsed': expanded,
     });
 
     const onItemExpand = () => {
@@ -353,6 +353,10 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
         }
         setExpanded(!expanded);
     }
+
+    useEffect(() => {
+        setManagerInfo(YiqiaOrganizationStore.Instance.TheManagerInfo(user));
+    }, [user])
 
     const seeMoreText = expanded ? "收起" : "显示更多";
 
