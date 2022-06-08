@@ -48,6 +48,8 @@ import RoomContext from "../../../contexts/RoomContext";
 import AccessibleButton from '../elements/AccessibleButton';
 import { options as linkifyOpts } from "../../../linkify-matrix";
 import { getParentEventId } from '../../../utils/Reply';
+import YiqiaBindMailbot from '../dialogs/YiqiaBindMailbotDialog';
+import { MatrixClientPeg } from '../../../MatrixClientPeg';
 
 const MAX_HIGHLIGHT_LENGTH = 4096;
 
@@ -434,7 +436,43 @@ export default class TextualBody extends React.Component<IBodyProps, IState> {
             e.preventDefault();
             window.location.hash = localHref;
         }
+        if(localHref.startsWith("mailbot:")) {
+            e.preventDefault();
+            const { finished } = Modal.createDialog(YiqiaBindMailbot);
+            finished.then((results: string[]) => {
+                console.log("finished ", results);
+                if(results[0].length === 0) return;
+                this.sendMailBindMessage(results[0]);
+            });
+        }
     };
+
+    /**
+     * 
+    {
+        "content": {
+            "body": "!mail processing",
+            "bot_body": "!mail setup imap, 123:993, 1@qq.com, 123, INBOX, true",
+            "msgtype": "m.text"
+        },
+        "origin_server_ts": 1654592018895,
+        "sender": "@haifengtang.text.ai:workly.ai",
+        "type": "m.room.message",
+        "unsigned": {
+            "age": 57858043
+        },
+        "event_id": "$mH06qpzJ4sMdeVe0CJS5jtDCiqYMdW8c1hxdWwNKGB0",
+        "room_id": "!CWEcXsoNGCAVPjeNHy:workly.ai"
+    }
+     */
+    private sendMailBindMessage = (command) => {
+        const theContent = {
+            "body": "!mail processing",
+            "bot_body": command,
+            "msgtype": "m.text"
+        }
+        MatrixClientPeg.get().sendMessage(this.props.mxEvent.getRoomId(), theContent);
+    }
 
     public getEventTileOps = () => ({
         isWidgetHidden: () => {

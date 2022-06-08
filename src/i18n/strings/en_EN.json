@@ -3527,5 +3527,12 @@
     "Contact": "Contact",
     "New line": "New line",
     "Force complete": "Force complete",
-    "Search (must be enabled)": "Search (must be enabled)"
+    "Search (must be enabled)": "Search (must be enabled)",
+    "Add Bot Email": "Add Bot Email",
+    "Bot Email Address": "Bot Email Address",
+    "Please input Bot Email Address": "Please input Bot Email Address",
+    "Please input Bot Email Password": "Please input Bot Email Password",
+    "IMAP Server Info": "IMAP Server Info",
+    "IMAP Server Address": "IMAP Server Address",
+    "IMAP Server Port": "IMAP Server Port"
 }

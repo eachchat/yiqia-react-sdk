@@ -80,6 +80,7 @@ export const PERMITTED_URL_SCHEMES = [
     "webcal",
     "wtai",
     "xmpp",
+    "mailbot",
 ];
 
 const MEDIA_API_MXC_REGEX = /\/_matrix\/media\/r0\/(?:download|thumbnail)\/(.+?)\/(.+?)(?:[?/]|$)/;

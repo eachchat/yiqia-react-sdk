@@ -3593,5 +3593,13 @@
     "remove from my contact": "从我的联系人移除",
     "add to my contact": "加入我的联系人",
     "Call Voice": "语音",
-    "Call Video": "视频"
+    "Call Video": "视频",
+    "Add Bot Email": "添加授权邮箱",
+    "Bot Email Address": "邮箱",
+    "Please input Bot Email Address": "请输入邮箱账号",
+    "Please input Bot Email Password": "请输入密码",
+    "IMAP Server Info": "收件服务器",
+    "IMAP Server Address": "服务器",
+    "IMAP Server Port": "端口",
+    "Please input Bot Email Server Address": "请输入服务器地址"
 }

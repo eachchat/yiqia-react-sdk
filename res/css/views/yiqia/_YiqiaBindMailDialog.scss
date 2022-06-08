@@ -1,0 +1,181 @@
+.yiqia_BindMailbot_dialog {
+    padding: 4px;
+
+    contain: content; // Not strict as it will break when resizing a sublist vertically
+    box-sizing: border-box;
+
+    // The tile is also a flexbox row itself
+    height: 440px;
+    max-width: 500px;
+
+    .yiqia_Mail_Server_info
+    .yiqia_Mail_info {
+        padding: 10px 0;
+    }
+
+    .yiqia_Mail_Label {
+        height: 45px;
+        line-height: 45px;
+    }
+
+    .mx_Dialog_buttons {
+        margin-top: 35px;
+    }
+
+    .mx_SettingsFlag {
+        color: $muted-fg-color;
+        font-size: $font-12px;
+        height: 45px;
+        line-height: 45px;
+
+        .mx_ToggleSwitch {
+            display: inline-block;
+            vertical-align: middle;
+            margin: 14px 0;
+
+            // downsize the switch + ball
+            width: $font-36px;
+            height: $font-17px;
+
+            &.mx_ToggleSwitch_on > .mx_ToggleSwitch_ball {
+                left: calc(100% - $font-17px);
+            }
+
+            .mx_ToggleSwitch_ball {
+                width: $font-17px;
+                height: $font-17px;
+                border-radius: $font-17px;
+            }
+        }
+
+        .mx_SettingsFlag_label {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
+    .yiqia_AddContact_content {
+        height: calc(100% - 36px);
+        overflow: hidden;
+    }
+
+    .yiqia_Mail_server_ssl {
+        height: 45px;
+        line-height: 45px;
+    }
+
+    .yiqia_CreateContact_base_item {
+        display: flex;
+        display: -webkit-flex;
+
+        .yiqia_CreateContact_base_item_label {
+            width: 90px;
+            display: flex;
+            display: -webkit-flex;
+            align-items: center;
+            font-weight: 500;
+            color: black;
+
+            .yiqia_CreateContact_base_item_label_necessary {
+                color: red;
+            }
+        }
+
+        .yiqia_CreateContact_base_item_input {
+            width: 480px;
+            margin: 5px 0;
+        }
+
+        .yiqia_CreateContact_base_item_type_expand {
+            display: inline-block;
+            position: relative;
+            width: 14px;
+            height: 14px;
+            margin-right: 6px;
+    
+            &::before {
+                content: '';
+                width: 18px;
+                height: 18px;
+                position: absolute;
+                mask-position: center;
+                mask-size: contain;
+                mask-repeat: no-repeat;
+                background-color: $tertiary-content;
+                mask-image: url('$(res)/img/yiqia-contact-book/narrow-down.svg');
+            }
+        }
+
+        .yiqia_CreateContact_base_item_type_unexpand {
+            display: inline-block;
+            position: relative;
+            width: 14px;
+            height: 14px;
+            margin-right: 6px;
+    
+            &::before {
+                content: '';
+                width: 18px;
+                height: 18px;
+                position: absolute;
+                mask-position: center;
+                mask-size: contain;
+                mask-repeat: no-repeat;
+                background-color: $tertiary-content;
+                mask-image: url('$(res)/img/yiqia-contact-book/narrow-right.svg');
+            }
+        }
+    }
+
+    .yiqia_BindMailbot_form {
+        flex-grow: 1;
+    }
+
+    .yiqia_BindMailbot_scroll {
+        flex-grow: 1;
+        height: 83%;
+    }
+
+    .YiqiaAddContact {
+        margin-bottom: 4px;
+        padding: 4px;
+    
+        contain: content; // Not strict as it will break when resizing a sublist vertically
+        box-sizing: border-box;
+    
+        // The tile is also a flexbox row itself
+        display: flex;
+        justify-content: space-between;
+
+        .yiqia_AddContact_addButton {
+            position: relative;
+            margin-left: 12px;
+            background: rgba($accent, 0.1);
+    
+            &:not(.yiqia_AddContact_canAdd) .yiqia_AddContact_addLabel {
+                // Hide the "Send" label while preserving button size
+                visibility: hidden;
+            }
+    
+            &.yiqia_AddContact_adding {
+                background-color: $accent;
+                mask-image: url('$(res)/img/element-icons/circle-sending.svg');
+                mask-position: center;
+                mask-repeat: no-repeat;
+                mask-size: 14px;
+                width: 14px;
+                height: 14px;
+            }
+    
+            &.yiqia_AddContact_added {
+                background-color: $accent;
+                mask-image: url('$(res)/img/element-icons/circle-sent.svg');
+                mask-position: center;
+                mask-repeat: no-repeat;
+                mask-size: 14px;
+                width: 14px;
+                height: 14px;
+            }
+        }
+    }
+
+}
