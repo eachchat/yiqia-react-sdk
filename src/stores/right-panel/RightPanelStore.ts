@@ -33,6 +33,8 @@ import {
     IRightPanelForRoom,
 } from './RightPanelStoreIPanelState';
 import RoomViewStore from '../RoomViewStore';
+import { YiqiaContact } from '../../utils/yiqiaUtils/YiqiaContact';
+import { AuthApi } from '../../utils/yiqiaUtils/YiqiaRequestInterface';
 
 const GROUP_PHASES = [
     RightPanelPhases.GroupMemberList,
@@ -40,6 +42,33 @@ const GROUP_PHASES = [
     RightPanelPhases.GroupRoomInfo,
     RightPanelPhases.GroupMemberInfo,
 ];
+
+/**
+ * {aId: 1, appName: "邮箱助手", appMatrixId: "@mailbot:yiqia.com", appEnv: 2,…}
+aId: 1
+appEnv: 2
+appMatrixId: "@mailbot:yiqia.com"
+appName: "邮箱助手"
+createdBy: null
+description: "邮箱助手将为您推送新邮件，以免您遗漏重要通知"
+developer: "爱工作"
+help: "<b font-size=\"16px\">授权登录邮箱</b>\r\n<div font-size=\"14px\">在群聊中发送 <font color=\"#00c975\">!mail login</font> 以完成邮箱的登录并开始接受邮件提醒。</div>\r\n<br>\r\n<b font-size=\"16px\">移除邮箱</b>\r\n<div font-size=\"14px\">在群聊中发送 <font color=\"#00c975\">!mail logout</font> 以解除当前群聊的邮箱。</div>\r\n<br>\r\n<b font-size=\"16px\">查看邮件接收箱列表</b>\r\n<div font-size=\"14px\">在群聊中发送 <font color=\"#00c975\">!mail mailboxes</font> 以查看当前群聊的邮件接收箱列表。</div>\r\n<br>\r\n<b font-size=\"16px\">变更邮件接收箱</b>\r\n<div font-size=\"14px\">在群聊中发送 <font color=\"#00c975\">!mail setmailbox [mailbox name]</font> 以变更邮件接收箱的推送。</div>\r\n<br>\r\n<b font-size=\"16px\">移除邮箱助手</b>\r\n<div font-size=\"14px\">在群聊中发送 <font color=\"#00c975\">!mail leave</font> 以移除邮箱助手。</div>\r\n<br>\r\n<b font-size=\"16px\">帮助</b>\r\n<div font-size=\"14px\">在群聊中发送 <font color=\"#00c975\">!mail help</font> 以获得更多操作帮助。</div>"
+lastModifiedBy: null
+logoUrl: "/upload/app_logo/test.jpg"
+ */
+
+interface botInfo {
+    aId: number;
+    appEnv: number;
+    appMatrixId: string;
+    appName: string;
+    createdBy: null;
+    description: string;
+    developer: string;
+    help: string;
+    lastModifiedBy: null;
+    logoUrl: string;
+}
 
 /**
  * A class for tracking the state of the right panel between layouts and
@@ -55,6 +84,7 @@ export default class RightPanelStore extends ReadyWatchingStore {
     private readonly dispatcherRefRightPanelStore: string;
     private viewedRoomId: string;
     private isReady = false;
+    private botsInfos:Map<string, botInfo> = new Map();
 
     private global?: IRightPanelForRoom = null;
     private byRoom: {
@@ -68,6 +98,31 @@ export default class RightPanelStore extends ReadyWatchingStore {
         this.dispatcherRefRightPanelStore = defaultDispatcher.register(this.onDispatch);
     }
 
+    private getBotServerList() {
+        AuthApi.Instance.getBotServerList()
+            .then((resp) => {
+                console.log("====getBotServerList resp ", resp);
+                if(resp.results) {
+                    resp.results.forEach(item => {
+                        this.botsInfos.set(item.appMatrixId, item);
+                    })
+                }
+            }).catch(err => {
+                console.log("======== getBotServerList error ", err);
+            })
+    }
+
+    public getBotInfo(matrixId) {
+        return this.botsInfos.get(matrixId);
+    }
+
+    private getDistBotInfo(distMatrixId) {
+        AuthApi.Instance.getDistBotInfo(distMatrixId)
+            .then((resp) => {
+                console.log("====resp ", resp);
+            })
+    }
+
     protected async onReady(): Promise<any> {
         this.isReady = true;
         this.roomStoreToken = RoomViewStore.addListener(this.onRoomViewStoreUpdate);
@@ -75,6 +130,7 @@ export default class RightPanelStore extends ReadyWatchingStore {
         this.viewedRoomId = RoomViewStore.getRoomId();
         this.loadCacheFromSettings();
         this.emitAndUpdateSettings();
+        this.getBotServerList();
     }
     public destroy() {
         if (this.dispatcherRefRightPanelStore) {

@@ -82,6 +82,14 @@ export class AuthApi {
         return YiqiaRequestInstance.newDelete(this.baseUrl + "/api/apps/contacts/v1/contact/info/" + params, this.accessToken);
     }
 
+    protected getBotServerList() {
+        return YiqiaRequestInstance.newGet("http://139.198.18.180:8888" + "/api/services/global/v1/matrix/apps", this.accessToken)
+    }
+
+    protected getDistBotInfo(appMatrixId) {
+        return YiqiaRequestInstance.newGet("http://139.198.18.180:8888" + "api/services/global/v1/matrix/app/" + appMatrixId + "/detail", this.accessToken)
+    }
+
     private getHost() {
         if(!this.host) {
             this.initMatrixOptions();

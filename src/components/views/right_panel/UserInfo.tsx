@@ -1331,7 +1331,15 @@ const BasicUserInfo: React.FC<{
     }
 
     let memberDetails;
+    let botHelpers;
     let adminToolsContainer;
+    if (RightPanelStore.instance.getBotInfo(member.userId)) {
+        botHelpers = <div style={{padding: "8px 16px"}}>
+                <h3 style={{fontSize: "12px", margin: "4px 0"}}>帮助</h3>
+                <div dangerouslySetInnerHTML={{__html: RightPanelStore.instance.getBotInfo(member.userId).help.replaceAll("16px", "14px").replaceAll("14px", "12px")}} style={{paddingLeft: "8px"}}>
+                </div>
+            </div>
+    }
     if (room && (member as RoomMember).roomId) {
         // hide the Roles section for DMs as it doesn't make sense there
         if (!DMRoomMap.shared().getUserIdForRoomId((member as RoomMember).roomId)) {
@@ -1481,6 +1489,7 @@ const BasicUserInfo: React.FC<{
             member={member as RoomMember}
             isSpace={SpaceStore.spacesEnabled && room?.isSpaceRoom()}
         />
+        { botHelpers }
 
         { adminToolsContainer }
 
