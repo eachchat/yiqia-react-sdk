@@ -18,7 +18,7 @@ import * as React from "react";
 
 import { _t, _tDom } from "../../languageHandler";
 import YiqiaContactUserStore, { UPDATE_SELECTED_CONTACT_ITEM } from "../../stores/YiqiaContactUserStore";
-import { ContactTagId } from "../../models/YiqiaModels";
+import { ContactTagId, UserModal } from "../../models/YiqiaModels";
 import YiqiaContactUserSearch from "./YiqiaContactUserSearch";
 import MainSplit from "./MainSplit";
 import ResizeNotifier from "../../utils/ResizeNotifier";
@@ -31,6 +31,9 @@ import { UPDATE_EVENT } from "../../stores/AsyncStore";
 import { objectHasDiff } from "../../utils/objects";
 import { mapHasDiff } from "../../utils/maps";
 import YiqiaContactUserTitle from "./YiqiaContactUserTitle";
+import { YiqiaContact } from "../../utils/yiqiaUtils/YiqiaContact";
+import pinyin from 'pinyin';
+import YiqiaRecentsStore from "../../stores/YiqiaRecentsStore";
 
 interface IProps {
     resizeNotifier: ResizeNotifier;
@@ -50,9 +53,68 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
         righaPanelShouldUpdate();
     });
 
+    function getBGColorFromDisplayName(displayName) {
+        let firstCharacterInUpper = "";
+        let isZh = false;
+        const firstText = displayName.slice(0, 1);
+    
+        if(firstText.charCodeAt(0) > 255) {
+            firstCharacterInUpper = pinyin(firstText)[0][0].slice(0, 1).toUpperCase();
+            isZh = true;
+        }
+        else {
+            firstCharacterInUpper = firstText.toUpperCase();
+            isZh = false;
+        }
+    
+        return firstCharacterInUpper;
+    }
+    
     function onSearchInputChange(term:string) {
         if(term.length == 0) {
             setUsers(YiqiaContactUserStore.instance.usersList);
+        } else if(YiqiaContactUserStore.instance.curItem === ContactTagId.Organization && YiqiaContactUserStore.instance.usersList.size === 0) {
+            YiqiaContact.Instance.yiqiaGmsSearch(term).then(async(gmsResult) => {
+                const checkTerm = term;
+                if(term.trim().length === 0) {
+                    return;
+                }
+
+                console.log("gmsResult is ", gmsResult);
+                if(gmsResult.length !== 0) {
+                    let dealedResult:UserModal[] = [];
+                    for(let i = 0; i < gmsResult.length; i++) {
+                        if(term.trim().length === 0 && term !== checkTerm) break;
+                        const u = gmsResult[i];
+                        let profile;
+                        const uModal = new UserModal(u.matrixId, u.displayName, profile?.avatar_url);
+                        const gmsUserInfo = await YiqiaRecentsStore.Instance.updateItemFromGms(uModal);
+                        if(gmsUserInfo) {
+                            if(uModal.updateProperty(gmsUserInfo)) {
+                                dealedResult.push(uModal);
+                            }
+                        }
+                    }
+
+                    console.log("dealedResult ", dealedResult);
+                    const dealedDate:Map<string, UserModal[]> = new Map();
+                    dealedResult.forEach(item => {
+                        if(item.del == 1 && term !== checkTerm) return;
+                        let firstLetter = "a";
+                        try{
+                            firstLetter = getBGColorFromDisplayName(item.DisplayName);
+                        } catch(err) {
+                            console.log("========== error item ", item.DisplayName);
+                        }
+                        if(dealedDate.has(firstLetter)) {
+                            dealedDate.get(firstLetter).push(item);
+                        } else {
+                            dealedDate.set(firstLetter, [item]);
+                        }
+                    })
+                    setUsers(new Map([...dealedDate.entries()].sort()));
+                }
+            });
         } else {
             const origin = YiqiaContactUserStore.instance.usersList;
             const newUsers = new Map();

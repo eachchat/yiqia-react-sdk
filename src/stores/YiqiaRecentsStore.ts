@@ -50,7 +50,7 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
         
     }
 
-    private async updateItemFromGms(item: UserModal): Promise<UserModal> {
+    public async updateItemFromGms(item: UserModal): Promise<UserModal> {
         try{
             const userInfo = await YiqiaContact.Instance.yiqiaGmsInfoFromMatrixId(item.matrixId);
             if(userInfo) {

@@ -1,4 +1,5 @@
 import { IState } from "../accessibility/RovingTabIndex";
+import { Action } from "../dispatcher/actions";
 import defaultDispatcher from "../dispatcher/dispatcher";
 import { YiqiaOrganizationItemClickedPayload } from "../dispatcher/payloads/ViewYiqiaContactPayload";
 import { DepartmentModal, UserModal } from "../models/YiqiaModels";
@@ -91,6 +92,8 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
     protected async onAction(payload: YiqiaOrganizationItemClickedPayload): Promise<void> {
         if(payload.action === "yiqia_organization_item_clicked") {
             this.getOrgMembers(payload.departmentName);
+        } else if(payload.action === Action.ViewYiqiaOrgMembers) {
+            this._orgMembers = new Map();
         }
     }
 
