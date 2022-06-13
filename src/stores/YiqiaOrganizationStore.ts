@@ -43,10 +43,12 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
     }
 
     public TheManagerInfo(user) {
+        console.log("TheManagerInfo ", user);
         let index = 0;
         const combined = "→";
         const managerList = [];
         let curUserinfo = this._allUsersWithMatrixId.get(user.matrixId);
+        if(!curUserinfo) return;
         let usermodal = new UserModal(curUserinfo.matrixId, curUserinfo.DisplayName, curUserinfo.photoUrl,curUserinfo.DisplayNamePy);
         usermodal.updateProperty(curUserinfo);
         managerList.push(usermodal.DisplayName);

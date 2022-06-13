@@ -358,11 +358,21 @@ export class YiqiaContact {
         //     photoUrl: contactInfo.photoUrl,
         //     lastName: ""
         // }
+        function DisplayNamePy(contactInfo) {
+            if(contactInfo.firstName && contactInfo.firstName.length > 0) {
+                return contactInfo.firstName;
+            } else if(contactInfo.matrixId) {
+                return contactInfo.matrixId?.slice(1,2);
+            } else {
+                return null;
+            }
+        };
+
         const newContactInfo = Object.assign({}, contactInfo, {room: null})
         console.log("contactInfo ", newContactInfo);
         const body = objectClone(newContactInfo);
-        body.nickName = contactInfo.DisplayName || contactInfo.family+contactInfo.given || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
-        body.prefixes = contactInfo.DisplayNamePy;
+        body.nickName = contactInfo.family || contactInfo.displayName || contactInfo.nickName || contactInfo.matrixId.slice(1,2) || contactInfo.family+contactInfo.given || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
+        body.prefixes = DisplayNamePy(contactInfo);
         body.telephoneList = contactInfo.phoneNumbers || contactInfo.telephoneList;
         body.emailList = contactInfo.emails || contactInfo.emailList;
         body.addressList = contactInfo.addresses || contactInfo.addressList;

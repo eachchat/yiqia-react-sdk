@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 import IdentityAuthClient from "../../../IdentityAuthClient";
 import { getKeyBindingsManager } from "../../../KeyBindingsManager";
@@ -31,6 +31,7 @@ enum AddState {
 }
 const YiqiaCreateContactItem: React.FC<ItemProps> = (props) => {
     const [curState, setCurState] = useState<AddState>(YiqiaContactContactStore.Instance.isUserInContact(props.user) ? AddState.Added : AddState.CanAdd);
+    let buttonText = _t("Add");
 
     const addContact = async() => {
         try{
@@ -38,11 +39,19 @@ const YiqiaCreateContactItem: React.FC<ItemProps> = (props) => {
             if(userInfo) {
                 console.log("lllll ", userInfo);
                 YiqiaContact.Instance.yiqiaContactAdd(userInfo).then(res => {
-                    YiqiaContactContactStore.Instance.generalContactsList();
+                    console.log("res======= ", res);
+                    YiqiaContactContactStore.Instance.generalContactsList().then(res => {
+                        setCurState(AddState.Added);
+                        buttonText = _t("Added");
+                    })
                 })
             } else {
                 YiqiaContact.Instance.yiqiaContactAdd(props.user).then(res => {
-                    YiqiaContactContactStore.Instance.generalContactsList();
+                    console.log("res======= ", res);
+                    YiqiaContactContactStore.Instance.generalContactsList().then(res => {
+                        setCurState(AddState.Added);
+                        buttonText = _t("Added");
+                    })
                 })
             }
         }
@@ -52,13 +61,21 @@ const YiqiaCreateContactItem: React.FC<ItemProps> = (props) => {
     }
 
     let className;
-    if(curState === AddState.CanAdd) {
+    if(!YiqiaContactContactStore.Instance.isUserInContact(props.user)) {
         className = "yiqia_AddContact_canAdd"
-    } else if(curState === AddState.Adding) {
-        className = "yiqia_AddContact_adding"
-    } else if(curState === AddState.Added) {
+    } else if(YiqiaContactContactStore.Instance.isUserInContact(props.user)) {
         className = "yiqia_AddContact_added"
+        buttonText = _t("Added");
     }
+
+    useEffect(() => {
+        if(!YiqiaContactContactStore.Instance.isUserInContact(props.user)) {
+            className = "yiqia_AddContact_canAdd"
+        } else if(YiqiaContactContactStore.Instance.isUserInContact(props.user)) {
+            className = "yiqia_AddContact_added"
+            buttonText = _t("Added");
+        }
+    }, []);
 
     return (
         <div className="YiqiaAddContact">
@@ -69,7 +86,7 @@ const YiqiaCreateContactItem: React.FC<ItemProps> = (props) => {
                 title={_t("Add")}
                 onClick={ addContact }
             >
-                <div className="yiqia_AddContact_addLabel">{ _t("Add") }</div>
+                <div className="yiqia_AddContact_addLabel">{ buttonText }</div>
             </AccessibleTooltipButton>
         </div>
     )
@@ -172,7 +189,7 @@ class YiqiaAddContactDialog extends React.PureComponent<IYiqiaAddContactDialogPr
         for(const user of oriResult) {
             if(user.matrixId) {
                 const profile = await matrixClient.getUser(user.matrixId);
-                user.photoUrl = profile.avatarUrl;
+                user.photoUrl = profile?.avatarUrl;
                 dealedResult.push(user);
             }
             if(term !== this.state.filterText || term.trim().length === 0) break;

@@ -168,6 +168,8 @@ const YiqiaContactUserTitle:React.FC<{onPageUpdate()}> = (props) => {
     const [exportMenuPosition, setExportMenuPosition] = useState(null)
     const [contactOperateMenuPosition, setContactOperateMenuPosition] = useState(null)
 
+    let tooltipTitle = _t("Import or Export");
+
     const onExportMenuOpenClick = (ev: React.MouseEvent) => {
         ev.preventDefault();
         ev.stopPropagation();
@@ -209,6 +211,7 @@ const YiqiaContactUserTitle:React.FC<{onPageUpdate()}> = (props) => {
     }
 
     if(contactOperateMenuPosition) {
+        tooltipTitle = _t("Create or Add");
         addOperateContextMenu = (
             <YiqiaContactHeaderContextMenu
                 {...contextMenuBelow(contactOperateMenuPosition)}

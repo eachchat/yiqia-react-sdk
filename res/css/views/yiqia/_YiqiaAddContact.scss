@@ -33,12 +33,11 @@
             position: relative;
             margin-left: 12px;
             background: rgba($accent, 0.1);
-    
-            &:not(.yiqia_AddContact_canAdd) .yiqia_AddContact_addLabel {
-                // Hide the "Send" label while preserving button size
-                visibility: hidden;
-            }
-    
+            height: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            width: 42px;
+            
             &.yiqia_AddContact_adding {
                 background-color: $accent;
                 mask-image: url('$(res)/img/element-icons/circle-sending.svg');
@@ -48,15 +47,11 @@
                 width: 14px;
                 height: 14px;
             }
-    
+
             &.yiqia_AddContact_added {
-                background-color: $accent;
-                mask-image: url('$(res)/img/element-icons/circle-sent.svg');
-                mask-position: center;
-                mask-repeat: no-repeat;
-                mask-size: 14px;
-                width: 14px;
-                height: 14px;
+                background: #F3F5F8;
+                border: none;
+                color: #00000080;
             }
         }
     }
