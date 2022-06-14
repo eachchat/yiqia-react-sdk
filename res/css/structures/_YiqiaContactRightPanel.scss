@@ -54,6 +54,22 @@ limitations under the License.
     }
 }
 
+.yiqia_BaseCard_edit_contact {
+    flex: 0 0 auto;
+    height: 36px;
+    line-height: 36px;
+    position: absolute;
+    background-color: $accent;
+    border-radius: 4px;
+    margin: 5px 9px 9px;
+    display: flex;
+    justify-content: center;
+    color: $button-fg-color;
+    font-weight: 600;
+    bottom: 45px;
+    width: 100%;
+}
+
 .yiqia_BaseCard_add_to_contact {
     flex: 0 0 auto;
     height: 36px;

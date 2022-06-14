@@ -388,6 +388,63 @@ export class YiqiaContact {
             })
     }
 
+    public async yiqiaContactUpdate(contactInfo:UserModal): Promise<boolean> {
+        // const body:operateContact = {
+        //     family: contactInfo.family,
+        //     middleName: contactInfo.middleName,
+        //     given: contactInfo.given,
+        //     matrixId: contactInfo.matrixId,
+        //     prefixes: contactInfo.prefixes,
+        //     suffixes: contactInfo.suffixes,
+        //     additionalName: contactInfo.additionalName,
+        //     nickName: contactInfo.nickName,
+        //     organization: contactInfo.organization,
+        //     department: contactInfo.department,
+        //     title: contactInfo.title,
+        //     telephoneList: arrayFastClone(contactInfo.telephoneList),
+        //     emailList: arrayFastClone(contactInfo.emailList),
+        //     addressList: arrayFastClone(contactInfo.addressList),
+        //     imppList: arrayFastClone(contactInfo.imppList),
+        //     urlList: arrayFastClone(contactInfo.urlList),
+        //     dateList: arrayFastClone(contactInfo.dateList),
+        //     note: "",
+        //     categories: "",
+        //     photo: "",
+        //     photoType: "",
+        //     firstName: "",
+        //     photoUrl: contactInfo.photoUrl,
+        //     lastName: ""
+        // }
+        function DisplayNamePy(contactInfo) {
+            if(contactInfo.firstName && contactInfo.firstName.length > 0) {
+                return contactInfo.firstName;
+            } else if(contactInfo.matrixId) {
+                return contactInfo.matrixId?.slice(1,2);
+            } else {
+                return null;
+            }
+        };
+
+        const newContactInfo = Object.assign({}, contactInfo, {room: null})
+        console.log("contactInfo ", newContactInfo);
+        const body = objectClone(newContactInfo);
+        body.nickName = contactInfo.family || contactInfo.displayName || contactInfo.nickName || contactInfo.matrixId.slice(1,2) || contactInfo.family+contactInfo.given || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
+        body.prefixes = DisplayNamePy(contactInfo);
+        body.telephoneList = contactInfo.phoneNumbers || contactInfo.telephoneList;
+        body.emailList = contactInfo.emails || contactInfo.emailList;
+        body.addressList = contactInfo.addresses || contactInfo.addressList;
+        body.imppList = contactInfo.ims || contactInfo.imppList;
+        body.urlList = contactInfo.urlList;
+        console.log("======= body ", body);
+        return AuthApi.Instance.editContact(body).then((resp) => {
+                return resp;
+            })
+            .catch((error) => {
+                console.log("error is ", error);
+                return null;
+            })
+    }
+
     public async yiqiaContactRemove(contactInfo:UserModal): Promise<boolean> {
         // const body:operateContact = {
         //     family: contactInfo.family,

@@ -30,7 +30,7 @@ import { Action } from "../../../dispatcher/actions";
 import ImageView from "../elements/ImageView";
 import { mediaFromMxc } from "../../../customisations/Media";
 import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
-import { UserModal } from '../../../models/YiqiaModels';
+import { ContactTagId, UserModal } from '../../../models/YiqiaModels';
 import BaseAvatar from '../avatars/BaseAvatar';
 import { useEventEmitter } from '../../../hooks/useEventEmitter';
 import YiqiaUserRightPanelStore from '../../../stores/YiqiaUserRightPanelStore';
@@ -40,6 +40,8 @@ import { YiqiaContactContactStore } from '../../../stores/YiqiaContactContactSto
 import { YiqiaContact } from '../../../utils/yiqiaUtils/YiqiaContact';
 import classNames from 'classnames';
 import YiqiaOrganizationStore from '../../../stores/YiqiaOrganizationStore';
+import YiqiaContactUserStore from '../../../stores/YiqiaContactUserStore';
+import YiqiaCreateContact from '../dialogs/YiqiaCreateContactDialog';
 
 export interface IDevice {
     deviceId: string;
@@ -422,6 +424,18 @@ const YiqiaUserInfoContent: React.FC<IProps2> = ({
         }
     }
     
+    const contactEdit = async() => {
+        const { finished } = Modal.createTrackedDialog("Add Contact", "", YiqiaCreateContact, {user: user});
+        const result = await finished;
+    }
+    
+    const editContactButton = <AccessibleButton
+            className="yiqia_BaseCard_edit_contact"
+            onClick={contactEdit}
+            title={_t("edit contact")}>
+                <span>{ _t("edit contact") }</span>
+            </AccessibleButton>
+
     const removeContactButton = <AccessibleButton
             className={operClassName}
             onClick={contactOperate}
@@ -436,6 +450,10 @@ const YiqiaUserInfoContent: React.FC<IProps2> = ({
             <UserInfoHeader user={user}></UserInfoHeader>
             <UserOptionsSection user={user}></UserOptionsSection>
             <YiqiaUserDetails user={user}></YiqiaUserDetails>
+            {
+                YiqiaContactUserStore.instance.curItem === ContactTagId.Contact &&
+                editContactButton
+            }
             {removeContactButton}
         </div>
 };

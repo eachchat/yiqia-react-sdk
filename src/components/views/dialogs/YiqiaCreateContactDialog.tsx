@@ -20,6 +20,7 @@ interface IProps {
     placeHolder: string;
     isNecessary: boolean;
     hasType: boolean;
+    value?: string;
 }
 
 const CreateContact = {
@@ -157,7 +158,7 @@ const YiqiaContactItemType:React.FC<TypeProps> = (props) => {
 }
 
 const YiqiaCreateContactBaseItem:React.FC<IProps> = (props) => {
-    const [inputValue, setInputValue] = useState("");
+    const [inputValue, setInputValue] = useState(props.value);
     const [expanded, setExpanded] = useState(false);
     const onInputChanged = ev => {
         setInputValue(ev.target.value);
@@ -214,6 +215,7 @@ const YiqiaCreateContactListItem:React.FC<IProps> = (props) => {
     const [listState, setListState] = useState<Map<number, number>>(new Map());
     const [itemObj, setItemObj] = useState<Phone | Im | Url | Date | Email>(null);
 
+    console.log("props.value ", props.value);
     const listRef = useRef<HTMLDivElement>(null);
     
     const onInputChanged = (key, value, id) => {
@@ -247,6 +249,7 @@ const YiqiaCreateContactListItem:React.FC<IProps> = (props) => {
             isNecessary={props.isNecessary}
             hasType={props.hasType}
             id={0}
+            value={props.value}
         ></YiqiaCreateContactBaseItem>
     ];
 
@@ -261,6 +264,7 @@ const YiqiaCreateContactListItem:React.FC<IProps> = (props) => {
                 isNecessary={props.isNecessary}
                 hasType={props.hasType}
                 id={key+1}
+                user={props.user}
             ></YiqiaCreateContactBaseItem>
         )
     })
@@ -286,9 +290,7 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
     }
 
     const onInputChanged = (key, value, id) => {
-        console.log("=====key ", key, " ++++++++ value ", value);
         userInstance.create2Model(key, value);
-        console.log("=====userInstance ", userInstance);
     }
 
     const onCancelClick = () => {
@@ -302,10 +304,17 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
             if(userInstance.given?.length == 0 || userInstance.family?.length == 0) {
                 alert("input name");
             }
-            YiqiaContact.Instance.yiqiaContactAdd(userInstance).then(async (res) => {
-                await YiqiaContactContactStore.Instance.generalContactsList()
-                props.onFinished();
-            })
+            if(!props.user) {
+                YiqiaContact.Instance.yiqiaContactAdd(userInstance).then(async (res) => {
+                    await YiqiaContactContactStore.Instance.generalContactsList()
+                    props.onFinished();
+                })
+            } else {
+                YiqiaContact.Instance.yiqiaContactUpdate(userInstance).then(async (res) => {
+                    await YiqiaContactContactStore.Instance.generalContactsList()
+                    props.onFinished();
+                })
+            }
         }
         catch(error) {
             console.log("YiqiaCreateContactItem error ", error);
@@ -314,9 +323,38 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
 
     useEffect(() => {
         if(!userInstance) {
-            setUserInstance(new UserModal());
+            console.log("======== props.user ", props.user);
+            if(props.user) {
+                setUserInstance(props.user);
+            } else {
+                setUserInstance(new UserModal());
+            }
         }
     }, []);
+
+    const getDefaultInfo = (theKey) => {
+        if(!props.user) return "";
+        switch(theKey){
+            case "telephone":
+                return props.user.phoneNumbers && props.user.phoneNumbers[0]?.value
+            case "email":
+                return props.user.emailList && props.user.emailList[0]?.value
+            case "url":
+                return props.user.urlList && props.user.urlList[0]?.value
+            case "date":
+                return props.user.dateList && props.user.dateList[0]?.value
+            case "impp":
+                return props.user.imppList && props.user.imppList[0]?.value
+            case "address":
+                return props.user.addressList && props.user.addressList[0]?.streetAddress
+            case "family":
+                return props.user?.family;
+            case "given":
+                return props.user?.given;
+            default:
+                return props.user[theKey];
+        }
+    }
 
     return (
         <BaseDialog
@@ -325,13 +363,11 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
             title={_t("Create Contact")}
         >
             <form onSubmit={onSubmit} className="yiqia_ContactCreate_form">
-                {
-                    expanded &&
                     <AutoHideScrollbar className="yiqia_ContactCreate_scroll">
                         {
                             Object.keys(CreateContact).map(key => {
+                                if(!expanded && Object.keys(CreateContactSimple).indexOf(key) < 0) return null;
                                 const placeHolderText = _t(CreateContact[key])
-                                console.log("all placeholder ", placeHolderText);
                                 switch(key){
                                     case "telephone":
                                     case "email":
@@ -346,6 +382,7 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
                                                 placeHolder={placeHolderText}
                                                 isNecessary={false}
                                                 hasType={false}
+                                                value={getDefaultInfo(key)}
                                             >
                                             </YiqiaCreateContactListItem>
                                         )
@@ -361,7 +398,8 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
                                                 label={key}
                                                 placeHolder={placeHolderText}
                                                 isNecessary={true}
-                                                hasType={false}/>
+                                                hasType={false}
+                                                value={getDefaultInfo(key)}/>
                                         )
                                         break;
                                     default:
@@ -372,72 +410,21 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
                                                 label={key}
                                                 placeHolder={placeHolderText}
                                                 isNecessary={false}
-                                                hasType={false}/>
+                                                hasType={false}
+                                                value={getDefaultInfo(key)}/>
                                         )
                                         break;
                                 }
                             })
                         }
                     </AutoHideScrollbar>
-                }
-                {
-                    !expanded &&
-                    <AutoHideScrollbar className="yiqia_ContactCreate_scroll">
-                        {
-                            Object.keys(CreateContactSimple).map(key => {
-                                const placeHolderText = _t(CreateContactSimple[key])
-                                switch(key){
-                                    case "telephone":
-                                    case "email":
-                                    case "url":
-                                    case "date":
-                                    case "impp":
-                                        return (
-                                            <YiqiaCreateContactListItem 
-                                                busy={false}
-                                                onInputChanged={onInputChanged}
-                                                label={key}
-                                                placeHolder={placeHolderText}
-                                                isNecessary={false}
-                                                hasType={false}
-                                            >
-                                            </YiqiaCreateContactListItem>
-                                        )
-                                        break;
-                                    case "address":
-                                        break;
-                                    case "family":
-                                    case "given":
-                                        return (
-                                            <YiqiaCreateContactBaseItem
-                                                busy={false}
-                                                onInputChanged={onInputChanged}
-                                                label={key}
-                                                placeHolder={placeHolderText}
-                                                isNecessary={true}
-                                                hasType={false}/>
-                                        )
-                                        break;
-                                    default:
-                                        return (
-                                            <YiqiaCreateContactBaseItem
-                                                busy={false}
-                                                onInputChanged={onInputChanged}
-                                                label={key}
-                                                placeHolder={placeHolderText}
-                                                isNecessary={false}
-                                                hasType={false}/>
-                                        )
-                                        break;
-                                }
-                            })
-                        }
+                    {
+                        !expanded &&
                         <div
                             style={{color: "blue", cursor: "pointer"}}
                             onClick={() => {setExpanded(!expanded)}}
                         >显示更多</div>
-                    </AutoHideScrollbar>
-                }
+                    }
                 <div className='mx_Dialog_buttons'>
                     <input
                         className='mx_Dialog_primary'
