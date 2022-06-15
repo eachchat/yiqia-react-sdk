@@ -290,6 +290,7 @@ export class UserModal {
 
     public get DisplayName() {
         if(this.nickName && this.nickName.length > 0) return this.nickName;
+        if(this.displayName) return this.displayName;
         if(this.family && this.given) return this.family + this.given;
         if(this.family) return this.family;
         if(this.matrixId) return this.matrixId.slice(1,2);

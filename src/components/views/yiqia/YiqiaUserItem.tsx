@@ -17,11 +17,12 @@ limitations under the License.
 import { User } from "matrix-js-sdk/src/models/user";
 import { RoomMember } from "matrix-js-sdk/src/models/room-member";
 import React from "react";
-import { UserModal } from "../../../models/YiqiaModels";
+import { ContactTagId, UserModal } from "../../../models/YiqiaModels";
 import MemberAvatar from "../avatars/MemberAvatar";
 import YiqiaUserRightPanelStore from "../../../stores/YiqiaUserRightPanelStore";
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
 import YiqiaOrganizationStore from "../../../stores/YiqiaOrganizationStore";
+import YiqiaContactUserStore from "../../../stores/YiqiaContactUserStore";
 
 interface IProps {
     userItem: UserModal,
@@ -47,7 +48,11 @@ export default function YiqiaUserItem(props:IProps) {
         if(props.userItem.matrixId && props.userItem.matrixId.split(":")[1] === MatrixClientPeg.get().getUserId().split(":")[1]) {
             return props.userItem?.title
         } else {
-            return props.userItem.DepartmentInfo ? YiqiaOrganizationStore.Instance.orgName + props.userItem.DepartmentInfo + " " + props.userItem.title : props.userItem.title;
+            if(YiqiaContactUserStore.instance.curItem === ContactTagId.Organization) {
+                return props.userItem?.title
+            } else {
+                return props.userItem.DepartmentInfo ? YiqiaOrganizationStore.Instance.orgName + props.userItem.DepartmentInfo + " " + props.userItem.title : props.userItem.title;
+            }
         }
     }
 
