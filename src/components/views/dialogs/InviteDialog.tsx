@@ -896,7 +896,7 @@ export default class InviteDialog extends React.PureComponent<IInviteDialogProps
                 })
             }
 
-            console.log("dealedResult ", dealedResult);
+            console.log("invite dealedResult ", dealedResult);
             this.setState({yiqiaOrgResults: dealedResult});
         }
     }

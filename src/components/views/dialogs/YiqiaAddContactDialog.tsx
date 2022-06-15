@@ -214,7 +214,7 @@ class YiqiaAddContactDialog extends React.PureComponent<IYiqiaAddContactDialogPr
                     dealedResult.push(new UserModal(u.matrixId, u.displayName, profile?.avatar_url));
                 }
 
-                console.log("dealedResult ", dealedResult);
+                console.log("add dealedResult ", dealedResult);
                 this.setState({ users: dealedResult });
             }
             this.updateSearchResults(term);

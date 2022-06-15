@@ -39,9 +39,13 @@ interface IProps {
     resizeNotifier: ResizeNotifier;
 }
 
+var curTerm;
+
 const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     const [showRightPanel, setShowRightPanel] = useState(false);
     const [users, setUsers] = useState(new Map()); //<Map<string, UserModal[]>
+    // const [curTerm, setCurTerm] = useState("");
+    console.log("11111111111111")
     
     useEventEmitter(YiqiaContactUserStore.instance, UPDATE_SELECTED_CONTACT_ITEM, () => {
         pageForceUpdate();
@@ -69,13 +73,42 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     
         return firstCharacterInUpper;
     }
+
+    const updateSearch = (term:string) => {
+        console.log("setCurTerm ", term);
+        curTerm = term;
+        setTimeout(() => {
+            console.log("CurTerm ", curTerm);
+            onSearchInputChange(term);
+        }, 0)
+    }
+
+    const updateUserInfos = async (theUsers) => {
+        const newUsers = new Map();
+        for(const item of theUsers) {
+            console.log("update users")
+            const users = item[1];
+            for(const user of users) {
+                const gmsUserInfo = await YiqiaRecentsStore.Instance.updateItemFromGms(user);
+                if(gmsUserInfo) {
+                    if(user.updateProperty(gmsUserInfo)) {
+                        if(!newUsers.has(item[0])) {
+                            newUsers.set(item[0], []);
+                        }
+                        newUsers.set(item[0], [...newUsers.get(item[0]), user]);
+                    }
+                }
+            }
+        }
+        console.log("setUsers")
+        setUsers(newUsers);
+    }
     
-    function onSearchInputChange(term:string) {
+    const onSearchInputChange = (term:string) => {
         if(term.length == 0) {
             setUsers(YiqiaContactUserStore.instance.usersList);
         } else if(YiqiaContactUserStore.instance.curItem === ContactTagId.Organization && YiqiaContactUserStore.instance.usersList.size === 0) {
             YiqiaContact.Instance.yiqiaGmsSearch(term).then(async(gmsResult) => {
-                const checkTerm = term;
                 if(term.trim().length === 0) {
                     return;
                 }
@@ -84,22 +117,30 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
                 if(gmsResult.length !== 0) {
                     let dealedResult:UserModal[] = [];
                     for(let i = 0; i < gmsResult.length; i++) {
-                        if(term.trim().length === 0 && term !== checkTerm) break;
+                        if(term.trim().length === 0 || term !== curTerm) break;
                         const u = gmsResult[i];
                         let profile;
-                        const uModal = new UserModal(u.matrixId, u.displayName, profile?.avatar_url);
-                        const gmsUserInfo = await YiqiaRecentsStore.Instance.updateItemFromGms(uModal);
+                        let uModal = new UserModal(u.matrixId, u.displayName, profile?.avatar_url);
+                        let gmsUserInfo;
+                        if(i < 20) {
+                            gmsUserInfo = await YiqiaRecentsStore.Instance.updateItemFromGms(uModal);
+                        }
                         if(gmsUserInfo) {
+                            console.log("===== term is ", term, " curTrem is ", curTerm);
                             if(uModal.updateProperty(gmsUserInfo)) {
                                 dealedResult.push(uModal);
                             }
+                        } else {
+                            dealedResult.push(uModal);
                         }
                     }
 
-                    console.log("dealedResult ", dealedResult);
+                    console.log("contact dealedResult ", dealedResult);
                     const dealedDate:Map<string, UserModal[]> = new Map();
-                    dealedResult.forEach(item => {
-                        if(item.del == 1 && term !== checkTerm) return;
+                    for(let item of dealedResult) {
+                        if(item.del == 1 || term !== curTerm) {
+                            return;
+                        }
                         let firstLetter = "a";
                         try{
                             firstLetter = getBGColorFromDisplayName(item.DisplayName);
@@ -111,8 +152,11 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
                         } else {
                             dealedDate.set(firstLetter, [item]);
                         }
-                    })
+                    }
                     setUsers(new Map([...dealedDate.entries()].sort()));
+                    setTimeout(() => {
+                        updateUserInfos(new Map([...dealedDate.entries()].sort()));
+                    }, 10)
                 }
             });
         } else {
@@ -192,7 +236,7 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
                     throw new Error("Function not implemented.");
                 } } onSearch={function (): string {
                     throw new Error("Function not implemented.");
-                } } onInputChange={onSearchInputChange.bind(this)}
+                } } onInputChange={updateSearch}
             />
             </div>
         )

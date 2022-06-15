@@ -336,7 +336,7 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
         if(!props.user) return "";
         switch(theKey){
             case "telephone":
-                return props.user.phoneNumbers && props.user.phoneNumbers[0]?.value
+                return (props.user.telephoneList && props.user.telephoneList[0]?.value) || (props.user.phoneNumbers && props.user.phoneNumbers[0]?.value)
             case "email":
                 return props.user.emailList && props.user.emailList[0]?.value
             case "url":
@@ -356,11 +356,14 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
         }
     }
 
+    const theTitle = props.user ? _t("edit contact") : _t("Create Contact");
+    const operateText = props.user ? _t('Edit') : _t('Create');
+
     return (
         <BaseDialog
             className="yiqia_CreateContact_dialog"
             onFinished={onFinished}
-            title={_t("Create Contact")}
+            title={ theTitle }
         >
             <form onSubmit={onSubmit} className="yiqia_ContactCreate_form">
                     <AutoHideScrollbar className="yiqia_ContactCreate_scroll">
@@ -429,7 +432,7 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
                     <input
                         className='mx_Dialog_primary'
                         type='submit'
-                        value={_t('Create')}
+                        value={ operateText }
                         disabled={disableForm}
                     />
                     <button onClick={onCancelClick} disabled={disableForm}>

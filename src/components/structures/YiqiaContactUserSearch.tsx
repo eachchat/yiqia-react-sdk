@@ -65,18 +65,18 @@ export default class YiqiaContactUserSearch extends React.PureComponent<IProps, 
     }
 
     public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>): void {
-        if (prevState.query !== this.state.query) {
-            const hadSearch = !!this.searchFilter.search.trim();
-            const haveSearch = !!this.state.query.trim();
-            this.searchFilter.search = this.state.query;
-            if (!hadSearch && haveSearch) {
-                // started a new filter - add the condition
-                RoomListStore.instance.addFilter(this.searchFilter);
-            } else if (hadSearch && !haveSearch) {
-                // cleared a filter - remove the condition
-                RoomListStore.instance.removeFilter(this.searchFilter);
-            } // else the filter hasn't changed enough for us to care here
-        }
+        // if (prevState.query !== this.state.query) {
+        //     const hadSearch = !!this.searchFilter.search.trim();
+        //     const haveSearch = !!this.state.query.trim();
+        //     this.searchFilter.search = this.state.query;
+        //     if (!hadSearch && haveSearch) {
+        //         // started a new filter - add the condition
+        //         RoomListStore.instance.addFilter(this.searchFilter);
+        //     } else if (hadSearch && !haveSearch) {
+        //         // cleared a filter - remove the condition
+        //         RoomListStore.instance.removeFilter(this.searchFilter);
+        //     } // else the filter hasn't changed enough for us to care here
+        // }
     }
 
     public componentWillUnmount() {
