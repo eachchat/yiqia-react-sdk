@@ -87,11 +87,11 @@ export class AuthApi {
     }
 
     protected getBotServerList() {
-        return YiqiaRequestInstance.newGet("http://139.198.18.180:8888" + "/api/services/global/v1/matrix/apps", this.accessToken)
+        return YiqiaRequestInstance.get("/api/services/global/v1/matrix/apps", this.accessToken)
     }
 
     protected getDistBotInfo(appMatrixId) {
-        return YiqiaRequestInstance.newGet("http://139.198.18.180:8888" + "api/services/global/v1/matrix/app/" + appMatrixId + "/detail", this.accessToken)
+        return YiqiaRequestInstance.get(\"api/services/global/v1/matrix/app/" + appMatrixId + "/detail", this.accessToken)
     }
 
     private getHost() {
