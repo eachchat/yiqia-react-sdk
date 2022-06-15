@@ -1,4 +1,5 @@
 import { Room } from "matrix-js-sdk/src/models/room";
+import YiqiaOrganizationStore from "../stores/YiqiaOrganizationStore";
 
 /**
  * 
@@ -288,7 +289,11 @@ export class UserModal {
     }
 
     public get DisplayName() {
-        return this.family || this.displayName || this.nickName || this.matrixId.slice(1,2);
+        if(this.nickName && this.nickName.length > 0) return this.nickName;
+        if(this.family && this.given) return this.family + this.given;
+        if(this.family) return this.family;
+        if(this.matrixId) return this.matrixId.slice(1,2);
+        return null;
     }
 
     public get DisplayNamePy() {

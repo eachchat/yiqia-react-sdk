@@ -34,6 +34,18 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
         return this._orgDate;
     }
 
+    public get orgName() {
+        return this._orgDate[0].name;
+    }
+
+    public getOrgInfo(user) {
+        let curUserinfo = this._allUsersWithMatrixId.get(user.matrixId);
+        if(!curUserinfo) {
+            curUserinfo = this._allUsersWithId.get(user.id);
+        }
+        return curUserinfo;
+    }
+
     public hasReporter(user) {
         let curUserinfo = this._allUsersWithMatrixId.get(user.matrixId);
         if(!curUserinfo) {

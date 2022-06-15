@@ -1,6 +1,7 @@
 import { string } from "prop-types";
 import { DepartmentModal, UserModal, Phone, Address } from "../../models/YiqiaModels";
 import { YiqiaContactContactStore } from "../../stores/YiqiaContactContactStore";
+import YiqiaOrganizationStore from "../../stores/YiqiaOrganizationStore";
 import { arrayFastClone } from "../arrays";
 import { objectClone } from "../objects";
 import { AuthApi } from "./YiqiaRequestInterface";
@@ -371,7 +372,10 @@ export class YiqiaContact {
         const newContactInfo = Object.assign({}, contactInfo, {room: null})
         console.log("contactInfo ", newContactInfo);
         const body = objectClone(newContactInfo);
-        body.nickName = contactInfo.family || contactInfo.displayName || contactInfo.nickName || contactInfo.matrixId.slice(1,2) || contactInfo.family+contactInfo.given || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
+        if(contactInfo.nickName) body.nickName = contactInfo.nickName;
+        else if(contactInfo.family && contactInfo.given) body.nickName = contactInfo.family+contactInfo.given;
+        else if(YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo)) body.nickName = YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo).displayName;
+        else body.nickName = contactInfo.matrixId.split(":")[0].slice(1) || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
         body.prefixes = DisplayNamePy(contactInfo);
         body.telephoneList = contactInfo.phoneNumbers || contactInfo.telephoneList;
         body.emailList = contactInfo.emails || contactInfo.emailList;
@@ -428,7 +432,10 @@ export class YiqiaContact {
         const newContactInfo = Object.assign({}, contactInfo, {room: null})
         console.log("contactInfo ", newContactInfo);
         const body = objectClone(newContactInfo);
-        body.nickName = contactInfo.family || contactInfo.displayName || contactInfo.nickName || contactInfo.matrixId.slice(1,2) || contactInfo.family+contactInfo.given || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
+        if(contactInfo.nickName) body.nickName = contactInfo.nickName;
+        else if(contactInfo.family && contactInfo.given) body.nickName = contactInfo.family+contactInfo.given;
+        else if(YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo)) body.nickName = YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo).displayName;
+        else body.nickName = contactInfo.matrixId.split(":")[0].slice(1) || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
         body.prefixes = DisplayNamePy(contactInfo);
         body.telephoneList = contactInfo.phoneNumbers || contactInfo.telephoneList;
         body.emailList = contactInfo.emails || contactInfo.emailList;

@@ -20,6 +20,8 @@ import React from "react";
 import { UserModal } from "../../../models/YiqiaModels";
 import MemberAvatar from "../avatars/MemberAvatar";
 import YiqiaUserRightPanelStore from "../../../stores/YiqiaUserRightPanelStore";
+import { MatrixClientPeg } from "../../../MatrixClientPeg";
+import YiqiaOrganizationStore from "../../../stores/YiqiaOrganizationStore";
 
 interface IProps {
     userItem: UserModal,
@@ -39,6 +41,14 @@ export default function YiqiaUserItem(props:IProps) {
     function onMemberClick() {
         console.log("------- ", props.userItem)
         YiqiaUserRightPanelStore.Instance.setCurd(props.userItem);
+    }
+
+    const orgInfoShow = () => {
+        if(props.userItem.matrixId && props.userItem.matrixId.split(":")[1] === MatrixClientPeg.get().getUserId().split(":")[1]) {
+            return props.userItem?.title
+        } else {
+            return props.userItem.DepartmentInfo ? YiqiaOrganizationStore.Instance.orgName + props.userItem.DepartmentInfo + " " + props.userItem.title : props.userItem.title;
+        }
     }
 
     const getUserAvatar = (
@@ -74,7 +84,7 @@ export default function YiqiaUserItem(props:IProps) {
         <div className="yiqia_ContactUser_descriptionContainer">
             <div className="yiqia_ContactUser_title_text" title={props.userItem.title } tabIndex={-1} dir="auto">
                 { props.descriptType === DescriptType.Title &&
-                    props.userItem.DepartmentInfo ? props.userItem.DepartmentInfo + " " + props.userItem.title : props.userItem.title
+                    orgInfoShow()
                 }
                 { props.descriptType !== DescriptType.Title &&
                     props.userItem.matrixId 

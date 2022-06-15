@@ -226,6 +226,9 @@ const UserInfoHeader: React.FC<{
     );
 
     const displayName = user.DisplayName;
+    if(!displayName) {
+        console.log("0000000")
+    }
     return (
         <div className='yiqia_RightPanel_header'>
             { avatarElement }
@@ -308,7 +311,7 @@ const DetailsShowItems = ["nickName", "telephone", "email", "department", "title
 const DetailsShowItemsWithReport = ["nickName", "telephone", "email", "department", "title", "report"];
 
 const YiqiaUserDetailItem: React.FC<{itemLabel: string, itemContent: string}> = (props) => {
-    const theContent = typeof props.itemContent === "string" ? (props.itemContent || "") : props.itemContent?.displayName || "";
+    let theContent = typeof props.itemContent === "string" ? (props.itemContent || "") : props.itemContent?.displayName || "";
     return (
         <div className='yiqia_user_details_item'>
             <div className='yiqia_user_details_item_label'>{props.itemLabel || ""}</div>
@@ -335,7 +338,13 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
         } else if(itemLabel === "report") {
             console.log("======managerInfo ", managerInfo);
             return managerInfo;
-        }else {
+        } else if(itemLabel === "nickName") {
+            if(user.nickName && user.nickName.length > 0) return user.nickName;
+            if(user.family && user.given) return user.family + user.given;
+            if(user.family) return user.family;
+            if(YiqiaOrganizationStore.Instance.getOrgInfo(user)) return YiqiaOrganizationStore.Instance.getOrgInfo(user).DisplayName;
+            if(user.matrixId) return user.matrixId.slice(1,2);
+        } else {
             return user[itemLabel];
         }
     }
