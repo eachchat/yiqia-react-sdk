@@ -91,7 +91,7 @@ export class AuthApi {
     }
 
     protected getDistBotInfo(appMatrixId) {
-        return YiqiaRequestInstance.get(\"api/services/global/v1/matrix/app/" + appMatrixId + "/detail", this.accessToken)
+        return YiqiaRequestInstance.get("api/services/global/v1/matrix/app/" + appMatrixId + "/detail", this.accessToken)
     }
 
     private getHost() {
