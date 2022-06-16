@@ -10,6 +10,7 @@ import { YiqiaBaseUserStore } from "./YiqiaBaseUserStore";
 
 export const ORGANIZATION_ITEM_CLICKED_EVENT = Symbol("organization_item_clicked_event");
 export const ORGANIZATION_MEMBER_UPDATE_EVENT = Symbol("organization_member_update_event");
+export const ORGANIZATION_READY = Symbol("organization_ready");
 
 export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
     private _orgMembers: Map<string, UserModal[]> = new Map();
@@ -36,6 +37,42 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
 
     public get orgName() {
         return this._orgDate[0].name;
+    }
+
+    private findPathById(deps, depId, names) {
+        if(typeof names === 'undefined') {
+            names = [];
+        }
+
+        for(var i = 0; i < deps.length; i++) {
+            var tmpPath = [...names];
+            tmpPath.push(deps[i].name);
+            if(deps[i].id === depId) {
+                return tmpPath;
+            }
+
+            if(deps[i].children) {
+                const res = this.findPathById(deps[i].children, depId, tmpPath);
+                if(res) {
+                    return res;
+                }
+            }
+        }
+    }
+
+    public getOrgInfoFromHead(user) {
+        const theSplit = " / ";
+        const res = this.findPathById(this._orgDate, user.departmentId, []);
+        console.log("res ", res);
+        return res.join(theSplit);
+    }
+
+    public getOrgInfoFromUid(userId) {
+        let curUserinfo = this._allUsersWithMatrixId.get(userId);
+        if(!curUserinfo) {
+            curUserinfo = this._allUsersWithId.get(userId);
+        }
+        return curUserinfo;
     }
 
     public getOrgInfo(user) {
@@ -117,6 +154,7 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
                 this._allUsersWithId.set(user.id, user);
                 this._allUsersWithMatrixId.set(user.matrixId, user);
             }
+            this.emit(ORGANIZATION_READY);
         })
         const results = await YiqiaContact.Instance.yiqiaOrganization();
         this._orgDate = results;

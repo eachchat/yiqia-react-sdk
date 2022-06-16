@@ -18,7 +18,7 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
     public isUserInContact(user:UserModal) {
         let res = false;
         for(const conatct of this._allUsers) {
-            if(user.matrixId === conatct.matrixId) {
+            if(user.matrixId === conatct.matrixId && conatct.del != 1) {
                 res = true;
                 break;
             }

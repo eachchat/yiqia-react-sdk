@@ -51,7 +51,7 @@ export default function YiqiaUserItem(props:IProps) {
             if(YiqiaContactUserStore.instance.curItem === ContactTagId.Organization) {
                 return props.userItem?.title
             } else {
-                return props.userItem.DepartmentInfo ? YiqiaOrganizationStore.Instance.orgName + props.userItem.DepartmentInfo + " " + props.userItem.title : props.userItem.title;
+                return props.userItem.DepartmentInfo ? YiqiaOrganizationStore.Instance.orgName + " " + props.userItem.title : props.userItem.title;
             }
         }
     }

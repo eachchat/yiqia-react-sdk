@@ -51,6 +51,8 @@ import ExportDialog from "../dialogs/ExportDialog";
 import RightPanelStore from "../../../stores/right-panel/RightPanelStore";
 import PosthogTrackers from "../../../PosthogTrackers";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
+import YiqiaOrganizationStore from "../../../stores/YiqiaOrganizationStore";
+import DMRoomMap from "../../../utils/DMRoomMap";
 
 interface IProps {
     room: Room;
@@ -271,6 +273,14 @@ const RoomSummaryCard: React.FC<IProps> = ({ room, onClose }) => {
     const e2eStatus = roomContext.e2eStatus;
 
     const alias = room.getCanonicalAlias() || room.getAltAliases()[0] || "";
+    const dmUser = DMRoomMap.shared().getUserIdForRoomId(room.roomId);
+    var showName;
+    if (dmUser) {
+        const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(dmUser);
+        if(orgUser) {
+            showName = orgUser.displayName || orgUser.nickName;
+        }
+    }
     const header = <React.Fragment>
         <div className="mx_RoomSummaryCard_avatar" role="presentation">
             <RoomAvatar room={room} height={54} width={54} viewAvatarOnClick />
@@ -289,8 +299,8 @@ const RoomSummaryCard: React.FC<IProps> = ({ room, onClose }) => {
 
         <RoomName room={room}>
             { name => (
-                <h2 title={name}>
-                    { name }
+                <h2 title={showName}>
+                    { showName }
                 </h2>
             ) }
         </RoomName>

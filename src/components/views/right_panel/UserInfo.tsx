@@ -82,6 +82,7 @@ import SettingsStore from '../../../settings/SettingsStore';
 import UserIdentifierCustomisations from '../../../customisations/UserIdentifier';
 import PosthogTrackers from "../../../PosthogTrackers";
 import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
+import YiqiaOrganizationStore from '../../../stores/YiqiaOrganizationStore';
 
 export interface IDevice {
     deviceId: string;
@@ -1343,9 +1344,14 @@ const BasicUserInfo: React.FC<{
     if (room && (member as RoomMember).roomId) {
         // hide the Roles section for DMs as it doesn't make sense there
         if (!DMRoomMap.shared().getUserIdForRoomId((member as RoomMember).roomId)) {
+            let name = room.name;
+            const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(member.userId);
+            if(orgUser) {
+                name = orgUser.displayName || orgUser.nickName;
+            }
             memberDetails = <div className="mx_UserInfo_container">
                 <h3>{ _t("Role in <RoomName/>", {}, {
-                    RoomName: () => <b>{ room.name }</b>,
+                    RoomName: () => <b>{ name }</b>,
                 }) }</h3>
                 <PowerLevelSection
                     powerLevels={powerLevels}
@@ -1576,7 +1582,11 @@ const UserInfoHeader: React.FC<{
         e2eIcon = <E2EIcon size={18} status={e2eStatus} isUser={true} />;
     }
 
-    const displayName = (member as RoomMember).rawDisplayName || (member as GroupMember).displayname;
+    let displayName = (member as RoomMember).rawDisplayName || (member as GroupMember).displayname;
+    const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(member.userId);
+    if(orgUser) {
+        displayName = orgUser.displayName || orgUser.nickName;
+    }
     return <React.Fragment>
         { avatarElement }
 

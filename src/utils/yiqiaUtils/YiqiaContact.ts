@@ -359,15 +359,15 @@ export class YiqiaContact {
         //     photoUrl: contactInfo.photoUrl,
         //     lastName: ""
         // }
-        function DisplayNamePy(contactInfo) {
-            if(contactInfo.firstName && contactInfo.firstName.length > 0) {
-                return contactInfo.firstName;
-            } else if(contactInfo.matrixId) {
-                return contactInfo.matrixId?.slice(1,2);
-            } else {
-                return null;
-            }
-        };
+        // function DisplayNamePy(contactInfo) {
+        //     if(contactInfo.firstName && contactInfo.firstName.length > 0) {
+        //         return contactInfo.firstName;
+        //     } else if(contactInfo.matrixId) {
+        //         return contactInfo.matrixId?.slice(1,2);
+        //     } else {
+        //         return null;
+        //     }
+        // };
 
         const newContactInfo = Object.assign({}, contactInfo, {room: null})
         console.log("contactInfo ", newContactInfo);
@@ -376,12 +376,14 @@ export class YiqiaContact {
         else if(contactInfo.family && contactInfo.given) body.nickName = contactInfo.family+contactInfo.given;
         else if(YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo)) body.nickName = YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo).displayName;
         else body.nickName = contactInfo.matrixId.split(":")[0].slice(1) || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
-        body.prefixes = DisplayNamePy(contactInfo);
+        if(typeof contactInfo.department != "string") body.department = contactInfo.department.name;
+        body.prefixes = contactInfo.prefixes;
         body.telephoneList = contactInfo.phoneNumbers || contactInfo.telephoneList;
         body.emailList = contactInfo.emails || contactInfo.emailList;
         body.addressList = contactInfo.addresses || contactInfo.addressList;
         body.imppList = contactInfo.ims || contactInfo.imppList;
         body.urlList = contactInfo.urlList;
+        body.organization = YiqiaOrganizationStore.Instance.getOrgInfoFromHead(contactInfo);
         console.log("======= body ", body);
         return AuthApi.Instance.addContact(body).then((resp) => {
                 return resp;
@@ -419,15 +421,6 @@ export class YiqiaContact {
         //     photoUrl: contactInfo.photoUrl,
         //     lastName: ""
         // }
-        function DisplayNamePy(contactInfo) {
-            if(contactInfo.firstName && contactInfo.firstName.length > 0) {
-                return contactInfo.firstName;
-            } else if(contactInfo.matrixId) {
-                return contactInfo.matrixId?.slice(1,2);
-            } else {
-                return null;
-            }
-        };
 
         const newContactInfo = Object.assign({}, contactInfo, {room: null})
         console.log("contactInfo ", newContactInfo);
@@ -436,7 +429,8 @@ export class YiqiaContact {
         else if(contactInfo.family && contactInfo.given) body.nickName = contactInfo.family+contactInfo.given;
         else if(YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo)) body.nickName = YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo).displayName;
         else body.nickName = contactInfo.matrixId.split(":")[0].slice(1) || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
-        body.prefixes = DisplayNamePy(contactInfo);
+        if(typeof contactInfo.department != "string") body.department = contactInfo.department.name;
+        body.prefixes = contactInfo.prefixes;
         body.telephoneList = contactInfo.phoneNumbers || contactInfo.telephoneList;
         body.emailList = contactInfo.emails || contactInfo.emailList;
         body.addressList = contactInfo.addresses || contactInfo.addressList;

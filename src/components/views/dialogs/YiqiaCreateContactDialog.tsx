@@ -357,7 +357,7 @@ const YiqiaCreateContact:React.FC<{}> = (props) => {
     }
 
     const theTitle = props.user ? _t("edit contact") : _t("Create Contact");
-    const operateText = props.user ? _t('Edit') : _t('Create');
+    const operateText = props.user ? _t('OK') : _t('Create');
 
     return (
         <BaseDialog
