@@ -429,7 +429,7 @@ export class YiqiaContact {
         else if(contactInfo.family && contactInfo.given) body.nickName = contactInfo.family+contactInfo.given;
         else if(YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo)) body.nickName = YiqiaOrganizationStore.Instance.getOrgInfo(contactInfo).displayName;
         else body.nickName = contactInfo.matrixId.split(":")[0].slice(1) || contactInfo.DisplayNamePy || contactInfo.prefixes+contactInfo.suffixes;
-        if(typeof contactInfo.department != "string") body.department = contactInfo.department.name;
+        if(typeof contactInfo.department != "string") body.department = contactInfo.department?.name;
         body.prefixes = contactInfo.prefixes;
         body.telephoneList = contactInfo.phoneNumbers || contactInfo.telephoneList;
         body.emailList = contactInfo.emails || contactInfo.emailList;
