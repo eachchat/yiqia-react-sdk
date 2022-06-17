@@ -136,6 +136,9 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
                 }
                 this._departmentId2Member.set(departmentId, this._orgMembers);
                 this.emit(ORGANIZATION_MEMBER_UPDATE_EVENT);
+            } else {
+                this._orgMembers = new Map();
+                this.emit(ORGANIZATION_MEMBER_UPDATE_EVENT);
             }
         })
     }
