@@ -16,6 +16,7 @@ export const UPDATE_USERLIST_INFOS = Symbol("userlist_infos_update");
 export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> {
     private static internalInstance = new YiqiaContactUserStore();
     private _curUsersList: Map<string, UserModal[]> = new Map();
+    private _curRecents: UserModal[] = [];
     private _curItem: ContactTagId = ContactTagId.Recent;
 
     constructor() {
@@ -67,8 +68,8 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
     }
 
     private updateUsersListFromRecentData() {
-        this._curUsersList = YiqiaRecentsStore.Instance.recents;
-        console.log("updateUsersListFromRecentData ", this._curUsersList);
+        this._curRecents = YiqiaRecentsStore.Instance.recents;
+        console.log("updateUsersListFromRecentData ", this._curRecents);
     }
 
     private updateUsersListFromContactsData() {
@@ -85,9 +86,13 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
         this.updateUsersData();
     }
 
-    public get usersList(): Map<string, UserModal[]>{
+    public get usersList(): Map<string, UserModal[]> | UserModal[]{
         this.updateUsersData();
-        return this._curUsersList;
+        if(this._curItem == ContactTagId.Recent) {
+            return this._curRecents;
+        } else {
+            return this._curUsersList;
+        }
     }
 
     // public getRoomDepartment(): Promise<DepartmentModal> {

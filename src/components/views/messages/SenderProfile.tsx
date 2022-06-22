@@ -29,6 +29,7 @@ import RoomContext, { TimelineRenderingType } from '../../../contexts/RoomContex
 import SettingsStore from "../../../settings/SettingsStore";
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
 import YiqiaOrganizationStore from '../../../stores/YiqiaOrganizationStore';
+import { YiqiaContactContactStore } from '../../../stores/YiqiaContactContactStore';
 
 interface IProps {
     mxEvent: MatrixEvent;
@@ -121,9 +122,14 @@ export default class SenderProfile extends React.Component<IProps, IState> {
 
         const disambiguate = member?.disambiguate || mxEvent.sender?.disambiguate;
         let displayName = member?.rawDisplayName || mxEvent.getSender() || "";
-        const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(member?.userId);
-        if(orgUser) {
-            displayName = orgUser.displayName || orgUser.nickName;
+        const contactinfo = YiqiaContactContactStore.Instance.getContactFromId(member?.userId);
+        if(contactinfo) {
+            displayName = contactinfo.DisplayName;
+        } else {
+            const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(member?.userId);
+            if(orgUser) {
+                displayName = orgUser.displayName || orgUser.nickName;
+            }
         }
         const mxid = member?.userId || mxEvent.getSender() || "";
 

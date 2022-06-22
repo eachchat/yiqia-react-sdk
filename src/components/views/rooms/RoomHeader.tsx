@@ -46,6 +46,7 @@ import RoomContext from "../../../contexts/RoomContext";
 import RoomLiveShareWarning from '../beacon/RoomLiveShareWarning';
 import { YiqiaVoIPLimit } from '../../../utils/yiqiaUtils/YiqiaVoIPLimi';
 import YiqiaOrganizationStore from '../../../stores/YiqiaOrganizationStore';
+import { YiqiaContactContactStore } from '../../../stores/YiqiaContactContactStore';
 
 export interface ISearchInfo {
     searchTerm: string;
@@ -198,9 +199,14 @@ export default class RoomHeader extends React.Component<IProps, IState> {
                         let roomName = name || oobName;
                         const dmUser = DMRoomMap.shared().getUserIdForRoomId(this.props.room.roomId);
                         if (dmUser) {
-                            const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(dmUser);
-                            if(orgUser) {
-                                roomName = orgUser.displayName || orgUser.nickName;
+                            const contactinfo = YiqiaContactContactStore.Instance.getContactFromId(dmUser);
+                            if(contactinfo) {
+                                roomName = contactinfo.DisplayName;
+                            } else {
+                                const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(dmUser);
+                                if(orgUser) {
+                                    roomName = orgUser.displayName || orgUser.nickName;
+                                }
                             }
                         }
                         return <div dir="auto" className={textClasses} title={roomName}>{ roomName }</div>;

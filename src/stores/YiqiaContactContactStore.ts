@@ -26,6 +26,16 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
         return res;
     }
 
+    public getContactFromId(matrixId) {
+        if(!this._allUsers) return null;
+        for(const conatct of this._allUsers) {
+            if(matrixId === conatct.matrixId) {
+                return conatct;
+            }
+        }
+        return null;
+    }
+
     public getContact(user:UserModal) {
         for(const conatct of this._allUsers) {
             if(user.matrixId === conatct.matrixId) {
@@ -47,6 +57,21 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
         return;
     }
 
+    public async updateItemFromMatrix(item: UserModal): Promise<UserModal> {
+        try{
+            const userInfo = this.matrixClient?.getUser(item.matrixId)
+            if(userInfo) {
+                item.avatarUrl = userInfo.avatarUrl;
+                return item;
+            }
+            return item;
+        }
+        catch(error) {
+            return item;
+        }
+
+    }
+
     public async generalContactsList(): Promise<void> {
         const results = await YiqiaContact.Instance.yiqiaContactContacts();
         const showResults = results.map((gmsContact: UserModal) => {
@@ -55,7 +80,13 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
             return usermodal;
         })
         console.log("generalContactsList ", showResults);
-        this._allUsers = showResults;
+        let newInfos = new Array();
+        for(let i = 0; i < showResults.length; i++) {
+            const user = showResults[i];
+            const newInfo = await this.updateItemFromMatrix(user);
+            newInfos.push(newInfo);
+        }
+        this._allUsers = [...newInfos];
         this._contactsInGms = this.dataDeal(showResults);
         console.log("_contactsInGms ", this._contactsInGms);
     }

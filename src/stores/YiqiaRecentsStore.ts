@@ -17,7 +17,7 @@ export const UPDATE_RECENT_EVENT = Symbol("yiqia_recent_user_update");
 export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
     private _recentsList: Map<string, UserModal[]> = new Map();
     private _isUpdating: boolean = false;
-    private _allUsers: UserModal[];
+    private _allUsers: UserModal[] = [];
     public static YiqiaRecentsStoreInstance = new YiqiaRecentsStore();
     constructor() {
         super(defaultDispatcher);
@@ -39,11 +39,11 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
         return YiqiaRecentsStore.YiqiaRecentsStoreInstance;
     }
 
-    public get recents(): Map<string, UserModal[]> {
-        if(this._recentsList.size === 0) {
+    public get recents(): UserModal[] {
+        if(this._allUsers.length === 0) {
             this.generalSortedDMList();
         }
-        return this._recentsList;
+        return this._allUsers;
     }
 
     protected async onAction(payload: ActionPayload): Promise<void> {
@@ -67,26 +67,23 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
     private async selfUpdateFromGms(): Promise<void> {
         if(this._isUpdating) return;
         let newData = new Map<string, UserModal[]>();
+        let newUsers = [];
         this._isUpdating = true;
         let needUpdate = false;
-        for(const [key, value] of this._recentsList.entries()) {
-            let newList = [];
-            for(let i = 0; i < value.length; i++) {
-                const item = value[i];
-                if(item.OrganizationInfo === YIQIA_LOADING) {
-                    const gmsUserInfo = await this.updateItemFromGms(item);
-                    if(gmsUserInfo) {
-                        if(item.updateProperty(gmsUserInfo)) {
-                            needUpdate = true;
-                        }
+        for(let i = 0; i < this._allUsers.length; i++) {
+            const user = this._allUsers[i];
+            if(user.OrganizationInfo === YIQIA_LOADING) {
+                const gmsUserInfo = await this.updateItemFromGms(user);
+                if(gmsUserInfo) {
+                    if(user.updateProperty(gmsUserInfo)) {
+                        needUpdate = true;
                     }
                 }
-                newList.push(item);
             }
-            newData.set(key, newList);
+            newUsers.push(user);
         }
         this._isUpdating = false;
-        this._recentsList = newData;
+        this._allUsers = newUsers;
         if(needUpdate) {
             this.emit(UPDATE_RECENT_EVENT);
         }

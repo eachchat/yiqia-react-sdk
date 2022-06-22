@@ -83,6 +83,7 @@ import UserIdentifierCustomisations from '../../../customisations/UserIdentifier
 import PosthogTrackers from "../../../PosthogTrackers";
 import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
 import YiqiaOrganizationStore from '../../../stores/YiqiaOrganizationStore';
+import { YiqiaContactContactStore } from '../../../stores/YiqiaContactContactStore';
 
 export interface IDevice {
     deviceId: string;
@@ -1345,9 +1346,14 @@ const BasicUserInfo: React.FC<{
         // hide the Roles section for DMs as it doesn't make sense there
         if (!DMRoomMap.shared().getUserIdForRoomId((member as RoomMember).roomId)) {
             let name = room.name;
-            const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(member.userId);
-            if(orgUser) {
-                name = orgUser.displayName || orgUser.nickName;
+            const contactinfo = YiqiaContactContactStore.Instance.getContactFromId(member?.userId);
+            if(contactinfo) {
+                name = contactinfo.DisplayName;
+            } else {
+                const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(member.userId);
+                if(orgUser) {
+                    name = orgUser.displayName || orgUser.nickName;
+                }
             }
             memberDetails = <div className="mx_UserInfo_container">
                 <h3>{ _t("Role in <RoomName/>", {}, {
@@ -1583,9 +1589,14 @@ const UserInfoHeader: React.FC<{
     }
 
     let displayName = (member as RoomMember).rawDisplayName || (member as GroupMember).displayname;
-    const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(member.userId);
-    if(orgUser) {
-        displayName = orgUser.displayName || orgUser.nickName;
+    const contactinfo = YiqiaContactContactStore.Instance.getContactFromId(member?.userId);
+    if(contactinfo) {
+        displayName = contactinfo.DisplayName;
+    } else {
+        const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(member.userId);
+        if(orgUser) {
+            displayName = orgUser.displayName || orgUser.nickName;
+        }
     }
     return <React.Fragment>
         { avatarElement }

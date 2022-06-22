@@ -119,8 +119,23 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
         this.fetchNewOrgMembers(departmentId);
     }
 
+    public async updateItemFromMatrix(item: UserModal): Promise<UserModal> {
+        try{
+            const userInfo = this.matrixClient?.getUser(item.matrixId)
+            if(userInfo) {
+                item.avatarUrl = userInfo.avatarUrl;
+                return item;
+            }
+            return item;
+        }
+        catch(error) {
+            return item;
+        }
+
+    }
+
     private async fetchNewOrgMembers(departmentId) {
-        YiqiaContact.Instance.yiqiaOrganizationMemberInfo(departmentId).then((resp) => {
+        YiqiaContact.Instance.yiqiaOrganizationMemberInfo(departmentId).then(async (resp) => {
             console.log("fetchNewOrgMembers ", resp)
             if(resp && resp.length > 0) {
                 const showResults = resp.map((orgMember: UserModal) => {
@@ -128,7 +143,13 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
                     usermodal.updateProperty(orgMember);
                     return usermodal;
                 })
-                this._orgMembers = this.dataDeal(showResults);
+                let newInfos = [];
+                for(let i = 0; i < showResults.length; i++) {
+                    const user = showResults[i];
+                    const newInfo = await this.updateItemFromMatrix(user);
+                    newInfos.push(newInfo);
+                }
+                this._orgMembers = this.dataDeal(newInfos);
                 if(this._departmentId2Member.has(departmentId)) {
                     if(!objectHasDiff(this._orgMembers, this._departmentId2Member.get(departmentId))) {
                         return;

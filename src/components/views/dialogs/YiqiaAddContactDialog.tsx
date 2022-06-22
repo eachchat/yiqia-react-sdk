@@ -18,6 +18,7 @@ import BaseDialog from "./BaseDialog";
 import { YiqiaContactContactStore } from "../../../stores/YiqiaContactContactStore";
 import AutoHideScrollbar from "../../structures/AutoHideScrollbar";
 import { arrayFastClone } from "../../../utils/arrays";
+import YiqiaOrganizationStore from "../../../stores/YiqiaOrganizationStore";
 
 interface ItemProps {
     user: UserModal;
@@ -189,6 +190,7 @@ class YiqiaAddContactDialog extends React.PureComponent<IYiqiaAddContactDialogPr
         for(const user of oriResult) {
             if(user.matrixId) {
                 const profile = await matrixClient.getUser(user.matrixId);
+                // const profile = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(user.matrixId);
                 user.photoUrl = profile?.avatarUrl;
                 dealedResult.push(user);
             }

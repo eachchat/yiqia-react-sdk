@@ -43,7 +43,7 @@ var curTerm;
 
 const YiqiaContactUserPage: React.FC<IProps> = (props) => {
     const [showRightPanel, setShowRightPanel] = useState(false);
-    const [users, setUsers] = useState(new Map()); //<Map<string, UserModal[]>
+    const [users, setUsers] = useState(); //<Map<string, UserModal[]>
     // const [curTerm, setCurTerm] = useState("");
     console.log("11111111111111")
     
@@ -188,12 +188,12 @@ const YiqiaContactUserPage: React.FC<IProps> = (props) => {
 
     const pageShouldUpdate = () => {
         const curUsers = YiqiaContactUserStore.instance.usersList;
-        console.log("pageShouldUpdate objectHasDiff ", objectHasDiff(curUsers, users));
+        // console.log("pageShouldUpdate objectHasDiff ", objectHasDiff(curUsers, users));
         console.log("pageShouldUpdate curUsers ", curUsers);
-        console.log("pageShouldUpdate users ", users);
-        if(mapHasDiff(curUsers, users)) {
-            setUsers(curUsers);
-        }
+        // console.log("pageShouldUpdate users ", users);
+        // if(mapHasDiff(curUsers, users)) {
+        setUsers(curUsers);
+        // }
     }
 
     const pageForceUpdate = () => {

@@ -59,6 +59,7 @@ import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 import { getKeyBindingsManager } from "../../../KeyBindingsManager";
 import DMRoomMap from "../../../utils/DMRoomMap";
 import YiqiaOrganizationStore, { ORGANIZATION_READY } from "../../../stores/YiqiaOrganizationStore";
+import { YiqiaContactContactStore } from "../../../stores/YiqiaContactContactStore";
 
 interface IProps {
     room: Room;
@@ -597,9 +598,14 @@ export default class RoomTile extends React.PureComponent<IProps, IState> {
         let name = roomProfile.displayName || this.props.room.name;
         const dmUser = DMRoomMap.shared().getUserIdForRoomId(this.props.room.roomId);
         if (dmUser) {
-            const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(dmUser);
-            if(orgUser) {
-                name = orgUser.displayName || orgUser.nickName;
+            const contactinfo = YiqiaContactContactStore.Instance.getContactFromId(dmUser);
+            if(contactinfo) {
+                name = contactinfo.DisplayName;
+            } else {
+                const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(dmUser);
+                if(orgUser) {
+                    name = orgUser.displayName || orgUser.nickName;
+                }
             }
         }
 

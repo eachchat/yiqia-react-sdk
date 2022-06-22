@@ -23,6 +23,9 @@ import YiqiaUserRightPanelStore from "../../../stores/YiqiaUserRightPanelStore";
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
 import YiqiaOrganizationStore from "../../../stores/YiqiaOrganizationStore";
 import YiqiaContactUserStore from "../../../stores/YiqiaContactUserStore";
+import { YiqiaContactContactStore } from "../../../stores/YiqiaContactContactStore";
+import BaseAvatar from "../avatars/BaseAvatar";
+import { mediaFromMxc } from "../../../customisations/Media";
 
 interface IProps {
     userItem: UserModal,
@@ -56,18 +59,45 @@ export default function YiqiaUserItem(props:IProps) {
         }
     }
 
+    const showName = () => {
+        let showName = props.userItem.DisplayName;
+        const contactinfo = YiqiaContactContactStore.Instance.getContact(props.userItem);
+        if(contactinfo) {
+            showName = contactinfo.DisplayName;
+            return showName;
+        }
+        const orgUser = YiqiaOrganizationStore.Instance.getOrgInfo(props.userItem);
+        if(orgUser) {
+            showName = orgUser.displayName || orgUser.nickName;
+            return showName;
+        }
+        return showName;
+    }
+
     const getUserAvatar = (
         <div className="yiqia_ConatctUserInfo_avatar">
             <div>
                 <div>
-                    <MemberAvatar
-                        key={props.userItem.matrixId} // to instantly blank the avatar when UserInfo changes members
-                        member={member as RoomMember}
-                        width={32} // 2x@30vh
-                        height={32} // 2x@30vh
-                        resizeMethod="scale"
-                        fallbackUserId={member ? member.userId : props.userItem.matrixId || props.userItem.DisplayName}
-                        urls={(member as unknown as User)?.avatarUrl ? [(member as unknown as User)?.avatarUrl] : undefined} />
+                    {
+                        member &&
+                        <MemberAvatar
+                            key={props.userItem.matrixId} // to instantly blank the avatar when UserInfo changes members
+                            member={member as RoomMember}
+                            width={32} // 2x@30vh
+                            height={32} // 2x@30vh
+                            resizeMethod="scale"
+                            fallbackUserId={member ? member.userId : props.userItem.matrixId || props.userItem.DisplayName}
+                            urls={props.userItem?.avatarUrl ? [mediaFromMxc(props.userItem?.avatarUrl).getSquareThumbnailHttp(48)] : undefined} />
+                    }
+                    {
+                        !member &&
+                        <BaseAvatar
+                            name={member ? member.userId : props.userItem.matrixId || props.userItem.DisplayName}
+                            title={member ? member.userId : props.userItem.matrixId || props.userItem.DisplayName}
+                            idName={props.userItem.matrixId}
+                            url={props.userItem?.avatarUrl ? mediaFromMxc(props.userItem?.avatarUrl).getSquareThumbnailHttp(48) : undefined}
+                        />
+                    }
                 </div>
             </div>
         </div>
@@ -79,8 +109,8 @@ export default function YiqiaUserItem(props:IProps) {
 
     let nameContainer:React.ReactNode = (
         <div className="yiqia_ContactUser_nameContainer">
-            <div className="yiqia_ContactUser_namt_text" title={props.userItem.DisplayName} tabIndex={-1} dir="auto">
-                { props.userItem.DisplayName }
+            <div className="yiqia_ContactUser_namt_text" title={showName()} tabIndex={-1} dir="auto">
+                { showName() }
             </div>
         </div>
     );

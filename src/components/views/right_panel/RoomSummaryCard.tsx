@@ -53,6 +53,7 @@ import PosthogTrackers from "../../../PosthogTrackers";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
 import YiqiaOrganizationStore from "../../../stores/YiqiaOrganizationStore";
 import DMRoomMap from "../../../utils/DMRoomMap";
+import { YiqiaContactContactStore } from "../../../stores/YiqiaContactContactStore";
 
 interface IProps {
     room: Room;
@@ -276,9 +277,14 @@ const RoomSummaryCard: React.FC<IProps> = ({ room, onClose }) => {
     const dmUser = DMRoomMap.shared().getUserIdForRoomId(room.roomId);
     var showName;
     if (dmUser) {
-        const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(dmUser);
-        if(orgUser) {
-            showName = orgUser.displayName || orgUser.nickName;
+        const contactinfo = YiqiaContactContactStore.Instance.getContactFromId(dmUser);
+        if(contactinfo) {
+            showName = contactinfo.DisplayName;
+        } else {
+            const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(dmUser);
+            if(orgUser) {
+                showName = orgUser.displayName || orgUser.nickName;
+            }
         }
     }
     const header = <React.Fragment>

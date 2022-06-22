@@ -210,7 +210,7 @@ const UserInfoHeader: React.FC<{
         Modal.createDialog(ImageView, params, "yiqia_Dialog_lightbox", null, true);
     }, [user]);
 
-    const httpUrl = (user.photoUrl && user.photoUrl.length > 0) ? mediaFromMxc(user.photoUrl).srcHttp : "";
+    const httpUrl = (user.avatarUrl || user.photoUrl) ? mediaFromMxc(user.avatarUrl || user.photoUrl).srcHttp : "";
     const avatarElement = (
         <div className="yiqia_UserInfo_avatar">
             <div>
@@ -342,6 +342,7 @@ const YiqiaUserDetails: React.FC<{user: UserModal}> = ({
             if(user.nickName && user.nickName.length > 0) return user.nickName;
             if(user.family && user.given) return user.family + user.given;
             if(user.family) return user.family;
+            if(YiqiaContactContactStore.Instance.getContact(user)) return YiqiaContactContactStore.Instance.getContact(user).DisplayName;
             if(YiqiaOrganizationStore.Instance.getOrgInfo(user)) return YiqiaOrganizationStore.Instance.getOrgInfo(user).DisplayName;
             if(user.matrixId) return user.matrixId.slice(1,2);
         } else {

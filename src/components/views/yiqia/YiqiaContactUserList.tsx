@@ -90,9 +90,14 @@ export default class YiqiaContactUserList extends React.Component<IProps, IState
     };
 
     private renderUsers(): React.ReactElement[] {
-        const tiles: React.ReactElement[] = [];
-
-        if (this.props.users) {
+        let tiles: React.ReactElement[] = [];
+        if (this.props.users && this.props.users instanceof(Array)) {
+            tiles = this.props.users.map(item => {
+                return(
+                    <YiqiaUserItem userItem={item} descriptType={DescriptType.Title}></YiqiaUserItem>
+                )
+            })
+        } else if(this.props.users) {
             let allLetters = [...this.props.users.keys()];
 
             for (const letter of allLetters) {

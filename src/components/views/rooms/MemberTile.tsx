@@ -35,6 +35,7 @@ import EntityTile, { PowerStatus } from "./EntityTile";
 import MemberAvatar from "./../avatars/MemberAvatar";
 import UserIdentifierCustomisations from '../../../customisations/UserIdentifier';
 import YiqiaOrganizationStore from '../../../stores/YiqiaOrganizationStore';
+import { YiqiaContactContactStore } from '../../../stores/YiqiaContactContactStore';
 
 interface IProps {
     member: RoomMember;
@@ -208,9 +209,14 @@ export default class MemberTile extends React.Component<IProps, IState> {
 
     private getDisplayName(): string {
         let name;
-        const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(this.props.member.userId);
-        if(orgUser) {
-            name = orgUser.displayName || orgUser.nickName;
+        const contactinfo = YiqiaContactContactStore.Instance.getContactFromId(this.props.member.userId);
+        if(contactinfo) {
+            name = contactinfo.DisplayName;
+        } else {
+            const orgUser = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(this.props.member.userId);
+            if(orgUser) {
+                name = orgUser.displayName || orgUser.nickName;
+            }
         }
         return name || this.props.member.name;
     }
