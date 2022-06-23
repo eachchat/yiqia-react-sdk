@@ -54,12 +54,15 @@ export default class YiqiaContactUserStore extends AsyncStoreWithClient<IState> 
     protected updateUsersData() {
         switch(this._curItem) {
             case ContactTagId.Recent:
+                YiqiaContactContactStore.Instance.generalContactsList();
                 this.updateUsersListFromRecentData();
                 break;
             case ContactTagId.Contact:
+                YiqiaContactContactStore.Instance.generalContactsList();
                 this.updateUsersListFromContactsData();
                 break;
             case ContactTagId.Organization:
+                YiqiaContactContactStore.Instance.generalContactsList();
                 this.updateUsersListFromOrganization();
                 break;
             case ContactTagId.Teams:

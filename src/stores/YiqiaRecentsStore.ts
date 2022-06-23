@@ -99,14 +99,13 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
         }
         if(!allRooms || allRooms.length == 0) return;
         const DMMap = DMRoomMap.shared();
-        const improvedList = allRooms.sort((a, b) => {
-            return a.timeline[a.timeline.length - 1].getTs() - b.timeline[b.timeline.length - 1].getTs();
-        }).map((room:Room) => {
+        let improvedList = allRooms.map((room:Room) => {
             const curUid = DMMap.getUserIdForRoomId(room.roomId);
             const matrixUser = this.matrixClient.getUser(curUid)
             if(matrixUser) {
                 const usermodal = new UserModal(matrixUser.userId, matrixUser.displayName, matrixUser.avatarUrl);
                 usermodal.Room = room;
+                usermodal.sortTime = room.timeline[room.timeline.length - 1].getTs();
                 return usermodal;
             }
         }).filter(userItem => {
@@ -117,6 +116,9 @@ export default class YiqiaRecentsStore extends YiqiaBaseUserStore<IState> {
             availUids.push(userItem.matrixId)
             return !!userItem;
         })
+        improvedList.sort((a, b) => {
+            return a.sortTime <= b.sortTime ? 1 : -1;
+        });
         this._allUsers = improvedList;
         this._recentsList = this.dataDeal(improvedList);
         this.selfUpdateFromGms();
