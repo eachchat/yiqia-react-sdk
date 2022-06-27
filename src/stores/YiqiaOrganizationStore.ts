@@ -36,6 +36,7 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
     }
 
     public get orgName() {
+        if(!this._orgDate) return "";
         return this._orgDate[0].name;
     }
 

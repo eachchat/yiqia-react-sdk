@@ -254,9 +254,9 @@ export default class Field extends React.PureComponent<PropShapes, IState> {
 
     private passwordVisibleIcon(): string {
         if(this.state.isPasswordVisible) {
-            return require("../../../../res/img/element-icons/inputfield/password_visible.svg");
+            return require("../../../../res/img/element-icons/inputfield/password-visible.svg").default;
         } else {
-            return require("../../../../res/img/element-icons/inputfield/password_invisible.svg");
+            return require("../../../../res/img/element-icons/inputfield/password_invisible.svg").default;
         }
     }
 

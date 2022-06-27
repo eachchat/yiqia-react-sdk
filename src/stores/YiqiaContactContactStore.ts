@@ -8,7 +8,7 @@ import { YiqiaBaseUserStore } from "./YiqiaBaseUserStore";
 
 export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
     private _contactsInGms: Map<string, UserModal[]> = new Map();
-    private _allUsers: UserModal[];
+    private _allUsers: UserModal[] = [];
     public static YiqiaContactContactStoreInstance = new YiqiaContactContactStore();
 
     constructor() {
