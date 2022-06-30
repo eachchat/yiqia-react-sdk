@@ -122,9 +122,9 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
 
     public async updateItemFromMatrix(item: UserModal): Promise<UserModal> {
         try{
-            const userInfo = this.matrixClient?.getUser(item.matrixId)
+            const userInfo = await this.matrixClient?.getProfileInfo(item.matrixId)
             if(userInfo) {
-                item.avatarUrl = userInfo.avatarUrl;
+                item.avatarUrl = userInfo.avatar_url;
                 return item;
             }
             return item;
