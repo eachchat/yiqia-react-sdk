@@ -117,12 +117,14 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
             this._orgMembers = this._departmentId2Member.get(departmentId);
             this.emit(ORGANIZATION_ITEM_CLICKED_EVENT);
         }
-        this.fetchNewOrgMembers(departmentId);
+        this.fetchNewOrgMembers(departmentId, true);
     }
 
-    public async updateItemFromMatrix(item: UserModal): Promise<UserModal> {
+    public async updateItemFromMatrix(item: UserModal, force=false): Promise<UserModal> {
         try{
-            const userInfo = await this.matrixClient?.getProfileInfo(item.matrixId)
+            let userInfo;
+            if(!item.matrixId) return item;
+            userInfo = this.matrixClient?.getUser(item.matrixId);
             if(userInfo) {
                 item.avatarUrl = userInfo.avatar_url;
                 return item;
@@ -135,7 +137,31 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
 
     }
 
-    private async fetchNewOrgMembers(departmentId) {
+    private async updateItemFromMatrixAgain() {
+        let newData = new Map<string, UserModal[]>();
+        let needUpdate = false;
+        for(const [key, value] of this._orgMembers.entries()) {
+            let newList = [];
+            for(let i = 0; i < value.length; i++) {
+                const item = value[i];
+                if(!item.avatarUrl) {
+                    const gmsUserInfo = await this.matrixClient?.getProfileInfo(item.matrixId);
+                    if(gmsUserInfo) {
+                        item.avatarUrl = gmsUserInfo.avatar_url;
+                        needUpdate = true;
+                    }
+                }
+                newList.push(item);
+            }
+            newData.set(key, newList);
+        }
+        this._orgMembers = newData;
+        if(needUpdate) {
+            this.emit(ORGANIZATION_MEMBER_UPDATE_EVENT);
+        }
+    }
+
+    private async fetchNewOrgMembers(departmentId, force=false) {
         YiqiaContact.Instance.yiqiaOrganizationMemberInfo(departmentId).then(async (resp) => {
             console.log("fetchNewOrgMembers ", resp)
             if(resp && resp.length > 0) {
@@ -147,7 +173,7 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
                 let newInfos = [];
                 for(let i = 0; i < showResults.length; i++) {
                     const user = showResults[i];
-                    const newInfo = await this.updateItemFromMatrix(user);
+                    const newInfo = await this.updateItemFromMatrix(user, force);
                     newInfos.push(newInfo);
                 }
                 this._orgMembers = this.dataDeal(newInfos);
@@ -162,6 +188,7 @@ export default class YiqiaOrganizationStore extends YiqiaBaseUserStore<IState> {
                 this._orgMembers = new Map();
                 this.emit(ORGANIZATION_MEMBER_UPDATE_EVENT);
             }
+            this.updateItemFromMatrixAgain();
         })
     }
 

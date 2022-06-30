@@ -59,9 +59,11 @@ export class YiqiaContactContactStore extends YiqiaBaseUserStore<IState> {
 
     public async updateItemFromMatrix(item: UserModal): Promise<UserModal> {
         try{
-            const userInfo = await this.matrixClient?.getProfileInfo(item.matrixId)
+            let userInfo;
+            if(!item.matrixId) return item;
+            userInfo = this.matrixClient?.getUser(item.matrixId);
             if(userInfo) {
-                item.avatarUrl = userInfo.avatar_url;
+                item.avatarUrl = userInfo.avatar_url || userInfo.avatarUrl;
                 return item;
             }
             return item;

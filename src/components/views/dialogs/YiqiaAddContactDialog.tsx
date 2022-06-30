@@ -189,9 +189,9 @@ class YiqiaAddContactDialog extends React.PureComponent<IYiqiaAddContactDialogPr
         const oriResult = arrayFastClone(this.state.users);
         for(const user of oriResult) {
             if(user.matrixId) {
-                const profile = await matrixClient.getUser(user.matrixId);
+                const profile = await matrixClient.getProfileInfo(user.matrixId);
                 // const profile = YiqiaOrganizationStore.Instance.getOrgInfoFromUid(user.matrixId);
-                user.photoUrl = profile?.avatarUrl;
+                user.photoUrl = profile?.avatar_url;
                 dealedResult.push(user);
             }
             if(term !== this.state.filterText || term.trim().length === 0) break;
